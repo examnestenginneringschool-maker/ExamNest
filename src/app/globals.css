@@ -1,22 +1,12 @@
 @import "tailwindcss";
 
+@theme {
+  --font-sans: var(--font-plus-jakarta-sans), "Plus Jakarta Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --background: #faf8ff;
+  --foreground: #171b2a;
 }
 
 html {
@@ -27,6 +17,163 @@ html {
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-plus-jakarta-sans), "Plus Jakarta Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+/* ========================================================= */
+/* Custom ExamNest Scrollbars (Cross-browser, Theme-aligned) */
+/* ========================================================= */
+
+/* Firefox & standard CSS */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+
+/* WebKit (Chrome, Edge, Safari, Opera) */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #cbd5e1;
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+  transition: background-color 0.2s ease-in-out;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: #94a3b8;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+::-webkit-scrollbar-thumb:active {
+  background-color: #6366f1;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* Utility to completely hide scrollbar when desired */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* ========================================================= */
+/* Custom Marketing Page Animations & Micro-Interactions     */
+/* ========================================================= */
+
+@keyframes floatAmbientAura {
+  0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.25; }
+  50% { transform: translate(-20px, 15px) scale(1.08); opacity: 0.38; }
+}
+
+@keyframes floatAmbientRight {
+  0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.20; }
+  50% { transform: translate(25px, -18px) scale(1.1); opacity: 0.32; }
+}
+
+@keyframes waveHand {
+  0% { transform: rotate(0deg); }
+  15% { transform: rotate(14deg); }
+  30% { transform: rotate(-8deg); }
+  45% { transform: rotate(12deg); }
+  60% { transform: rotate(-4deg); }
+  75% { transform: rotate(8deg); }
+  100% { transform: rotate(0deg); }
+}
+
+@keyframes livePulseDot {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(91, 77, 255, 0.6); }
+  70% { transform: scale(1.05); box-shadow: 0 0 0 6px rgba(91, 77, 255, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(91, 77, 255, 0); }
+}
+
+@keyframes shimmerPass {
+  0% { transform: translateX(-150%); }
+  100% { transform: translateX(200%); }
+}
+
+.aura-glow-left { animation: floatAmbientAura 12s ease-in-out infinite; }
+.aura-glow-right { animation: floatAmbientRight 14s ease-in-out infinite; }
+
+.waving-hand {
+  display: inline-block;
+  transform-origin: 70% 70%;
+  animation: waveHand 2.4s ease-in-out infinite;
+}
+
+.live-pulse-dot {
+  position: relative;
+}
+.live-pulse-dot::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  animation: livePulseDot 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.btn-shimmer {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.btn-shimmer::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+  transform: skewX(-20deg) translateX(-180%);
+  transition: none;
+}
+.btn-shimmer:hover::before {
+  animation: shimmerPass 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.progress-bar-fill {
+  position: relative;
+  overflow: hidden;
+  transition: width 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.progress-bar-fill::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.45) 50%, transparent 100%);
+  animation: shimmerPass 2.8s infinite ease-in-out;
+}
+
+@keyframes authFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-auth-fade-in {
+  animation: authFadeIn 0.32s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 

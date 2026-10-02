@@ -25,6 +25,7 @@ import {
   getUniversities,
 } from "@/app/onboarding/actions";
 import { fullAcademicProfileSchema } from "@/lib/validation/onboarding";
+import { Logo } from "@/components/brand/Logo";
 
 export type University = {
   id: string;
@@ -315,27 +316,42 @@ export default function StudentOnboarding({ initialUniversities = [] }: Props) {
     return false;
   }
 
+  // Progress percentage for animated top bar
+  const progressPercent = Math.round(((step - 1) / 5) * 100);
+
   return (
-    <div className="mx-auto w-full max-w-4xl">
+    <div className="mx-auto w-full max-w-4xl font-sans">
       {/* HEADER */}
-      <div className="mb-8 text-center">
-        <div className="inline-flex items-center gap-2 rounded-full border border-indigo-200/80 bg-indigo-50/70 px-3.5 py-1 text-xs font-semibold uppercase tracking-wider text-indigo-700">
-          <Sparkles className="h-3.5 w-3.5" />
-          Personalized Study Setup
+      <div className="mb-8 text-center flex flex-col items-center">
+        <div className="mb-4">
+          <Logo size="md" />
         </div>
 
-        <h1 className="mt-3 text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl md:text-4xl">
+        <div className="inline-flex items-center gap-2 rounded-full border border-[#dee1f7] bg-[#ebedff]/80 px-4 py-1.5 text-xs font-bold text-[#5B4DFF] shadow-xs backdrop-blur-sm">
+          <Sparkles className="h-3.5 w-3.5" />
+          <span>Personalized Academic Setup</span>
+        </div>
+
+        <h1 className="mt-3.5 text-3xl sm:text-4xl font-black tracking-tight text-[#1B1B2F]">
           Set up your academic profile
         </h1>
 
-        <p className="mx-auto mt-2.5 max-w-xl text-sm leading-relaxed text-slate-600 sm:text-base">
+        <p className="mx-auto mt-2 max-w-xl text-xs sm:text-sm leading-relaxed text-[#717588]">
           ExamNest organizes your notes, syllabus, and exam questions to match your exact university curriculum.
         </p>
       </div>
 
-      {/* STEPPER NAVIGATION */}
-      <div className="mb-8 overflow-x-auto pb-2">
-        <nav aria-label="Progress" className="flex items-center justify-between min-w-[560px]">
+      {/* STEPPER PROGRESS NAVIGATION */}
+      <div className="mb-8 bg-white/80 border border-[#e2e5f0] rounded-3xl p-4 sm:p-5 shadow-xs backdrop-blur-sm">
+        {/* Animated Progress Bar */}
+        <div className="w-full h-1.5 bg-[#ebedff] rounded-full overflow-hidden mb-4">
+          <div
+            className="h-full bg-gradient-to-r from-[#5B4DFF] to-[#F6C844] rounded-full transition-all duration-500 ease-out"
+            style={{ width: `${Math.max(progressPercent, 12)}%` }}
+          />
+        </div>
+
+        <nav aria-label="Progress" className="flex items-center justify-between overflow-x-auto pb-1 gap-2">
           {STEP_DEFINITIONS.map((def, idx) => {
             const isCompleted = step > def.step || (def.step === 6 && submitting);
             const isCurrent = step === def.step;
@@ -348,33 +364,33 @@ export default function StudentOnboarding({ initialUniversities = [] }: Props) {
                   type="button"
                   onClick={() => isClickable && goToStep(def.step)}
                   disabled={!isClickable}
-                  className={`group flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold transition ${
+                  className={`group flex items-center gap-2 rounded-full px-3.5 py-1.5 text-xs font-bold transition-all duration-300 ${
                     isCurrent
-                      ? "bg-indigo-600 text-white shadow-md shadow-indigo-500/25 ring-2 ring-indigo-600/20"
+                      ? "bg-[#5B4DFF] text-white shadow-md shadow-[#5B4DFF]/25 ring-2 ring-[#5B4DFF]/20 scale-105"
                       : isCompleted
-                      ? "bg-indigo-50 text-indigo-700 hover:bg-indigo-100 cursor-pointer"
-                      : "bg-slate-100 text-slate-400 cursor-not-allowed"
+                      ? "bg-[#edeaff] text-[#5B4DFF] hover:bg-[#e4e0ff] cursor-pointer"
+                      : "bg-[#FAF8FF] border border-[#e2e5f0] text-[#717588] cursor-not-allowed"
                   }`}
                 >
                   <span
-                    className={`flex h-5 w-5 items-center justify-center rounded-full text-[11px] ${
+                    className={`flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-black ${
                       isCurrent
                         ? "bg-white/20 text-white"
                         : isCompleted
-                        ? "bg-indigo-600 text-white"
-                        : "bg-slate-200 text-slate-500"
+                        ? "bg-[#5B4DFF] text-white"
+                        : "bg-[#ebedff] text-[#717588]"
                     }`}
                   >
                     {isCompleted ? <Check className="h-3 w-3 stroke-[3]" /> : def.step}
                   </span>
-                  <Icon className="h-3.5 w-3.5 opacity-80" />
+                  <Icon className="h-3.5 w-3.5 opacity-90 hidden sm:inline-block" />
                   <span>{def.label}</span>
                 </button>
 
                 {idx < STEP_DEFINITIONS.length - 1 && (
                   <div
-                    className={`mx-2 h-0.5 flex-1 transition ${
-                      step > def.step ? "bg-indigo-500" : "bg-slate-200"
+                    className={`mx-2 h-0.5 flex-1 rounded-full transition-all duration-300 hidden md:block ${
+                      step > def.step ? "bg-[#5B4DFF]" : "bg-[#ebedff]"
                     }`}
                   />
                 )}
@@ -384,35 +400,35 @@ export default function StudentOnboarding({ initialUniversities = [] }: Props) {
         </nav>
       </div>
 
-      {/* MAIN CONTAINER */}
-      <div className="relative overflow-hidden rounded-3xl border border-slate-200/90 bg-white p-6 shadow-xl shadow-slate-200/50 sm:p-8 md:p-10">
-        {/* Loading overlay banner when fetching next step */}
+      {/* MAIN CARD CONTAINER */}
+      <div className="relative overflow-hidden rounded-3xl border border-[#e2e5f0] bg-white p-6 sm:p-8 md:p-10 shadow-[0_20px_60px_-15px_rgba(27,27,47,0.07)] backdrop-blur-xl">
+        {/* Loading overlay top line when fetching next step */}
         {stepLoading && (
-          <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-indigo-500 via-violet-500 to-indigo-500 animate-pulse" />
+          <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[#5B4DFF] via-[#F6C844] to-[#5B4DFF] animate-pulse" />
         )}
 
         {/* Selected Breadcrumb trail */}
         {step > 1 && (
-          <div className="mb-6 flex flex-wrap items-center gap-1.5 rounded-xl border border-slate-100 bg-slate-50/80 px-4 py-2.5 text-xs text-slate-600">
-            <span className="font-semibold text-slate-400 uppercase tracking-wider text-[10px]">
+          <div className="mb-6 flex flex-wrap items-center gap-2 rounded-2xl border border-[#e8ebf6] bg-[#FAF8FF] px-4 py-2.5 text-xs text-[#1B1B2F] animate-in fade-in duration-300">
+            <span className="font-extrabold text-[#717588] uppercase tracking-wider text-[10px]">
               Selections:
             </span>
             {selectedUniversity && (
               <button
                 type="button"
                 onClick={() => goToStep(1)}
-                className="font-medium text-indigo-700 hover:underline"
+                className="font-bold text-[#5B4DFF] hover:underline"
               >
                 {selectedUniversity.short_name || selectedUniversity.name}
               </button>
             )}
             {selectedCollege && (
               <>
-                <ChevronRight className="h-3 w-3 text-slate-400" />
+                <ChevronRight className="h-3 w-3 text-[#717588]" />
                 <button
                   type="button"
                   onClick={() => goToStep(2)}
-                  className="font-medium text-indigo-700 hover:underline max-w-[150px] truncate"
+                  className="font-bold text-[#5B4DFF] hover:underline max-w-[160px] truncate"
                   title={selectedCollege.name}
                 >
                   {selectedCollege.name}
@@ -421,11 +437,11 @@ export default function StudentOnboarding({ initialUniversities = [] }: Props) {
             )}
             {selectedCourse && (
               <>
-                <ChevronRight className="h-3 w-3 text-slate-400" />
+                <ChevronRight className="h-3 w-3 text-[#717588]" />
                 <button
                   type="button"
                   onClick={() => goToStep(3)}
-                  className="font-medium text-indigo-700 hover:underline"
+                  className="font-bold text-[#5B4DFF] hover:underline"
                 >
                   {selectedCourse.course?.short_name || selectedCourse.course?.name}
                 </button>
@@ -433,11 +449,11 @@ export default function StudentOnboarding({ initialUniversities = [] }: Props) {
             )}
             {selectedDepartment && (
               <>
-                <ChevronRight className="h-3 w-3 text-slate-400" />
+                <ChevronRight className="h-3 w-3 text-[#717588]" />
                 <button
                   type="button"
                   onClick={() => goToStep(4)}
-                  className="font-medium text-indigo-700 hover:underline"
+                  className="font-bold text-[#5B4DFF] hover:underline"
                 >
                   {selectedDepartment.department?.short_name || selectedDepartment.department?.name}
                 </button>
@@ -445,20 +461,22 @@ export default function StudentOnboarding({ initialUniversities = [] }: Props) {
             )}
             {selectedSemester && (
               <>
-                <ChevronRight className="h-3 w-3 text-slate-400" />
-                <span className="font-semibold text-slate-900">{selectedSemester.name}</span>
+                <ChevronRight className="h-3 w-3 text-[#717588]" />
+                <span className="font-bold text-[#1B1B2F] bg-[#ebedff] px-2 py-0.5 rounded-full text-[11px]">
+                  {selectedSemester.name}
+                </span>
               </>
             )}
           </div>
         )}
 
         {error && (
-          <div className="mb-6 rounded-2xl border border-red-200 bg-red-50/90 px-4 py-3 text-sm font-medium text-red-700 flex items-center justify-between">
+          <div className="mb-6 rounded-2xl border border-rose-200 bg-rose-50/90 px-4 py-3 text-xs sm:text-sm font-semibold text-rose-700 flex items-center justify-between animate-in fade-in duration-200">
             <span>{error}</span>
             <button
               type="button"
               onClick={() => setError("")}
-              className="text-xs text-red-600 underline hover:text-red-800"
+              className="text-xs text-rose-600 underline hover:text-rose-800 cursor-pointer"
             >
               Dismiss
             </button>
@@ -467,11 +485,13 @@ export default function StudentOnboarding({ initialUniversities = [] }: Props) {
 
         {/* STEP 1: UNIVERSITY */}
         {step === 1 && (
-          <div>
+          <div key="step-1" className="animate-in fade-in slide-in-from-right-4 duration-300 ease-out">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div>
-                <h2 className="text-xl font-bold text-slate-900">Select your university</h2>
-                <p className="mt-1 text-sm text-slate-500">
+                <h2 className="text-xl sm:text-2xl font-black text-[#1B1B2F]">
+                  Select your university
+                </h2>
+                <p className="mt-1 text-xs sm:text-sm text-[#717588]">
                   Choose the university your college is affiliated with.
                 </p>
               </div>
@@ -484,7 +504,7 @@ export default function StudentOnboarding({ initialUniversities = [] }: Props) {
               )}
             </div>
 
-            <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <div className="mt-6 grid grid-cols-1 gap-3.5 sm:grid-cols-2">
               {filteredUniversities.length === 0 ? (
                 <EmptyState
                   text={
@@ -502,21 +522,28 @@ export default function StudentOnboarding({ initialUniversities = [] }: Props) {
                       type="button"
                       disabled={stepLoading}
                       onClick={() => handleUniversitySelect(uni.id)}
-                      className={`group relative rounded-2xl border p-5 text-left transition duration-150 ${
+                      className={`group relative rounded-2xl border p-5 text-left transition-all duration-200 cursor-pointer ${
                         isSelected
-                          ? "border-indigo-600 bg-indigo-50/60 ring-2 ring-indigo-600/30"
-                          : "border-slate-200 bg-white hover:border-indigo-400 hover:bg-slate-50/70 hover:shadow-sm"
+                          ? "border-[#5B4DFF] bg-[#edeaff]/40 ring-2 ring-[#5B4DFF]/30 shadow-xs"
+                          : "border-[#e2e5f0] bg-white hover:border-[#5B4DFF]/40 hover:bg-[#FAF8FF] hover:shadow-sm hover:-translate-y-0.5"
                       } ${stepLoading ? "opacity-60 cursor-wait" : ""}`}
                     >
                       <div className="flex items-start justify-between gap-3">
-                        <div>
-                          <p className="text-base font-bold text-slate-900 group-hover:text-indigo-600 transition">
-                            {uni.short_name}
-                          </p>
-                          <p className="mt-1 text-xs text-slate-500 leading-snug">{uni.name}</p>
+                        <div className="flex items-start gap-3">
+                          <div className="w-10 h-10 rounded-xl bg-[#ebedff] text-[#5B4DFF] flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                            <Building2 className="h-5 w-5" />
+                          </div>
+                          <div>
+                            <p className="text-base font-extrabold text-[#1B1B2F] group-hover:text-[#5B4DFF] transition-colors">
+                              {uni.short_name}
+                            </p>
+                            <p className="mt-1 text-xs text-[#717588] leading-snug">
+                              {uni.name}
+                            </p>
+                          </div>
                         </div>
                         {isSelected && (
-                          <div className="flex h-5 w-5 items-center justify-center rounded-full bg-indigo-600 text-white shrink-0">
+                          <div className="flex h-5 w-5 items-center justify-center rounded-full bg-[#5B4DFF] text-white shrink-0 shadow-xs">
                             <Check className="h-3 w-3 stroke-[3]" />
                           </div>
                         )}
@@ -531,11 +558,13 @@ export default function StudentOnboarding({ initialUniversities = [] }: Props) {
 
         {/* STEP 2: COLLEGE */}
         {step === 2 && (
-          <div>
+          <div key="step-2" className="animate-in fade-in slide-in-from-right-4 duration-300 ease-out">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div>
-                <h2 className="text-xl font-bold text-slate-900">Choose your college</h2>
-                <p className="mt-1 text-sm text-slate-500">
+                <h2 className="text-xl sm:text-2xl font-black text-[#1B1B2F]">
+                  Choose your college
+                </h2>
+                <p className="mt-1 text-xs sm:text-sm text-[#717588]">
                   Select the institution you currently attend.
                 </p>
               </div>
@@ -566,21 +595,26 @@ export default function StudentOnboarding({ initialUniversities = [] }: Props) {
                       type="button"
                       disabled={stepLoading}
                       onClick={() => handleCollegeSelect(col.id)}
-                      className={`group w-full flex items-center justify-between rounded-2xl border p-4 text-left transition ${
+                      className={`group w-full flex items-center justify-between rounded-2xl border p-4 sm:p-5 text-left transition-all duration-200 cursor-pointer ${
                         isSelected
-                          ? "border-indigo-600 bg-indigo-50/60 ring-2 ring-indigo-600/30"
-                          : "border-slate-200 bg-white hover:border-indigo-400 hover:bg-slate-50/70"
+                          ? "border-[#5B4DFF] bg-[#edeaff]/40 ring-2 ring-[#5B4DFF]/30 shadow-xs"
+                          : "border-[#e2e5f0] bg-white hover:border-[#5B4DFF]/40 hover:bg-[#FAF8FF] hover:shadow-xs hover:-translate-x-0.5"
                       } ${stepLoading ? "opacity-60 cursor-wait" : ""}`}
                     >
-                      <span className="font-semibold text-slate-900 group-hover:text-indigo-600 transition">
-                        {col.name}
-                      </span>
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-xl bg-[#ebedff] text-[#5B4DFF] flex items-center justify-center shrink-0">
+                          <GraduationCap className="h-4 w-4" />
+                        </div>
+                        <span className="font-bold text-sm text-[#1B1B2F] group-hover:text-[#5B4DFF] transition-colors">
+                          {col.name}
+                        </span>
+                      </div>
                       {isSelected ? (
-                        <div className="flex h-5 w-5 items-center justify-center rounded-full bg-indigo-600 text-white shrink-0">
+                        <div className="flex h-5 w-5 items-center justify-center rounded-full bg-[#5B4DFF] text-white shrink-0 shadow-xs">
                           <Check className="h-3 w-3 stroke-[3]" />
                         </div>
                       ) : (
-                        <ChevronRight className="h-4 w-4 text-slate-400 group-hover:text-indigo-500 transition" />
+                        <ChevronRight className="h-4 w-4 text-[#717588] group-hover:text-[#5B4DFF] transition-transform group-hover:translate-x-1" />
                       )}
                     </button>
                   );
@@ -594,11 +628,13 @@ export default function StudentOnboarding({ initialUniversities = [] }: Props) {
 
         {/* STEP 3: COURSE */}
         {step === 3 && (
-          <div>
+          <div key="step-3" className="animate-in fade-in slide-in-from-right-4 duration-300 ease-out">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div>
-                <h2 className="text-xl font-bold text-slate-900">Select your course / degree</h2>
-                <p className="mt-1 text-sm text-slate-500">
+                <h2 className="text-xl sm:text-2xl font-black text-[#1B1B2F]">
+                  Select your course / degree
+                </h2>
+                <p className="mt-1 text-xs sm:text-sm text-[#717588]">
                   Choose the academic program you are enrolled in.
                 </p>
               </div>
@@ -611,7 +647,7 @@ export default function StudentOnboarding({ initialUniversities = [] }: Props) {
               )}
             </div>
 
-            <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <div className="mt-6 grid grid-cols-1 gap-3.5 sm:grid-cols-2">
               {filteredCourses.length === 0 ? (
                 <EmptyState
                   text={
@@ -630,23 +666,28 @@ export default function StudentOnboarding({ initialUniversities = [] }: Props) {
                       type="button"
                       disabled={stepLoading}
                       onClick={() => handleCourseSelect(opt.id)}
-                      className={`group rounded-2xl border p-5 text-left transition ${
+                      className={`group rounded-2xl border p-5 text-left transition-all duration-200 cursor-pointer ${
                         isSelected
-                          ? "border-indigo-600 bg-indigo-50/60 ring-2 ring-indigo-600/30"
-                          : "border-slate-200 bg-white hover:border-indigo-400 hover:bg-slate-50/70"
+                          ? "border-[#5B4DFF] bg-[#edeaff]/40 ring-2 ring-[#5B4DFF]/30 shadow-xs"
+                          : "border-[#e2e5f0] bg-white hover:border-[#5B4DFF]/40 hover:bg-[#FAF8FF] hover:shadow-sm hover:-translate-y-0.5"
                       } ${stepLoading ? "opacity-60 cursor-wait" : ""}`}
                     >
                       <div className="flex items-start justify-between gap-3">
-                        <div>
-                          <p className="text-base font-bold text-slate-900 group-hover:text-indigo-600 transition">
-                            {c?.short_name || c?.name || "Course"}
-                          </p>
-                          {c?.short_name && c?.name && (
-                            <p className="mt-1 text-xs text-slate-500">{c.name}</p>
-                          )}
+                        <div className="flex items-start gap-3">
+                          <div className="w-10 h-10 rounded-xl bg-[#ebedff] text-[#5B4DFF] flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                            <BookOpen className="h-5 w-5" />
+                          </div>
+                          <div>
+                            <p className="text-base font-extrabold text-[#1B1B2F] group-hover:text-[#5B4DFF] transition-colors">
+                              {c?.short_name || c?.name || "Course"}
+                            </p>
+                            {c?.short_name && c?.name && (
+                              <p className="mt-1 text-xs text-[#717588]">{c.name}</p>
+                            )}
+                          </div>
                         </div>
                         {isSelected && (
-                          <div className="flex h-5 w-5 items-center justify-center rounded-full bg-indigo-600 text-white shrink-0">
+                          <div className="flex h-5 w-5 items-center justify-center rounded-full bg-[#5B4DFF] text-white shrink-0 shadow-xs">
                             <Check className="h-3 w-3 stroke-[3]" />
                           </div>
                         )}
@@ -663,12 +704,14 @@ export default function StudentOnboarding({ initialUniversities = [] }: Props) {
 
         {/* STEP 4: DEPARTMENT */}
         {step === 4 && (
-          <div>
+          <div key="step-4" className="animate-in fade-in slide-in-from-right-4 duration-300 ease-out">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div>
-                <h2 className="text-xl font-bold text-slate-900">Select your department / branch</h2>
-                <p className="mt-1 text-sm text-slate-500">
-                  Select your major stream or specialization.
+                <h2 className="text-xl sm:text-2xl font-black text-[#1B1B2F]">
+                  Select your department / branch
+                </h2>
+                <p className="mt-1 text-xs sm:text-sm text-[#717588]">
+                  Select your major stream or engineering specialization.
                 </p>
               </div>
               {departments.length > 3 && (
@@ -699,26 +742,31 @@ export default function StudentOnboarding({ initialUniversities = [] }: Props) {
                       type="button"
                       disabled={stepLoading}
                       onClick={() => handleDepartmentSelect(opt.id)}
-                      className={`group w-full flex items-center justify-between rounded-2xl border p-4 text-left transition ${
+                      className={`group w-full flex items-center justify-between rounded-2xl border p-4 sm:p-5 text-left transition-all duration-200 cursor-pointer ${
                         isSelected
-                          ? "border-indigo-600 bg-indigo-50/60 ring-2 ring-indigo-600/30"
-                          : "border-slate-200 bg-white hover:border-indigo-400 hover:bg-slate-50/70"
+                          ? "border-[#5B4DFF] bg-[#edeaff]/40 ring-2 ring-[#5B4DFF]/30 shadow-xs"
+                          : "border-[#e2e5f0] bg-white hover:border-[#5B4DFF]/40 hover:bg-[#FAF8FF] hover:shadow-xs hover:-translate-x-0.5"
                       } ${stepLoading ? "opacity-60 cursor-wait" : ""}`}
                     >
-                      <div>
-                        <span className="font-semibold text-slate-900 group-hover:text-indigo-600 transition">
-                          {d?.short_name || d?.name || "Department"}
-                        </span>
-                        {d?.short_name && d?.name && (
-                          <span className="ml-2 text-xs text-slate-400">({d.name})</span>
-                        )}
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-xl bg-[#ebedff] text-[#5B4DFF] flex items-center justify-center shrink-0">
+                          <Layers className="h-4 w-4" />
+                        </div>
+                        <div>
+                          <span className="font-bold text-sm text-[#1B1B2F] group-hover:text-[#5B4DFF] transition-colors">
+                            {d?.short_name || d?.name || "Department"}
+                          </span>
+                          {d?.short_name && d?.name && (
+                            <span className="ml-2 text-xs text-[#717588]">({d.name})</span>
+                          )}
+                        </div>
                       </div>
                       {isSelected ? (
-                        <div className="flex h-5 w-5 items-center justify-center rounded-full bg-indigo-600 text-white shrink-0">
+                        <div className="flex h-5 w-5 items-center justify-center rounded-full bg-[#5B4DFF] text-white shrink-0 shadow-xs">
                           <Check className="h-3 w-3 stroke-[3]" />
                         </div>
                       ) : (
-                        <ChevronRight className="h-4 w-4 text-slate-400 group-hover:text-indigo-500 transition" />
+                        <ChevronRight className="h-4 w-4 text-[#717588] group-hover:text-[#5B4DFF] transition-transform group-hover:translate-x-1" />
                       )}
                     </button>
                   );
@@ -732,15 +780,17 @@ export default function StudentOnboarding({ initialUniversities = [] }: Props) {
 
         {/* STEP 5: SEMESTER */}
         {step === 5 && (
-          <div>
+          <div key="step-5" className="animate-in fade-in slide-in-from-right-4 duration-300 ease-out">
             <div>
-              <h2 className="text-xl font-bold text-slate-900">Which semester are you in?</h2>
-              <p className="mt-1 text-sm text-slate-500">
+              <h2 className="text-xl sm:text-2xl font-black text-[#1B1B2F]">
+                Which semester are you in?
+              </h2>
+              <p className="mt-1 text-xs sm:text-sm text-[#717588]">
                 Your syllabus, subjects, and study materials will match this semester.
               </p>
             </div>
 
-            <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <div className="mt-6 grid grid-cols-2 gap-3.5 sm:grid-cols-4">
               {semesters.length === 0 ? (
                 <div className="col-span-full">
                   <EmptyState text="No semesters currently listed for this program." />
@@ -754,14 +804,19 @@ export default function StudentOnboarding({ initialUniversities = [] }: Props) {
                       type="button"
                       disabled={stepLoading}
                       onClick={() => handleSemesterSelect(sem.id)}
-                      className={`group rounded-2xl border p-5 text-center transition ${
+                      className={`group rounded-2xl border p-5 text-center transition-all duration-200 cursor-pointer ${
                         isSelected
-                          ? "border-indigo-600 bg-indigo-50/80 ring-2 ring-indigo-600/30 text-indigo-700"
-                          : "border-slate-200 bg-white hover:border-indigo-400 hover:bg-slate-50/70 text-slate-900"
+                          ? "border-[#5B4DFF] bg-[#edeaff]/70 ring-2 ring-[#5B4DFF]/30 text-[#5B4DFF] shadow-xs scale-102"
+                          : "border-[#e2e5f0] bg-white hover:border-[#5B4DFF]/40 hover:bg-[#FAF8FF] hover:shadow-xs hover:scale-102 text-[#1B1B2F]"
                       } ${stepLoading ? "opacity-60 cursor-wait" : ""}`}
                     >
-                      <p className="text-lg font-black">{sem.name}</p>
-                      <p className="mt-0.5 text-xs text-slate-400 font-medium">Semester {sem.semester_number}</p>
+                      <div className="w-10 h-10 rounded-full bg-[#ebedff] text-[#5B4DFF] flex items-center justify-center mx-auto mb-2 font-black text-sm group-hover:bg-[#5B4DFF] group-hover:text-white transition-colors">
+                        {sem.semester_number}
+                      </div>
+                      <p className="text-base font-black">{sem.name}</p>
+                      <p className="mt-0.5 text-xs text-[#717588] font-medium">
+                        Semester {sem.semester_number}
+                      </p>
                     </button>
                   );
                 })
@@ -774,15 +829,32 @@ export default function StudentOnboarding({ initialUniversities = [] }: Props) {
 
         {/* STEP 6: REVIEW & CONFIRM */}
         {step === 6 && (
-          <div>
+          <div key="step-6" className="animate-in fade-in slide-in-from-right-4 duration-300 ease-out">
             <div>
-              <h2 className="text-xl font-bold text-slate-900">Review your profile</h2>
-              <p className="mt-1 text-sm text-slate-500">
-                Verify your academic placement. You can update this later anytime from settings.
+              <h2 className="text-xl sm:text-2xl font-black text-[#1B1B2F]">
+                Review your profile
+              </h2>
+              <p className="mt-1 text-xs sm:text-sm text-[#717588]">
+                Verify your academic placement. You can update this later anytime from your settings.
               </p>
             </div>
 
-            <div className="mt-6 rounded-2xl border border-slate-200 divide-y divide-slate-100 overflow-hidden bg-slate-50/50">
+            {/* Motivational Banner */}
+            <div className="mt-6 p-4 rounded-2xl bg-gradient-to-r from-[#edeaff] to-[#FAF8FF] border border-[#dee1f7] flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-[#F6C844] text-[#6c5400] flex items-center justify-center shrink-0 shadow-xs">
+                <Sparkles className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="text-xs font-bold text-[#1B1B2F]">
+                  Curriculum Engine Ready
+                </p>
+                <p className="text-[11px] text-[#717588]">
+                  Your custom dashboard, notes, and study units will be provisioned instantly.
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-6 rounded-2xl border border-[#e2e5f0] divide-y divide-[#f0f2f8] overflow-hidden bg-[#FAF8FF]">
               <ReviewRow
                 label="University"
                 value={selectedUniversity?.name || selectedUniversity?.short_name || "—"}
@@ -813,14 +885,14 @@ export default function StudentOnboarding({ initialUniversities = [] }: Props) {
               />
             </div>
 
-            <div className="mt-8 flex items-center justify-between gap-4">
+            <div className="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4 pt-2">
               <button
                 type="button"
                 onClick={() => goToStep(5)}
                 disabled={submitting}
-                className="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 transition hover:text-slate-900 disabled:opacity-50"
+                className="inline-flex items-center gap-2 text-xs font-bold text-[#717588] transition hover:text-[#1B1B2F] disabled:opacity-50 cursor-pointer"
               >
-                <ArrowLeft className="h-4 w-4" />
+                <ArrowLeft className="h-3.5 w-3.5" />
                 Back to Semesters
               </button>
 
@@ -828,16 +900,16 @@ export default function StudentOnboarding({ initialUniversities = [] }: Props) {
                 type="button"
                 onClick={handleComplete}
                 disabled={submitting}
-                className="inline-flex items-center gap-2.5 rounded-2xl bg-indigo-600 px-7 py-3.5 text-sm font-bold text-white shadow-lg shadow-indigo-600/30 transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
+                className="btn-shimmer w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-2xl bg-[#F6C844] text-[#6c5400] hover:bg-[#5B4DFF] hover:text-white px-8 py-3.5 text-xs sm:text-sm font-bold shadow-md hover:shadow-xl transition-all transform hover:-translate-y-0.5 active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
               >
                 {submitting ? (
                   <>
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    Personalizing your workspace...
+                    <Loader2 className="h-4 w-4 animate-spin text-current" />
+                    <span>Personalizing your workspace...</span>
                   </>
                 ) : (
                   <>
-                    Launch ExamNest
+                    <span>Launch ExamNest</span>
                     <ChevronRight className="h-4 w-4" />
                   </>
                 )}
@@ -862,13 +934,13 @@ function ReviewRow({
   onEdit: () => void;
 }) {
   return (
-    <div className="flex items-center justify-between p-4 sm:p-5 hover:bg-white/80 transition">
+    <div className="flex items-center justify-between p-4 sm:p-5 hover:bg-white transition-colors">
       <div>
-        <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">{label}</p>
+        <p className="text-[10px] font-extrabold text-[#717588] uppercase tracking-wider">{label}</p>
         <div className="mt-1 flex items-center gap-2">
-          <p className="text-sm sm:text-base font-bold text-slate-900">{value}</p>
+          <p className="text-xs sm:text-sm font-bold text-[#1B1B2F]">{value}</p>
           {badge && (
-            <span className="rounded-md bg-indigo-100 px-2 py-0.5 text-[11px] font-semibold text-indigo-700">
+            <span className="rounded-md bg-[#edeaff] px-2 py-0.5 text-[10px] font-bold text-[#5B4DFF]">
               {badge}
             </span>
           )}
@@ -877,7 +949,7 @@ function ReviewRow({
       <button
         type="button"
         onClick={onEdit}
-        className="text-xs font-semibold text-indigo-600 hover:text-indigo-800 transition"
+        className="text-xs font-bold text-[#5B4DFF] hover:underline transition cursor-pointer"
       >
         Change
       </button>
@@ -896,13 +968,13 @@ function SearchBar({
 }) {
   return (
     <div className="relative w-full sm:w-64">
-      <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+      <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#717588]" />
       <input
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-2 pl-9 pr-3 text-xs font-medium text-slate-800 placeholder-slate-400 transition focus:border-indigo-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+        className="w-full rounded-2xl border border-[#e2e5f0] bg-[#FAF8FF] py-2.5 pl-9 pr-3 text-xs font-medium text-[#1B1B2F] placeholder-[#717588]/60 transition-all focus:border-[#5B4DFF] focus:bg-white focus:outline-none focus:ring-4 focus:ring-[#5B4DFF]/10"
       />
     </div>
   );
@@ -914,17 +986,17 @@ function BackButton({ onClick, disabled }: { onClick: () => void; disabled?: boo
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-slate-500 transition hover:text-slate-900 disabled:opacity-50"
+      className="mt-6 inline-flex items-center gap-2 text-xs font-bold text-[#717588] transition hover:text-[#1B1B2F] disabled:opacity-50 cursor-pointer"
     >
-      <ArrowLeft className="h-4 w-4" />
-      Back
+      <ArrowLeft className="h-3.5 w-3.5" />
+      <span>Back</span>
     </button>
   );
 }
 
 function EmptyState({ text }: { text: string }) {
   return (
-    <div className="col-span-full rounded-2xl border border-dashed border-slate-200 bg-slate-50/50 p-8 text-center text-sm font-medium text-slate-500">
+    <div className="col-span-full rounded-2xl border border-dashed border-[#e2e5f0] bg-[#FAF8FF] p-8 text-center text-xs font-semibold text-[#717588]">
       {text}
     </div>
   );
