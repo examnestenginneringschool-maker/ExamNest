@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { currentUser } from "@clerk/nextjs/server";
+import { UserButton } from "@clerk/nextjs";
+import { auth } from "@clerk/nextjs/server";
 import {
   ArrowLeft,
   BookOpen,
@@ -8,13 +9,14 @@ import {
   ClipboardList,
   FileText,
   GraduationCap,
-  Layers3,
   NotebookPen,
   Sparkles,
   Trophy,
+  type LucideIcon,
 } from "lucide-react";
 
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { getStudentAcademicContext } from "@/lib/academic/student-context";
 
 type PageProps = {
   params: Promise<{
@@ -41,9 +43,9 @@ type NoteUnit = {
 };
 
 export default async function SubjectPage({ params }: PageProps) {
-  const user = await currentUser();
+  const { userId } = await auth();
 
-  if (!user) {
+  if (!userId) {
     redirect("/sign-in");
   }
 
@@ -51,196 +53,64 @@ export default async function SubjectPage({ params }: PageProps) {
 
   const supabase = createServerSupabaseClient();
 
-  // =========================================================
-  // PROFILE CHECK
-  // =========================================================
+  // Fast unified academic profile resolution (cached across request)
+  const context = await getStudentAcademicContext(userId);
 
-  const { data: profile, error: profileError } = await supabase
-    .from("profiles")
-    .select("onboarding_completed")
-    .eq("user_id", user.id)
-    .maybeSingle();
-
-  if (profileError) {
-    throw new Error(profileError.message);
-  }
-
-  if (!profile?.onboarding_completed) {
+  if (!context) {
     redirect("/onboarding");
   }
 
-  // =========================================================
-  // STUDENT PROFILE
-  // =========================================================
+  const { university, college, course, department, semester } = context;
 
-  const { data: studentProfile, error: studentProfileError } = await supabase
-    .from("student_profiles")
-    .select("semester_id, college_course_department_id")
-    .eq("user_id", user.id)
-    .maybeSingle();
+  // Run subject, curriculum authorization, and note units in parallel
+  const [subjectRes, curriculumRes, noteUnitsRes] = await Promise.all([
+    supabase
+      .from("subjects")
+      .select("id, code, name, slug, category, subject_type, description")
+      .eq("id", subjectId)
+      .maybeSingle<Subject>(),
+    supabase
+      .from("curriculum_subjects")
+      .select("id")
+      .eq("subject_id", subjectId)
+      .eq("university_id", university.id)
+      .eq("course_id", course.id)
+      .eq("semester_number", semester.semester_number)
+      .eq("is_active", true)
+      .or(`department_id.is.null,department_id.eq.${department.id}`)
+      .maybeSingle(),
+    supabase
+      .from("subject_note_units")
+      .select("id, unit_number, title, syllabus_text, important_topics")
+      .eq("subject_id", subjectId)
+      .eq("is_active", true)
+      .order("unit_number", { ascending: true })
+      .returns<NoteUnit[]>(),
+  ]);
 
-  if (studentProfileError) {
-    throw new Error(studentProfileError.message);
+  if (subjectRes.error) {
+    throw new Error(subjectRes.error.message);
   }
 
-  if (!studentProfile?.semester_id || !studentProfile?.college_course_department_id) {
-    redirect("/onboarding");
-  }
-
-  // =========================================================
-  // SEMESTER
-  // =========================================================
-
-  const { data: semester, error: semesterError } = await supabase
-    .from("semesters")
-    .select("id, name, semester_number, college_course_id")
-    .eq("id", studentProfile.semester_id)
-    .single();
-
-  if (semesterError) {
-    throw new Error(semesterError.message);
-  }
-
-  // =========================================================
-  // COLLEGE COURSE
-  // =========================================================
-
-  const { data: collegeCourse, error: collegeCourseError } = await supabase
-    .from("college_courses")
-    .select("id, college_id, course_id")
-    .eq("id", semester.college_course_id)
-    .single();
-
-  if (collegeCourseError) {
-    throw new Error(collegeCourseError.message);
-  }
-
-  // =========================================================
-  // COLLEGE
-  // =========================================================
-
-  const { data: college, error: collegeError } = await supabase
-    .from("colleges")
-    .select("id, name, university_id")
-    .eq("id", collegeCourse.college_id)
-    .single();
-
-  if (collegeError) {
-    throw new Error(collegeError.message);
-  }
-
-  // =========================================================
-  // UNIVERSITY
-  // =========================================================
-
-  const { data: university, error: universityError } = await supabase
-    .from("universities")
-    .select("id, name, short_name")
-    .eq("id", college.university_id)
-    .single();
-
-  if (universityError) {
-    throw new Error(universityError.message);
-  }
-
-  // =========================================================
-  // COURSE
-  // =========================================================
-
-  const { data: course, error: courseError } = await supabase
-    .from("courses")
-    .select("id, name, short_name")
-    .eq("id", collegeCourse.course_id)
-    .single();
-
-  if (courseError) {
-    throw new Error(courseError.message);
-  }
-
-  // =========================================================
-  // DEPARTMENT MAPPING
-  // =========================================================
-
-  const { data: departmentMapping, error: departmentMappingError } = await supabase
-    .from("college_course_departments")
-    .select("department_id")
-    .eq("id", studentProfile.college_course_department_id)
-    .single();
-
-  if (departmentMappingError) {
-    throw new Error(departmentMappingError.message);
-  }
-
-  // =========================================================
-  // DEPARTMENT
-  // =========================================================
-
-  const { data: department, error: departmentError } = await supabase
-    .from("departments")
-    .select("id, name, short_name, slug")
-    .eq("id", departmentMapping.department_id)
-    .single();
-
-  if (departmentError) {
-    throw new Error(departmentError.message);
-  }
-
-  // =========================================================
-  // SUBJECT
-  // =========================================================
-
-  const { data: subject, error: subjectError } = await supabase
-    .from("subjects")
-    .select("id, code, name, slug, category, subject_type, description")
-    .eq("id", subjectId)
-    .maybeSingle<Subject>();
-
-  if (subjectError) {
-    throw new Error(subjectError.message);
-  }
-
-  if (!subject) {
+  if (!subjectRes.data) {
     notFound();
   }
 
-  // =========================================================
-  // OPTIONAL SAFETY: CHECK SUBJECT BELONGS TO CURRICULUM
-  // =========================================================
+  const subject = subjectRes.data;
 
-  const { data: curriculumRow, error: curriculumError } = await supabase
-    .from("curriculum_subjects")
-    .select("id")
-    .eq("subject_id", subject.id)
-    .eq("university_id", university.id)
-    .eq("course_id", course.id)
-    .eq("semester_number", semester.semester_number)
-    .eq("is_active", true)
-    .or(`department_id.is.null,department_id.eq.${department.id}`)
-    .maybeSingle();
-
-  if (curriculumError) {
-    throw new Error(curriculumError.message);
+  if (curriculumRes.error) {
+    throw new Error(curriculumRes.error.message);
   }
 
-  if (!curriculumRow) {
+  if (!curriculumRes.data) {
     notFound();
   }
 
-  // =========================================================
-  // NOTES
-  // =========================================================
-
-  const { data: noteUnits, error: noteUnitsError } = await supabase
-    .from("subject_note_units")
-    .select("id, unit_number, title, syllabus_text, important_topics")
-    .eq("subject_id", subject.id)
-    .eq("is_active", true)
-    .order("unit_number", { ascending: true })
-    .returns<NoteUnit[]>();
-
-  if (noteUnitsError) {
-    throw new Error(noteUnitsError.message);
+  if (noteUnitsRes.error) {
+    throw new Error(noteUnitsRes.error.message);
   }
+
+  const noteUnits = noteUnitsRes.data;
 
   const totalUnits = noteUnits?.length ?? 0;
   const firstUnit = noteUnits?.[0] ?? null;
@@ -249,14 +119,18 @@ export default async function SubjectPage({ params }: PageProps) {
   return (
     <main className="min-h-screen bg-[#f6f8fc] text-slate-950">
       <div className="mx-auto max-w-[1500px] px-5 py-7 md:px-8 md:py-9">
-        {/* BACK */}
-        <Link
-          href="/app/dashboard"
-          className="inline-flex items-center gap-2 text-base font-semibold text-slate-600 transition hover:text-indigo-600"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Back to dashboard
-        </Link>
+        {/* TOP BAR */}
+        <div className="flex items-center justify-between">
+          <Link
+            href="/app/dashboard"
+            className="inline-flex items-center gap-2 text-base font-semibold text-slate-600 transition hover:text-indigo-600"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back to dashboard
+          </Link>
+
+          <UserButton />
+        </div>
 
         {/* HERO */}
         <section className="relative mt-6 overflow-hidden rounded-[30px] border border-indigo-100 bg-gradient-to-br from-[#eef1ff] via-[#f8f9ff] to-[#eef7ff] shadow-[0_20px_60px_rgba(79,70,229,0.08)]">
@@ -547,7 +421,7 @@ function StatCard({
   value,
   hint,
 }: {
-  icon: any;
+  icon: LucideIcon;
   title: string;
   value: string;
   hint: string;
@@ -581,7 +455,7 @@ function WorkspaceCard({
   footer,
 }: {
   href: string;
-  icon: any;
+  icon: LucideIcon;
   title: string;
   description: string;
   badge: string;

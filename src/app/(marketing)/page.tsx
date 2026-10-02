@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { UserButton } from "@clerk/nextjs";
+import { auth } from "@clerk/nextjs/server";
 
 import {
   ArrowRight,
@@ -13,7 +15,9 @@ import {
   Target,
 } from "lucide-react";
 
-export default function HomePage() {
+export default async function HomePage() {
+  const { userId } = await auth();
+  const isAuthenticated = Boolean(userId);
   return (
     <main className="min-h-screen overflow-hidden bg-[#f8f9fc] text-slate-950">
       {/* ===================================================== */}
@@ -71,21 +75,37 @@ export default function HomePage() {
           {/* ACTIONS */}
 
           <div className="flex items-center gap-2 sm:gap-3">
-            <Link
-              href="/sign-in"
-              className="hidden rounded-xl px-4 py-2.5 text-sm font-bold text-slate-700 transition hover:bg-slate-100 sm:inline-flex"
-            >
-              Sign In
-            </Link>
+            {isAuthenticated ? (
+              <>
+                <Link
+                  href="/app/dashboard"
+                  className="inline-flex items-center gap-2 rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-slate-800 sm:px-5"
+                >
+                  Dashboard
 
-            <Link
-              href="/sign-up"
-              className="inline-flex items-center gap-2 rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-slate-800 sm:px-5"
-            >
-              Get Started
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+                <UserButton />
+              </>
+            ) : (
+              <>
+                <Link
+                  href="/sign-in"
+                  className="hidden rounded-xl px-4 py-2.5 text-sm font-bold text-slate-700 transition hover:bg-slate-100 sm:inline-flex"
+                >
+                  Sign In
+                </Link>
 
-              <ArrowRight className="h-4 w-4" />
-            </Link>
+                <Link
+                  href="/sign-up"
+                  className="inline-flex items-center gap-2 rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-slate-800 sm:px-5"
+                >
+                  Get Started
+
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </header>
@@ -135,23 +155,36 @@ export default function HomePage() {
             {/* CTA */}
 
             <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
-              <Link
-                href="/sign-up"
-                className="group inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-indigo-600 px-7 py-4 text-sm font-bold text-white shadow-[0_15px_40px_rgba(79,70,229,0.28)] transition hover:-translate-y-0.5 hover:bg-indigo-700 sm:w-auto"
-              >
-                Start learning
+              {isAuthenticated ? (
+                <Link
+                  href="/app/dashboard"
+                  className="group inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-indigo-600 px-7 py-4 text-sm font-bold text-white shadow-[0_15px_40px_rgba(79,70,229,0.28)] transition hover:-translate-y-0.5 hover:bg-indigo-700 sm:w-auto"
+                >
+                  Go to Dashboard
 
-                <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" />
-              </Link>
+                  <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" />
+                </Link>
+              ) : (
+                <>
+                  <Link
+                    href="/sign-up"
+                    className="group inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-indigo-600 px-7 py-4 text-sm font-bold text-white shadow-[0_15px_40px_rgba(79,70,229,0.28)] transition hover:-translate-y-0.5 hover:bg-indigo-700 sm:w-auto"
+                  >
+                    Start learning
 
-              <Link
-                href="/sign-in"
-                className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-7 py-4 text-sm font-bold text-slate-700 shadow-sm transition hover:border-slate-300 hover:bg-slate-50 sm:w-auto"
-              >
-                <PlayCircle className="h-4 w-4" />
+                    <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" />
+                  </Link>
 
-                Student login
-              </Link>
+                  <Link
+                    href="/sign-in"
+                    className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-7 py-4 text-sm font-bold text-slate-700 shadow-sm transition hover:border-slate-300 hover:bg-slate-50 sm:w-auto"
+                  >
+                    <PlayCircle className="h-4 w-4" />
+
+                    Student login
+                  </Link>
+                </>
+              )}
             </div>
 
             {/* TRUST LINE */}
@@ -353,7 +386,7 @@ export default function HomePage() {
             <p className="mt-5 text-base leading-8 text-slate-500">
               ExamNest connects the complete academic structure
               with learning resources designed around each
-              student's actual curriculum.
+              student&apos;s actual curriculum.
             </p>
           </div>
 
@@ -361,7 +394,7 @@ export default function HomePage() {
             <FeatureCard
               icon={BookOpen}
               title="Structured Notes"
-              description="Chapter-wise and topic-wise notes organized directly from the student's syllabus."
+              description="Chapter-wise and topic-wise notes organized directly from the student&apos;s syllabus."
             />
 
             <FeatureCard
