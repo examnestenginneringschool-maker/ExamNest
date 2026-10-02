@@ -2,8 +2,17 @@
 
 import { auth } from "@clerk/nextjs/server";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import {
+  completeOnboardingSchema,
+  entityIdSchema,
+} from "@/lib/validation/onboarding";
 
 export async function getUniversities() {
+  const { userId } = await auth();
+  if (!userId) {
+    throw new Error("Unauthorized");
+  }
+
   const supabase = createServerSupabaseClient();
 
   const { data, error } = await supabase
@@ -20,12 +29,22 @@ export async function getUniversities() {
 }
 
 export async function getColleges(universityId: string) {
+  const { userId } = await auth();
+  if (!userId) {
+    throw new Error("Unauthorized");
+  }
+
+  const validatedId = entityIdSchema.safeParse(universityId);
+  if (!validatedId.success) {
+    throw new Error("Invalid university identifier");
+  }
+
   const supabase = createServerSupabaseClient();
 
   const { data, error } = await supabase
     .from("colleges")
     .select("id, name")
-    .eq("university_id", universityId)
+    .eq("university_id", validatedId.data)
     .eq("is_active", true)
     .order("name");
 
@@ -37,6 +56,16 @@ export async function getColleges(universityId: string) {
 }
 
 export async function getCourses(collegeId: string) {
+  const { userId } = await auth();
+  if (!userId) {
+    throw new Error("Unauthorized");
+  }
+
+  const validatedId = entityIdSchema.safeParse(collegeId);
+  if (!validatedId.success) {
+    throw new Error("Invalid college identifier");
+  }
+
   const supabase = createServerSupabaseClient();
 
   const { data, error } = await supabase
@@ -49,7 +78,7 @@ export async function getCourses(collegeId: string) {
         short_name
       )
     `)
-    .eq("college_id", collegeId)
+    .eq("college_id", validatedId.data)
     .eq("is_active", true);
 
   if (error) {
@@ -68,89 +97,17 @@ export async function getCourses(collegeId: string) {
   });
 }
 
-export async function getSemesters(collegeCourseId: string) {
-  const supabase = createServerSupabaseClient();
-
-  const { data, error } = await supabase
-    .from("semesters")
-    .select("id, semester_number, name")
-    .eq("college_course_id", collegeCourseId)
-    .eq("is_active", true)
-    .order("semester_number");
-
-  if (error) {
-    throw new Error(error.message);
-  }
-
-  return data ?? [];
-}
-
-
-export async function completeOnboarding(
-  semesterId: string,
-  collegeCourseDepartmentId: string
-) {
+export async function getDepartments(collegeCourseId: string) {
   const { userId } = await auth();
-
   if (!userId) {
     throw new Error("Unauthorized");
   }
 
-  const supabase = createServerSupabaseClient();
-
-  const { error: profileError } = await supabase
-    .from("profiles")
-    .upsert(
-      {
-        user_id: userId,
-      },
-      {
-        onConflict: "user_id",
-        ignoreDuplicates: true,
-      }
-    );
-
-  if (profileError) {
-    throw new Error(profileError.message);
+  const validatedId = entityIdSchema.safeParse(collegeCourseId);
+  if (!validatedId.success) {
+    throw new Error("Invalid course identifier");
   }
 
-  const { error: studentProfileError } = await supabase
-    .from("student_profiles")
-    .upsert(
-      {
-        user_id: userId,
-        semester_id: semesterId,
-        college_course_department_id:
-          collegeCourseDepartmentId,
-        updated_at: new Date().toISOString(),
-      },
-      {
-        onConflict: "user_id",
-      }
-    );
-
-  if (studentProfileError) {
-    throw new Error(studentProfileError.message);
-  }
-
-  const { error: onboardingError } = await supabase
-    .from("profiles")
-    .update({
-      onboarding_completed: true,
-      updated_at: new Date().toISOString(),
-    })
-    .eq("user_id", userId);
-
-  if (onboardingError) {
-    throw new Error(onboardingError.message);
-  }
-
-  return {
-    success: true,
-  };
-}
-
-export async function getDepartments(collegeCourseId: string) {
   const supabase = createServerSupabaseClient();
 
   const { data, error } = await supabase
@@ -163,7 +120,7 @@ export async function getDepartments(collegeCourseId: string) {
         short_name
       )
     `)
-    .eq("college_course_id", collegeCourseId)
+    .eq("college_course_id", validatedId.data)
     .eq("is_active", true);
 
   if (error) {
@@ -180,4 +137,117 @@ export async function getDepartments(collegeCourseId: string) {
       department,
     };
   });
+}
+
+export async function getSemesters(collegeCourseId: string) {
+  const { userId } = await auth();
+  if (!userId) {
+    throw new Error("Unauthorized");
+  }
+
+  const validatedId = entityIdSchema.safeParse(collegeCourseId);
+  if (!validatedId.success) {
+    throw new Error("Invalid course identifier");
+  }
+
+  const supabase = createServerSupabaseClient();
+
+  const { data, error } = await supabase
+    .from("semesters")
+    .select("id, semester_number, name")
+    .eq("college_course_id", validatedId.data)
+    .eq("is_active", true)
+    .order("semester_number");
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data ?? [];
+}
+
+export async function completeOnboarding(
+  semesterId: string,
+  collegeCourseDepartmentId: string
+) {
+  const { userId } = await auth();
+
+  if (!userId) {
+    throw new Error("Unauthorized");
+  }
+
+  const validation = completeOnboardingSchema.safeParse({
+    semesterId,
+    collegeCourseDepartmentId,
+  });
+
+  if (!validation.success) {
+    const message =
+      validation.error.issues[0]?.message || "Invalid onboarding academic input.";
+    throw new Error(message);
+  }
+
+  const validatedData = validation.data;
+  const supabase = createServerSupabaseClient();
+  const timestamp = new Date().toISOString();
+
+  // 1. Ensure base user profile exists first.
+  // Foreign key constraint `student_profiles_user_id_fkey` requires a parent row in `profiles(user_id)`.
+  const { error: baseProfileError } = await supabase
+    .from("profiles")
+    .upsert(
+      {
+        user_id: userId,
+        onboarding_completed: false,
+      },
+      {
+        onConflict: "user_id",
+        ignoreDuplicates: true,
+      }
+    );
+
+  if (baseProfileError) {
+    throw new Error(`Profile initialization failed: ${baseProfileError.message}`);
+  }
+
+  // 2. Upsert student academic profile
+  const { error: studentProfileError } = await supabase
+    .from("student_profiles")
+    .upsert(
+      {
+        user_id: userId,
+        semester_id: validatedData.semesterId,
+        college_course_department_id: validatedData.collegeCourseDepartmentId,
+        updated_at: timestamp,
+      },
+      {
+        onConflict: "user_id",
+      }
+    );
+
+  if (studentProfileError) {
+    throw new Error(`Academic profile setup failed: ${studentProfileError.message}`);
+  }
+
+  // 3. Mark onboarding as completed only after student academic record is verified
+  const { error: profileError } = await supabase
+    .from("profiles")
+    .upsert(
+      {
+        user_id: userId,
+        onboarding_completed: true,
+        updated_at: timestamp,
+      },
+      {
+        onConflict: "user_id",
+      }
+    );
+
+  if (profileError) {
+    throw new Error(`Completing onboarding failed: ${profileError.message}`);
+  }
+
+  return {
+    success: true,
+  };
 }

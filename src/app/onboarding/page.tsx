@@ -2,7 +2,9 @@ import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 
 import StudentOnboarding from "@/components/auth/StudentOnboarding";
+import { getStudentAcademicContext } from "@/lib/academic/student-context";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { getUniversities } from "./actions";
 
 export default async function OnboardingPage() {
   const { userId } = await auth();
@@ -13,8 +15,8 @@ export default async function OnboardingPage() {
 
   const supabase = createServerSupabaseClient();
 
-  // Make sure the ExamNest profile exists
-  const { error: profileError } = await supabase
+  // Ensure base profile exists in Supabase for the authenticated student
+  await supabase
     .from("profiles")
     .upsert(
       {
@@ -24,31 +26,27 @@ export default async function OnboardingPage() {
         onConflict: "user_id",
         ignoreDuplicates: true,
       }
-    );
+    )
+    .then(({ error }) => {
+      if (error) {
+        console.error("Base profile initialization on onboarding page:", error.message);
+      }
+    });
 
-  if (profileError) {
-    throw new Error(profileError.message);
-  }
+  // Check if academic profile is already fully configured, and prefetch universities in parallel
+  const [academicContext, initialUniversities] = await Promise.all([
+    getStudentAcademicContext(userId),
+    getUniversities().catch(() => []),
+  ]);
 
-  // Check onboarding status
-  const { data: profile, error } = await supabase
-    .from("profiles")
-    .select("onboarding_completed")
-    .eq("user_id", userId)
-    .single();
-
-  if (error) {
-    throw new Error(error.message);
-  }
-
-  // Already completed onboarding
-  if (profile?.onboarding_completed) {
+  // If already onboarded with valid academic data, redirect straight to dashboard
+  if (academicContext) {
     redirect("/app/dashboard");
   }
 
   return (
-    <main className="min-h-screen bg-slate-50 px-4 py-12">
-      <StudentOnboarding />
+    <main className="min-h-screen bg-gradient-to-b from-slate-50 via-indigo-50/20 to-slate-100 px-4 py-8 md:py-14">
+      <StudentOnboarding initialUniversities={initialUniversities} />
     </main>
   );
 }
