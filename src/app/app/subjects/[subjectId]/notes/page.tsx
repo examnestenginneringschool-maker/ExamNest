@@ -1,18 +1,12 @@
-import { BookOpen } from "lucide-react";
-import { auth } from "@clerk/nextjs/server";
+import { auth, currentUser } from "@clerk/nextjs/server";
 import { notFound, redirect } from "next/navigation";
+import { BookOpen } from "lucide-react";
 
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { getStudentAcademicContext } from "@/lib/academic/student-context";
-import { NotesHeader } from "@/components/notes/NotesHeader";
-import { NotesHero } from "@/components/notes/NotesHero";
-import { NotesMobileNav } from "@/components/notes/NotesMobileNav";
-import { NotesOutlineSidebar } from "@/components/notes/NotesOutlineSidebar";
-import {
-  UnitSection,
-  type NoteUnit,
-  type Topic,
-} from "@/components/notes/UnitSection";
+import { WorkspaceHeader } from "@/components/notes/WorkspaceHeader";
+import { NotesWorkspaceClient } from "@/components/notes/NotesWorkspaceClient";
+import type { NoteUnit, Topic } from "@/components/notes/UnitSection";
 import type { TopicBlock } from "@/components/notes/NoteBlockRenderer";
 
 type PageProps = {
@@ -31,12 +25,16 @@ export default async function NotesPage({ params }: PageProps) {
   const { subjectId } = await params;
   const supabase = createServerSupabaseClient();
 
-  const context = await getStudentAcademicContext(userId);
+  const [context, user] = await Promise.all([
+    getStudentAcademicContext(userId),
+    currentUser(),
+  ]);
+
   if (!context) {
     redirect("/onboarding");
   }
 
-  const { semester } = context;
+  const { university, college, course, department, semester } = context;
 
   // Parallelize subject lookup, curriculum access authorization, and note units
   const [subjectRes, accessRes, notesRes] = await Promise.all([
@@ -49,12 +47,12 @@ export default async function NotesPage({ params }: PageProps) {
     supabase
       .from("curriculum_subjects")
       .select("id")
-      .eq("university_id", context.university.id)
-      .eq("course_id", context.course.id)
-      .eq("semester_number", context.semester.semester_number)
+      .eq("university_id", university.id)
+      .eq("course_id", course.id)
+      .eq("semester_number", semester.semester_number)
       .eq("subject_id", subjectId)
       .eq("is_active", true)
-      .or(`department_id.is.null,department_id.eq.${context.department.id}`)
+      .or(`department_id.is.null,department_id.eq.${department.id}`)
       .limit(1)
       .maybeSingle(),
     supabase
@@ -110,83 +108,67 @@ export default async function NotesPage({ params }: PageProps) {
   }
 
   // Group topics by unit
-  const topicsByUnit = new Map<string, Topic[]>();
+  const topicsByUnitRecord: Record<string, Topic[]> = {};
   for (const topic of topics) {
-    const current = topicsByUnit.get(topic.note_unit_id) ?? [];
-    current.push(topic);
-    topicsByUnit.set(topic.note_unit_id, current);
+    if (!topicsByUnitRecord[topic.note_unit_id]) {
+      topicsByUnitRecord[topic.note_unit_id] = [];
+    }
+    topicsByUnitRecord[topic.note_unit_id].push(topic);
   }
 
   // Group blocks by topic
-  const blocksByTopic = new Map<string, TopicBlock[]>();
+  const blocksByTopicRecord: Record<string, TopicBlock[]> = {};
   for (const block of blocks) {
-    const current = blocksByTopic.get(block.topic_id) ?? [];
-    current.push(block);
-    blocksByTopic.set(block.topic_id, current);
+    if (!blocksByTopicRecord[block.topic_id]) {
+      blocksByTopicRecord[block.topic_id] = [];
+    }
+    blocksByTopicRecord[block.topic_id].push(block);
   }
 
-  const totalTopics = topics.length;
-  const totalImportantTopics = topics.filter((t) => t.is_important).length;
-
-  const unitsWithTopics = units.map((unit) => ({
-    id: unit.id,
-    unit_number: unit.unit_number,
-    title: unit.title,
-    topics: (topicsByUnit.get(unit.id) ?? []).map((t) => ({
-      id: t.id,
-      topic_number: t.topic_number,
-      title: t.title,
-      is_important: t.is_important,
-    })),
-  }));
+  const studentName = user
+    ? [user.firstName, user.lastName].filter(Boolean).join(" ")
+    : undefined;
 
   return (
-    <main className="min-h-screen bg-[#f7f7fb] text-slate-950">
-      <NotesHeader subjectId={subject.id} subjectName={subject.name} />
+    <main className="min-h-screen bg-[#faf8ff] text-slate-900 antialiased selection:bg-indigo-500 selection:text-white">
+      {/* 1. Sleek Academic Workspace Header */}
+      <WorkspaceHeader
+        subjectId={subject.id}
+        subjectName={subject.name}
+        subjectCode={subject.code}
+        universityName={university.short_name || university.name}
+        collegeName={college.name}
+        courseName={course.name}
+        departmentCode={department.short_name || department.name}
+        semesterNumber={semester.semester_number}
+        studentName={studentName}
+      />
 
-      <div className="mx-auto max-w-[1500px] px-4 pb-24 pt-6 sm:px-6 lg:px-8 lg:pt-8">
-        <NotesHero
-          code={subject.code}
-          name={subject.name}
-          semesterName={semester.name}
-          category={subject.category}
-          unitCount={units.length}
-          totalTopics={totalTopics}
-          totalImportantTopics={totalImportantTopics}
-        />
-
-        <NotesMobileNav units={units} />
-
+      {/* 2. Workspace Body */}
+      <div className="mx-auto max-w-[1560px] px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8">
         {units.length === 0 ? (
-          <div className="mt-8 flex min-h-[340px] items-center justify-center rounded-[28px] border border-dashed border-slate-300 bg-white">
+          <div className="flex min-h-[380px] items-center justify-center rounded-3xl border border-dashed border-slate-300 bg-white">
             <div className="max-w-sm px-6 text-center">
-              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100">
-                <BookOpen className="h-6 w-6 text-slate-400" />
+              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600">
+                <BookOpen className="h-6 w-6" />
               </div>
-              <h2 className="mt-5 text-xl font-bold text-slate-950">
-                Notes have not been added yet
+              <h2 className="mt-5 text-xl font-bold text-slate-900">
+                Notes coming soon
               </h2>
               <p className="mt-2 text-sm leading-6 text-slate-500">
-                The study material for this subject will appear here when it becomes available.
+                Study notes and unit materials for {subject.name} are currently being organized.
               </p>
             </div>
           </div>
         ) : (
-          <div className="mt-8 grid gap-8 lg:grid-cols-[320px_minmax(0,1fr)] xl:grid-cols-[340px_minmax(0,1fr)] xl:gap-12">
-            <NotesOutlineSidebar units={unitsWithTopics} />
-
-            <div className="min-w-0">
-              {units.map((unit, unitIndex) => (
-                <UnitSection
-                  key={unit.id}
-                  unit={unit}
-                  unitIndex={unitIndex}
-                  topics={topicsByUnit.get(unit.id) ?? []}
-                  blocksByTopic={blocksByTopic}
-                />
-              ))}
-            </div>
-          </div>
+          <NotesWorkspaceClient
+            subjectId={subject.id}
+            subjectName={subject.name}
+            semesterNumber={semester.semester_number}
+            units={units}
+            topicsByUnit={topicsByUnitRecord}
+            blocksByTopic={blocksByTopicRecord}
+          />
         )}
       </div>
     </main>

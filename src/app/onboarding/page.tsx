@@ -45,8 +45,17 @@ export default async function OnboardingPage() {
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-slate-50 via-indigo-50/20 to-slate-100 px-4 py-8 md:py-14">
-      <StudentOnboarding initialUniversities={initialUniversities} />
+    <main className="relative min-h-screen bg-[#FAF8FF] px-4 py-8 md:py-14 overflow-hidden selection:bg-[#5B4DFF] selection:text-white">
+      {/* Ambient Atmospheric Glows */}
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div className="absolute -top-32 left-1/2 -translate-x-1/2 w-[850px] h-[380px] bg-[#F6C844]/20 rounded-full blur-3xl aura-glow-left" />
+        <div className="absolute top-1/3 -right-24 w-[600px] h-[400px] bg-[#5B4DFF]/18 rounded-full blur-3xl aura-glow-right" />
+        <div className="absolute -bottom-24 -left-20 w-[500px] h-[350px] bg-[#5B4DFF]/12 rounded-full blur-3xl" />
+      </div>
+
+      <div className="relative z-10 animate-in fade-in zoom-in-[0.99] duration-500 ease-out">
+        <StudentOnboarding initialUniversities={initialUniversities} />
+      </div>
     </main>
   );
 }

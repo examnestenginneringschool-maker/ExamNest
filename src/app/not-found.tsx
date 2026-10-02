@@ -1,12 +1,11 @@
 import Link from "next/link";
-import { ArrowLeft, GraduationCap, Home } from "lucide-react";
+import { ArrowLeft, Home } from "lucide-react";
+import { LogoImage } from "@/components/brand/Logo";
 
 export default function NotFound() {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-[#f8f9fc] px-4 py-16 text-center">
-      <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600 shadow-sm ring-1 ring-indigo-100">
-        <GraduationCap className="h-8 w-8" />
-      </div>
+      <LogoImage size="xl" />
 
       <p className="mt-6 text-sm font-bold uppercase tracking-widest text-indigo-600">
         404 — Page Not Found
