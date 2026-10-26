@@ -1,5 +1,5 @@
-import { SignIn } from "@clerk/nextjs";
+import { AuthInteractivePortal } from "@/components/auth/AuthInteractivePortal";
 
 export default function SignInPage() {
-  return <SignIn fallbackRedirectUrl="/app/dashboard" />;
+  return <AuthInteractivePortal mode="sign-in" />;
 }

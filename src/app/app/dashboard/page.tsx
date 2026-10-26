@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { currentUser } from "@clerk/nextjs/server";
+import { getAuthenticatedUser } from "@/lib/supabase/server";
 import {
   getStudentAcademicContext,
   getCurriculumSubjectsWithNotes,
@@ -14,7 +14,7 @@ import { SubjectUpdatesFeed } from "@/components/dashboard/SubjectUpdatesFeed";
 import { RemindersTasksWidget } from "@/components/dashboard/RemindersTasksWidget";
 
 export default async function DashboardPage() {
-  const user = await currentUser();
+  const user = await getAuthenticatedUser();
 
   if (!user) {
     redirect("/sign-in");
@@ -37,9 +37,8 @@ export default async function DashboardPage() {
     department.id
   );
 
-  const studentName =
-    [user.firstName, user.lastName].filter(Boolean).join(" ") || "Student";
-  const firstName = user.firstName || "Student";
+  const studentName = user.fullName;
+  const firstName = user.firstName;
   const universityName = university.short_name || university.name;
   const collegeName = college.name;
   const courseName = course.short_name || course.name;

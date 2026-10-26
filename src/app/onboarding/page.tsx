@@ -1,26 +1,28 @@
-import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 
 import StudentOnboarding from "@/components/auth/StudentOnboarding";
 import { getStudentAcademicContext } from "@/lib/academic/student-context";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
+import {
+  createServerSupabaseClient,
+  getAuthenticatedUser,
+} from "@/lib/supabase/server";
 import { getUniversities } from "./actions";
 
 export default async function OnboardingPage() {
-  const { userId } = await auth();
+  const user = await getAuthenticatedUser();
 
-  if (!userId) {
+  if (!user) {
     redirect("/sign-in");
   }
 
-  const supabase = createServerSupabaseClient();
+  const supabase = await createServerSupabaseClient();
 
   // Ensure base profile exists in Supabase for the authenticated student
   await supabase
     .from("profiles")
     .upsert(
       {
-        user_id: userId,
+        user_id: user.id,
       },
       {
         onConflict: "user_id",
@@ -29,13 +31,16 @@ export default async function OnboardingPage() {
     )
     .then(({ error }) => {
       if (error) {
-        console.error("Base profile initialization on onboarding page:", error.message);
+        console.error(
+          "Base profile initialization on onboarding page:",
+          error.message
+        );
       }
     });
 
   // Check if academic profile is already fully configured, and prefetch universities in parallel
   const [academicContext, initialUniversities] = await Promise.all([
-    getStudentAcademicContext(userId),
+    getStudentAcademicContext(user.id),
     getUniversities().catch(() => []),
   ]);
 

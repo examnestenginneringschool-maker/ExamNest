@@ -1,5 +1,5 @@
-import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
+import { getAuthenticatedUser } from "@/lib/supabase/server";
 import { getStudentAcademicContext } from "@/lib/academic/student-context";
 
 export default async function StudentLayout({
@@ -7,15 +7,15 @@ export default async function StudentLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { userId } = await auth();
+  const user = await getAuthenticatedUser();
 
-  if (!userId) {
+  if (!user) {
     redirect("/sign-in");
   }
 
   // Ensure student has completed academic onboarding before accessing student routes.
   // React.cache() in getStudentAcademicContext ensures child pages reuse the result with 0 extra queries.
-  const context = await getStudentAcademicContext(userId);
+  const context = await getStudentAcademicContext(user.id);
   if (!context) {
     redirect("/onboarding");
   }

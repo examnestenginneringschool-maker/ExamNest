@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ArrowLeft, Building2, School, ChevronDown } from "lucide-react";
-import { UserButton } from "@clerk/nextjs";
+import { UserMenu } from "@/components/auth/UserMenu";
 
 type WorkspaceHeaderProps = {
   subjectId: string;
@@ -71,13 +71,7 @@ export function WorkspaceHeader({
         </div>
 
         <div className="flex items-center gap-3 pl-3 border-l border-slate-200">
-          <UserButton
-            appearance={{
-              elements: {
-                avatarBox: "w-9 h-9 ring-2 ring-slate-100 rounded-full",
-              },
-            }}
-          />
+          <UserMenu studentName={studentName} />
           {studentName && (
             <div className="hidden sm:flex flex-col text-left">
               <span className="text-xs font-bold text-slate-800 leading-tight">

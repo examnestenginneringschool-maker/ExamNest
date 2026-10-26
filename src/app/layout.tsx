@@ -1,7 +1,5 @@
-import { ClerkProvider } from "@clerk/nextjs";
 import type { Metadata } from "next";
 import { Plus_Jakarta_Sans } from "next/font/google";
-import { clerkAppearance } from "@/lib/clerk-theme";
 import "./globals.css";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
@@ -34,7 +32,7 @@ export default function RootLayout({
         suppressHydrationWarning
         className={`${plusJakartaSans.variable} font-sans antialiased`}
       >
-        <ClerkProvider appearance={clerkAppearance}>{children}</ClerkProvider>
+        {children}
       </body>
     </html>
   );

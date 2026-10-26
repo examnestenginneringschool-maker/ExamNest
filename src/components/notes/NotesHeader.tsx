@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ArrowLeft, BookOpen } from "lucide-react";
-import { UserButton } from "@clerk/nextjs";
 import { Logo } from "@/components/brand/Logo";
+import { UserMenu } from "@/components/auth/UserMenu";
 
 type NotesHeaderProps = {
   subjectId: string;
@@ -37,13 +37,7 @@ export function NotesHeader({ subjectId, subjectName }: NotesHeaderProps) {
         </Link>
 
         <div className="pl-3 border-l border-slate-200">
-          <UserButton
-            appearance={{
-              elements: {
-                avatarBox: "w-9 h-9 ring-2 ring-slate-100 rounded-full",
-              },
-            }}
-          />
+          <UserMenu />
         </div>
       </div>
     </header>
