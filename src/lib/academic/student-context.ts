@@ -51,7 +51,7 @@ export const getStudentAcademicContext = cache(
   async function getStudentAcademicContext(
     userId: string
   ): Promise<StudentAcademicContext | null> {
-    const supabase = createServerSupabaseClient();
+    const supabase = await createServerSupabaseClient();
 
   // Primary attempt: Single relational join across the entire academic hierarchy
   try {
@@ -380,7 +380,7 @@ export async function getCurriculumSubjectsWithNotes(
   semesterNumber: number,
   departmentId: string
 ): Promise<{ subjects: CurriculumSubject[]; noteUnitCount: Map<string, number> }> {
-  const supabase = createServerSupabaseClient();
+  const supabase = await createServerSupabaseClient();
 
   const { data: curriculumRows, error: curriculumError } = await supabase
     .from("curriculum_subjects")

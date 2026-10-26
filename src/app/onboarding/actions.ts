@@ -1,19 +1,21 @@
 "use server";
 
-import { auth } from "@clerk/nextjs/server";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
+import {
+  createServerSupabaseClient,
+  getAuthenticatedUser,
+} from "@/lib/supabase/server";
 import {
   completeOnboardingSchema,
   entityIdSchema,
 } from "@/lib/validation/onboarding";
 
 export async function getUniversities() {
-  const { userId } = await auth();
-  if (!userId) {
+  const user = await getAuthenticatedUser();
+  if (!user) {
     throw new Error("Unauthorized");
   }
 
-  const supabase = createServerSupabaseClient();
+  const supabase = await createServerSupabaseClient();
 
   const { data, error } = await supabase
     .from("universities")
@@ -29,8 +31,8 @@ export async function getUniversities() {
 }
 
 export async function getColleges(universityId: string) {
-  const { userId } = await auth();
-  if (!userId) {
+  const user = await getAuthenticatedUser();
+  if (!user) {
     throw new Error("Unauthorized");
   }
 
@@ -39,7 +41,7 @@ export async function getColleges(universityId: string) {
     throw new Error("Invalid university identifier");
   }
 
-  const supabase = createServerSupabaseClient();
+  const supabase = await createServerSupabaseClient();
 
   const { data, error } = await supabase
     .from("colleges")
@@ -56,8 +58,8 @@ export async function getColleges(universityId: string) {
 }
 
 export async function getCourses(collegeId: string) {
-  const { userId } = await auth();
-  if (!userId) {
+  const user = await getAuthenticatedUser();
+  if (!user) {
     throw new Error("Unauthorized");
   }
 
@@ -66,7 +68,7 @@ export async function getCourses(collegeId: string) {
     throw new Error("Invalid college identifier");
   }
 
-  const supabase = createServerSupabaseClient();
+  const supabase = await createServerSupabaseClient();
 
   const { data, error } = await supabase
     .from("college_courses")
@@ -98,8 +100,8 @@ export async function getCourses(collegeId: string) {
 }
 
 export async function getDepartments(collegeCourseId: string) {
-  const { userId } = await auth();
-  if (!userId) {
+  const user = await getAuthenticatedUser();
+  if (!user) {
     throw new Error("Unauthorized");
   }
 
@@ -108,7 +110,7 @@ export async function getDepartments(collegeCourseId: string) {
     throw new Error("Invalid course identifier");
   }
 
-  const supabase = createServerSupabaseClient();
+  const supabase = await createServerSupabaseClient();
 
   const { data, error } = await supabase
     .from("college_course_departments")
@@ -140,8 +142,8 @@ export async function getDepartments(collegeCourseId: string) {
 }
 
 export async function getSemesters(collegeCourseId: string) {
-  const { userId } = await auth();
-  if (!userId) {
+  const user = await getAuthenticatedUser();
+  if (!user) {
     throw new Error("Unauthorized");
   }
 
@@ -150,7 +152,7 @@ export async function getSemesters(collegeCourseId: string) {
     throw new Error("Invalid course identifier");
   }
 
-  const supabase = createServerSupabaseClient();
+  const supabase = await createServerSupabaseClient();
 
   const { data, error } = await supabase
     .from("semesters")
@@ -170,9 +172,9 @@ export async function completeOnboarding(
   semesterId: string,
   collegeCourseDepartmentId: string
 ) {
-  const { userId } = await auth();
+  const user = await getAuthenticatedUser();
 
-  if (!userId) {
+  if (!user) {
     throw new Error("Unauthorized");
   }
 
@@ -183,13 +185,43 @@ export async function completeOnboarding(
 
   if (!validation.success) {
     const message =
-      validation.error.issues[0]?.message || "Invalid onboarding academic input.";
+      validation.error.issues[0]?.message ||
+      "Invalid onboarding academic input.";
     throw new Error(message);
   }
 
   const validatedData = validation.data;
-  const supabase = createServerSupabaseClient();
+  const supabase = await createServerSupabaseClient();
   const timestamp = new Date().toISOString();
+
+  // Security & Relational Integrity Verification:
+  // Ensure the selected semester and department actually belong to the same college_course_id.
+  const [semCheck, deptCheck] = await Promise.all([
+    supabase
+      .from("semesters")
+      .select("id, college_course_id")
+      .eq("id", validatedData.semesterId)
+      .eq("is_active", true)
+      .maybeSingle(),
+    supabase
+      .from("college_course_departments")
+      .select("id, college_course_id")
+      .eq("id", validatedData.collegeCourseDepartmentId)
+      .eq("is_active", true)
+      .maybeSingle(),
+  ]);
+
+  if (
+    semCheck.error ||
+    deptCheck.error ||
+    !semCheck.data ||
+    !deptCheck.data ||
+    semCheck.data.college_course_id !== deptCheck.data.college_course_id
+  ) {
+    throw new Error(
+      "Mismatched academic stream selection. Please select a valid department and semester for your course."
+    );
+  }
 
   // 1. Ensure base user profile exists first.
   // Foreign key constraint `student_profiles_user_id_fkey` requires a parent row in `profiles(user_id)`.
@@ -197,7 +229,7 @@ export async function completeOnboarding(
     .from("profiles")
     .upsert(
       {
-        user_id: userId,
+        user_id: user.id,
         onboarding_completed: false,
       },
       {
@@ -207,7 +239,9 @@ export async function completeOnboarding(
     );
 
   if (baseProfileError) {
-    throw new Error(`Profile initialization failed: ${baseProfileError.message}`);
+    throw new Error(
+      `Profile initialization failed: ${baseProfileError.message}`
+    );
   }
 
   // 2. Upsert student academic profile
@@ -215,7 +249,7 @@ export async function completeOnboarding(
     .from("student_profiles")
     .upsert(
       {
-        user_id: userId,
+        user_id: user.id,
         semester_id: validatedData.semesterId,
         college_course_department_id: validatedData.collegeCourseDepartmentId,
         updated_at: timestamp,
@@ -226,7 +260,9 @@ export async function completeOnboarding(
     );
 
   if (studentProfileError) {
-    throw new Error(`Academic profile setup failed: ${studentProfileError.message}`);
+    throw new Error(
+      `Academic profile setup failed: ${studentProfileError.message}`
+    );
   }
 
   // 3. Mark onboarding as completed only after student academic record is verified
@@ -234,7 +270,7 @@ export async function completeOnboarding(
     .from("profiles")
     .upsert(
       {
-        user_id: userId,
+        user_id: user.id,
         onboarding_completed: true,
         updated_at: timestamp,
       },

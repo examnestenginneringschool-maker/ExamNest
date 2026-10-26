@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { UserButton } from "@clerk/nextjs";
-import { auth, currentUser } from "@clerk/nextjs/server";
+import { redirect } from "next/navigation";
+import { getAuthenticatedUser } from "@/lib/supabase/server";
+import { UserMenu } from "@/components/auth/UserMenu";
 import {
   ArrowRight,
   CheckCircle2,
@@ -21,16 +22,16 @@ import { DashboardTiltPreview } from "@/components/marketing/DashboardTiltPrevie
 import { Logo } from "@/components/brand/Logo";
 
 export default async function HomePage() {
-  const { userId } = await auth();
-  const isAuthenticated = Boolean(userId);
-  const user = isAuthenticated ? await currentUser() : null;
+  const user = await getAuthenticatedUser();
 
-  const studentName = user
-    ? [user.firstName, user.lastName].filter(Boolean).join(" ") ||
-      user.firstName ||
-      "Student"
-    : "Student";
-  const studentPhoto = user?.imageUrl || null;
+  // If student is already authenticated, transfer directly to student dashboard
+  if (user) {
+    redirect("/app/dashboard");
+  }
+
+  const isAuthenticated = false;
+  const studentName = "Student";
+  const studentPhoto = null;
 
   return (
     <div className="min-h-screen bg-[#faf8ff] text-[#171b2a] font-sans selection:bg-[#402ae6] selection:text-white">
@@ -79,7 +80,10 @@ export default async function HomePage() {
                 </Link>
 
                 <div className="flex items-center gap-2 pl-2 border-l border-[#e2e5f0]">
-                  <UserButton />
+                  <UserMenu
+                    studentName={studentName}
+                    avatarUrl={studentPhoto}
+                  />
                   <div className="text-left hidden sm:block">
                     <div className="text-xs font-bold text-[#171b2a] leading-tight">
                       {studentName}
@@ -91,14 +95,7 @@ export default async function HomePage() {
                 </div>
               </div>
             ) : (
-              <div className="flex items-center gap-2 sm:gap-3">
-                <Link
-                  href="/sign-in"
-                  className="px-4 py-2 rounded-full text-xs font-bold text-[#171b2a] hover:bg-[#ebedff] transition-colors"
-                >
-                  Sign In
-                </Link>
-
+              <div className="flex items-center">
                 <Link
                   href="/sign-up"
                   className="btn-shimmer inline-flex items-center gap-1.5 rounded-full bg-[#f6c844] hover:bg-[#402ae6] text-[#6c5400] hover:text-white px-4 sm:px-5 py-2.5 text-xs font-bold shadow-sm hover:shadow-md transition-all transform hover:-translate-y-0.5 active:translate-y-0"
@@ -152,7 +149,7 @@ export default async function HomePage() {
             </p>
 
             {/* Action Buttons: Sign-Up vs Signed-In */}
-            <div className="flex flex-wrap items-center justify-center gap-3.5 mt-8">
+            <div className="flex flex-col items-center justify-center mt-8">
               {isAuthenticated ? (
                 <Link
                   href="/app/dashboard"
@@ -167,16 +164,19 @@ export default async function HomePage() {
                     href="/sign-up"
                     className="btn-shimmer px-8 py-3.5 rounded-full bg-[#f6c844] text-[#6c5400] font-bold text-sm shadow-md hover:shadow-xl hover:bg-[#402ae6] hover:text-white transition-all transform hover:-translate-y-0.5 active:translate-y-0 flex items-center gap-2"
                   >
-                    <span>Get Started Free</span>
+                    <span>Get Started Here</span>
                     <ArrowRight className="h-4 w-4" />
                   </Link>
 
-                  <Link
-                    href="/sign-in"
-                    className="px-6 py-3.5 rounded-full bg-white border border-[#e2e5f0] text-[#171b2a] font-bold text-sm shadow-xs hover:bg-[#ebedff] transition-all transform hover:-translate-y-0.5"
-                  >
-                    Student Sign In
-                  </Link>
+                  <p className="mt-3.5 text-xs text-[#5d5c73] font-medium">
+                    Already have an account?{" "}
+                    <Link
+                      href="/sign-in"
+                      className="font-bold text-[#402ae6] hover:text-[#3311dc] hover:underline underline-offset-4 transition-colors"
+                    >
+                      Sign In
+                    </Link>
+                  </p>
                 </>
               )}
             </div>

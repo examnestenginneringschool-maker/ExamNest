@@ -1,8 +1,8 @@
 # ExamNest — Comprehensive Project Summary & Architecture Changelog
 
-**Date:** October 2, 2026  
+**Date:** October 26, 2026  
 **Project:** ExamNest (Student Academic Companion Platform)  
-**Tech Stack:** Next.js 16.3.6 (Turbopack, App Router), React 19, TypeScript, Tailwind CSS, Clerk Authentication, Supabase (PostgreSQL), Vitest  
+**Tech Stack:** Next.js 16.3.6 (Turbopack, App Router), React 19, TypeScript, Tailwind CSS, Supabase Native Authentication (`@supabase/ssr`), Supabase (PostgreSQL), Vitest  
 
 ---
 
@@ -14,59 +14,34 @@ $$\text{University} \longrightarrow \text{College} \longrightarrow \text{Course}
 
 Once enrolled, students get immediate access to their curated semester curriculum: syllabus-mapped notes, formulas, important focus topics, previous year questions, and revision modules.
 
-Today, the codebase underwent a comprehensive optimization, security hardening, modular refactoring, and test suite setup.
-
 ---
 
-## 2. Key Challenges Identified & Fixed Today
+## 2. Key Architecture & Security Highlights
 
-### 1. Database Query Waterfall (10–12 Sequential Round-Trips)
-* **The Problem:** Visiting the dashboard, a subject, or notes triggered 10 to 12 individual database queries executed sequentially across the internet. This added 2 to 3 seconds of network latency to every page load.
+### 1. Database Query Waterfall Elimination
+* **The Problem:** Visiting the dashboard, a subject, or notes triggered 10 to 12 individual database queries executed sequentially across the internet.
 * **The Fix:** Implemented a unified academic data resolution engine in `src/lib/academic/student-context.ts`. It fetches the entire university-to-semester hierarchy in a single relational join (with automatic batch fallbacks), wrapped in React's `cache()` to eliminate redundant queries within the same request lifecycle.
 
-### 2. Infinite Redirect Loop (`ERR_TOO_MANY_REDIRECTS`)
-* **The Problem:** If a student's profile flag indicated onboarding was completed, but their academic placement record was missing or incomplete, the dashboard redirected to onboarding, while onboarding redirected back to the dashboard, creating an infinite browser loop.
-* **The Fix:** Synchronized both `/onboarding` and the `/app` layout to evaluate the presence of the verified academic context before making routing decisions. In `src/app/onboarding/actions.ts` and `src/app/onboarding/page.tsx`, guaranteed base `profiles` record existence first to satisfy PostgreSQL foreign key constraints (`student_profiles_user_id_fkey`), saved `student_profiles`, and only then marked `onboarding_completed: true`.
+### 2. Supabase Native Auth (`@supabase/ssr`) & 6-Digit Email OTP
+* **The Implementation:** Full cookie-based SSR authentication with `createServerSupabaseClient`, `createBrowserSupabaseClient`, and `getAuthenticatedUser()`.
+* **Security Hardening:**
+  * Disposable/throwaway email domains are blocked at both the client and Zod validation schema levels (`src/lib/validation/auth.ts`).
+  * Registration enforces strong passwords and transitions to a 6-digit Email OTP verification screen (`supabase.auth.verifyOtp`).
+  * PKCE OAuth / Magic Link callback handler (`src/app/auth/callback/route.ts`) sanitizes `next` redirect paths to prevent Open Redirect attacks.
 
 ### 3. Edge Route Protection & Next.js 16 Proxy Convention
-* **The Problem:** Next.js 16 deprecated `middleware.ts` in favor of `proxy.ts`. Furthermore, unauthenticated visitors previously reached the Node.js SSR runtime before being redirected, and onboarding server actions lacked authentication checks.
-* **The Fix:** Migrated to `src/proxy.ts` using Clerk's `createRouteMatcher(["/app(.*)", "/onboarding(.*)"])` with `auth.protect()` to intercept unauthorized traffic at the edge. Added authentication checks (`const { userId } = await auth()`) to all onboarding server actions.
+* **The Implementation:** `src/proxy.ts` refreshes Supabase Auth tokens on every request via `supabase.auth.getUser()`, redirects unauthenticated visitors away from `/app/*` and `/onboarding/*`, and redirects authenticated users away from `/sign-in` and `/sign-up`.
 
-### 4. Hydration Mismatch Caused by Browser Extensions
-* **The Problem:** Browser extensions (such as Grammarly and Liner) injected attributes and inline styles into `<html>` and `<body>` prior to client hydration, triggering React console errors.
-* **The Fix:** Added `suppressHydrationWarning` to the root `<html>` and `<body>` tags in `src/app/layout.tsx`.
+### 4. Relational Stream Integrity in Onboarding
+* **The Fix:** In `src/app/onboarding/actions.ts`, `completeOnboarding` verifies that the submitted `semesterId` and `collegeCourseDepartmentId` belong to the exact same `college_course_id` before saving the student's academic profile.
 
-### 5. Latency Reduction in Inner App Routes
-* **The Problem:** Subject overview and notes pages were invoking Clerk's remote `currentUser()` helper (which makes an external HTTPS request across the web) solely to retrieve `user.id`.
-* **The Fix:** Replaced with lightweight, instant `auth()`, saving 100–300ms on every navigation.
-
-### 6. Type-Safe Form Validation with Zod
-* **The Problem:** Zod was installed in `package.json` but unused; input IDs were handled as unvalidated raw strings.
-* **The Fix:** Created `src/lib/validation/onboarding.ts`. Added pre-submission validation on the client stepper and strict server-side validation on all onboarding server actions.
-
-### 7. Modularization of the Notes Reader (From 954 Lines to 171 Lines)
-* **The Problem:** `src/app/app/subjects/[subjectId]/notes/page.tsx` was a monolithic 954-line file containing the header, desktop sidebar, hero section, mobile pill navigation, and block rendering.
-* **The Fix:** Decomposed into focused, single-responsibility components in `src/components/notes/`:
-  * `NotesHeader.tsx`: Sticky topbar with back link, subject name, ExamNest branding, and `<UserButton />`.
+### 5. Modularization of the Notes Reader
+* Decomposed into focused, single-responsibility components in `src/components/notes/`:
+  * `NotesHeader.tsx`: Sticky topbar with back link, subject name, ExamNest branding, and `<UserMenu />`.
   * `NotesHero.tsx`: Subject metadata, category, semester badge, and the 3-metric statistics grid.
   * `NotesMobileNav.tsx`: Horizontal scrolling pill navigation for phones.
-  * `NotesOutlineSidebar.tsx`: Sticky desktop sidebar locked to the viewport past the hero section, featuring interactive accordion unit expansion, direct topic-to-topic jumping, and real-time scroll spy tracking.
+  * `NotesOutlineSidebar.tsx`: Sticky desktop sidebar locked to the viewport past the hero section.
   * `UnitSection.tsx`: Unit header, syllabus coverage box, focus areas, and modular block rendering.
-
-### 8. Zero-Layout-Shift (CLS) Loading Skeletons
-* **The Problem:** Notes and onboarding showed blank screens while loading. On the subject page, the skeleton dimensions did not match the real page, causing visual jumps.
-* **The Fix:** Created matching skeleton layouts:
-  * `src/app/app/subjects/[subjectId]/notes/loading.tsx`
-  * `src/app/onboarding/loading.tsx`
-  * Updated `src/app/app/subjects/[subjectId]/loading.tsx` to match the exact 1500px 2-column layout.
-
-### 9. Diagnostic Route Cleanup
-* **The Problem:** A temporary database test route (`/app/test-db`) remained in the production router.
-* **The Fix:** Removed `src/app/app/test-db` from the router and preserved the diagnostic tool as a developer CLI script in `scripts/test-db.ts`.
-
-### 10. Automated Testing Suite Setup
-* **The Problem:** The repository lacked automated tests to guard against regressions.
-* **The Fix:** Configured Vitest in `vitest.config.mts` with Node 22 native ESM path aliases (`@/`). Added 14 unit tests in `tests/` covering schema validation, subject text formatting, and note block contracts.
 
 ---
 
@@ -75,8 +50,9 @@ Today, the codebase underwent a comprehensive optimization, security hardening, 
 ```
 App Router
 ├── /                                   (Public Marketing Landing Page)
-├── /sign-in                            (Clerk Authentication Sign-In)
-├── /sign-up                            (Clerk Authentication Registration)
+├── /sign-in                            (Supabase Native Sign-In)
+├── /sign-up                            (Supabase Native Registration + 6-Digit Email OTP)
+├── /auth/callback                      (Supabase PKCE / OAuth Session Exchange)
 ├── /onboarding                         (6-Step Academic Enrollment Stepper)
 └── /app/
     ├── dashboard                       (Student Dashboard & Curriculum Feed)
@@ -87,20 +63,7 @@ App Router
 
 ---
 
-## 4. Verification & Quality Health Check
-
-All checks pass with zero warnings and zero errors:
-
-| Check | Tool / Command | Result |
-| :--- | :--- | :---: |
-| **Unit Test Suite** | `npm test` (Vitest) | **14 / 14 Passed (100%)** |
-| **Type Integrity** | `npx tsc --noEmit` | **0 Errors** |
-| **Linting & Code Quality** | `npm run lint` (ESLint) | **0 Warnings / 0 Errors** |
-| **Production Build** | `npm run build` (Turbopack) | **Compiled Cleanly (0 warnings)** |
-
----
-
-## 5. Developer Cheat Sheet
+## 4. Developer Cheat Sheet
 
 ```bash
 # Start development server

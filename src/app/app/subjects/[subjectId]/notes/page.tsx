@@ -1,8 +1,10 @@
-import { auth, currentUser } from "@clerk/nextjs/server";
 import { notFound, redirect } from "next/navigation";
 import { BookOpen } from "lucide-react";
 
-import { createServerSupabaseClient } from "@/lib/supabase/server";
+import {
+  createServerSupabaseClient,
+  getAuthenticatedUser,
+} from "@/lib/supabase/server";
 import { getStudentAcademicContext } from "@/lib/academic/student-context";
 import { WorkspaceHeader } from "@/components/notes/WorkspaceHeader";
 import { NotesWorkspaceClient } from "@/components/notes/NotesWorkspaceClient";
@@ -16,18 +18,16 @@ type PageProps = {
 };
 
 export default async function NotesPage({ params }: PageProps) {
-  const { userId } = await auth();
+  const user = await getAuthenticatedUser();
 
-  if (!userId) {
+  if (!user) {
     redirect("/sign-in");
   }
 
   const { subjectId } = await params;
-  const supabase = createServerSupabaseClient();
-
-  const [context, user] = await Promise.all([
-    getStudentAcademicContext(userId),
-    currentUser(),
+  const [supabase, context] = await Promise.all([
+    createServerSupabaseClient(),
+    getStudentAcademicContext(user.id),
   ]);
 
   if (!context) {
@@ -125,9 +125,7 @@ export default async function NotesPage({ params }: PageProps) {
     blocksByTopicRecord[block.topic_id].push(block);
   }
 
-  const studentName = user
-    ? [user.firstName, user.lastName].filter(Boolean).join(" ")
-    : undefined;
+  const studentName = user.fullName;
 
   return (
     <main className="min-h-screen bg-[#faf8ff] text-slate-900 antialiased selection:bg-indigo-500 selection:text-white">
