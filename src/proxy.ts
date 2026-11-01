@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { isDisposableEmail } from "@/lib/validation/auth";
 
 const PROTECTED_PREFIXES = ["/app", "/onboarding"];
 const AUTH_PREFIXES = ["/sign-in", "/sign-up"];
@@ -18,7 +19,44 @@ export async function proxy(request: NextRequest) {
     return supabaseResponse;
   }
 
-  const { pathname } = request.nextUrl;
+  const { pathname, searchParams } = request.nextUrl;
+  const isServerAction =
+    request.method !== "GET" || request.headers.has("next-action");
+
+  // Never redirect POST / Server Action RPC requests — let the Server Action execute and return its RSC payload
+  if (isServerAction) {
+    return supabaseResponse;
+  }
+
+  // Intercept Supabase auth codes, token_hash links, or auth errors that fell back to the root Site URL ("/")
+  // and forward them to "/auth/callback" so recovery & OAuth sessions are always handled properly.
+  if (
+    pathname === "/" &&
+    (searchParams.has("code") ||
+      searchParams.has("token_hash") ||
+      searchParams.get("type") === "recovery" ||
+      searchParams.has("error_code") ||
+      searchParams.has("error_description"))
+  ) {
+    const callbackUrl = request.nextUrl.clone();
+    callbackUrl.pathname = "/auth/callback";
+    return NextResponse.redirect(callbackUrl);
+  }
+
+  // If a password recovery flow cookie is active and Supabase redirected to "/" or "/app/dashboard",
+  // route the user straight to the password recovery portal ("/reset-password").
+  const hasRecoveryFlowCookie =
+    request.cookies.get("examnest_recovery_flow")?.value === "1";
+  if (
+    hasRecoveryFlowCookie &&
+    (pathname === "/" || pathname.startsWith("/app"))
+  ) {
+    const resetUrl = request.nextUrl.clone();
+    resetUrl.pathname = "/reset-password";
+    const res = NextResponse.redirect(resetUrl);
+    res.cookies.delete("examnest_recovery_flow");
+    return res;
+  }
 
   const isProtectedRoute = PROTECTED_PREFIXES.some(
     (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`)
@@ -70,6 +108,48 @@ export async function proxy(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
+  // 0. Block any session associated with a disposable/temporary email address
+  if (user?.email && isDisposableEmail(user.email)) {
+    await supabase.auth.signOut({ scope: "local" });
+    if (isProtectedRoute) {
+      const redirectUrl = request.nextUrl.clone();
+      redirectUrl.pathname = "/sign-in";
+      redirectUrl.search =
+        "?error=Temporary+or+disposable+email+services+are+strictly+blocked";
+      return NextResponse.redirect(redirectUrl);
+    }
+    return supabaseResponse;
+  }
+
+  // 0b. Single-Device Session Enforcement on protected routes:
+  // If `user.user_metadata.active_device_token` is set and does not match this browser's
+  // `examnest_device_token` cookie, another device or browser has signed in with this account.
+  const activeDeviceToken =
+    typeof user?.user_metadata?.active_device_token === "string"
+      ? user.user_metadata.active_device_token
+      : null;
+  const browserDeviceToken =
+    request.cookies.get("examnest_device_token")?.value || null;
+  const isDeviceDisplaced = Boolean(
+    activeDeviceToken &&
+      (!browserDeviceToken || activeDeviceToken !== browserDeviceToken)
+  );
+
+  if (user && isProtectedRoute && isDeviceDisplaced) {
+    await supabase.auth.signOut({ scope: "local" });
+    const redirectUrl = request.nextUrl.clone();
+    redirectUrl.pathname = "/sign-in";
+    redirectUrl.search = "?reason=session_replaced";
+    const res = NextResponse.redirect(redirectUrl);
+    res.cookies.delete("examnest_device_token");
+    allCookies.forEach((c) => {
+      if (c.name.startsWith("sb-")) {
+        res.cookies.delete(c.name);
+      }
+    });
+    return res;
+  }
+
   // 1. Intercept invalid session visitors trying to access protected academic routes
   if (isProtectedRoute && !user) {
     const redirectUrl = request.nextUrl.clone();
@@ -79,7 +159,13 @@ export async function proxy(request: NextRequest) {
   }
 
   // 2. Redirect already-authenticated students away from /sign-in or /sign-up
-  if (isAuthRoute && user) {
+  // (Only if their device session is valid and not displaced)
+  if (
+    isAuthRoute &&
+    user &&
+    !isDeviceDisplaced &&
+    searchParams.get("reason") !== "session_replaced"
+  ) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = "/app/dashboard";
     redirectUrl.search = "";

@@ -4,6 +4,7 @@ import {
   createServerSupabaseClient,
   getAuthenticatedUser,
 } from "@/lib/supabase/server";
+import { verifyEmailSecurityOnServer } from "@/app/(auth)/actions";
 import {
   completeOnboardingSchema,
   entityIdSchema,
@@ -174,8 +175,17 @@ export async function completeOnboarding(
 ) {
   const user = await getAuthenticatedUser();
 
-  if (!user) {
+  if (!user || !user.email) {
     throw new Error("Unauthorized");
+  }
+
+  // Enforce server-side disposable email & verified email check before writing to DB
+  const emailCheck = await verifyEmailSecurityOnServer(user.email);
+  if (!emailCheck.allowed) {
+    throw new Error(
+      emailCheck.reason ||
+        "Temporary or disposable email accounts cannot complete academic onboarding."
+    );
   }
 
   const validation = completeOnboardingSchema.safeParse({

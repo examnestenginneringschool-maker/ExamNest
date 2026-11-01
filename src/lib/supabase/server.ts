@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
 import { createClient } from "@supabase/supabase-js";
 import type { User } from "@supabase/supabase-js";
+import { isDisposableEmail } from "@/lib/validation/auth";
 
 function getSupabaseEnv() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -75,7 +76,7 @@ export const getAuthenticatedUser = cache(
         error,
       } = await supabase.auth.getUser();
 
-      if (error || !user) {
+      if (error || !user || !user.email || isDisposableEmail(user.email)) {
         return null;
       }
 

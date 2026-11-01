@@ -865,21 +865,71 @@ export default async function HomePage() {
                 </li>
               </ul>
             </div>
+
+            {/* Legal & Policies */}
+            <div>
+              <h4 className="text-xs font-bold text-[#171b2a] uppercase tracking-wider mb-4">
+                Legal &amp; Privacy
+              </h4>
+              <ul className="space-y-2.5 text-xs text-[#5d5c73]">
+                <li>
+                  <Link
+                    href="/privacy"
+                    className="hover:text-[#402ae6] transition-colors"
+                  >
+                    Student Privacy Policy
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/terms"
+                    className="hover:text-[#402ae6] transition-colors"
+                  >
+                    Terms of Use
+                  </Link>
+                </li>
+                <li>
+                  <a
+                    href="#open-charter"
+                    className="hover:text-[#402ae6] transition-colors"
+                  >
+                    Academic Charter
+                  </a>
+                </li>
+                <li>
+                  <Link
+                    href="/terms#disclaimers"
+                    className="hover:text-[#402ae6] transition-colors"
+                  >
+                    Institutional Scope
+                  </Link>
+                </li>
+              </ul>
+            </div>
           </div>
 
           {/* Bottom Bar */}
           <div className="pt-8 border-t border-[#e2e5f0] flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[#717588]">
             <p>© {new Date().getFullYear()} ExamNest | All Rights Reserved</p>
             <div className="flex items-center gap-6">
-              <span className="hover:text-[#171b2a] transition-colors cursor-pointer">
+              <a
+                href="#open-charter"
+                className="hover:text-[#171b2a] transition-colors"
+              >
                 Academic Integrity
-              </span>
-              <span className="hover:text-[#171b2a] transition-colors cursor-pointer">
+              </a>
+              <Link
+                href="/privacy"
+                className="hover:text-[#171b2a] transition-colors"
+              >
                 Student Privacy
-              </span>
-              <span className="hover:text-[#171b2a] transition-colors cursor-pointer">
+              </Link>
+              <Link
+                href="/terms"
+                className="hover:text-[#171b2a] transition-colors"
+              >
                 Terms of Use
-              </span>
+              </Link>
             </div>
           </div>
         </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -15,6 +15,7 @@ import {
   Loader2,
   ShieldCheck,
 } from "lucide-react";
+import { registerSingleDeviceLogin } from "@/app/(auth)/actions";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 import { resetPasswordSchema } from "@/lib/validation/auth";
 
@@ -65,6 +66,56 @@ function getPasswordStrengthInfo(password: string) {
   };
 }
 
+const CONSUMED_TOKENS_STORAGE_KEY = "examnest_consumed_recovery_tokens";
+const ACTIVE_RECOVERY_GRANT_KEY = "examnest_recovery_grant";
+
+// Module-level deduplication so React 19 Strict Mode double-mount in dev does not call verifyOtp twice
+const inFlightTokenVerifications = new Map<
+  string,
+  Promise<{ valid: boolean; errorMessage?: string }>
+>();
+
+function isTokenMarkedConsumed(tokenKey: string): boolean {
+  if (typeof window === "undefined" || !tokenKey) return false;
+  try {
+    const raw = window.localStorage.getItem(CONSUMED_TOKENS_STORAGE_KEY);
+    if (!raw) return false;
+    const list = JSON.parse(raw) as string[];
+    return Array.isArray(list) && list.includes(tokenKey);
+  } catch {
+    return false;
+  }
+}
+
+function consumeRecoveryGrantPermanently(tokenKey?: string | null) {
+  if (typeof window === "undefined") return;
+  try {
+    const activeGrant =
+      tokenKey || window.sessionStorage.getItem(ACTIVE_RECOVERY_GRANT_KEY);
+    if (activeGrant) {
+      const raw = window.localStorage.getItem(CONSUMED_TOKENS_STORAGE_KEY);
+      const list: string[] = raw ? (JSON.parse(raw) as string[]) : [];
+      if (!list.includes(activeGrant)) {
+        const updated = [...list.slice(-49), activeGrant];
+        window.localStorage.setItem(
+          CONSUMED_TOKENS_STORAGE_KEY,
+          JSON.stringify(updated)
+        );
+      }
+    }
+    window.sessionStorage.removeItem(ACTIVE_RECOVERY_GRANT_KEY);
+  } catch {
+    // Ignore storage errors
+  }
+
+  if (typeof document !== "undefined") {
+    document.cookie =
+      "examnest_recovery_flow=; path=/; max-age=0; SameSite=Lax";
+    document.cookie =
+      "examnest_recovery_verified=; path=/; max-age=0; SameSite=Lax";
+  }
+}
+
 export function ResetPasswordPortal() {
   const router = useRouter();
   const [step, setStep] = useState<"choice" | "form">("choice");
@@ -80,6 +131,7 @@ export function ResetPasswordPortal() {
   const [isSessionChecking, setIsSessionChecking] = useState(true);
   const [isSessionInvalid, setIsSessionInvalid] = useState(false);
   const [sessionErrorMessage, setSessionErrorMessage] = useState("");
+  const activeTokenKeyRef = useRef<string | null>(null);
 
   const pwdStrength = getPasswordStrengthInfo(newPassword);
   const passwordsMatch =
@@ -87,30 +139,44 @@ export function ResetPasswordPortal() {
   const passwordsMismatch =
     confirmPassword.length > 0 && newPassword !== confirmPassword;
 
-  // Verify recovery session via cookies, URL query errors, and onAuthStateChange
+  // Verify recovery session via one-time token_hash / code / recovery cookie
   useEffect(() => {
     let mounted = true;
     const supabase = createBrowserSupabaseClient();
 
-    // 1. Check if an error was passed in URL query parameters
-    if (typeof window !== "undefined") {
-      const params = new URLSearchParams(window.location.search);
-      const urlError = params.get("error_description") || params.get("error");
-      if (urlError) {
-        setIsSessionInvalid(true);
-        setSessionErrorMessage(urlError);
-        setIsSessionChecking(false);
-        return;
-      }
+    // Clear the redirect-routing cookie now that the user has reached /reset-password
+    if (typeof document !== "undefined") {
+      document.cookie =
+        "examnest_recovery_flow=; path=/; max-age=0; SameSite=Lax";
     }
 
-    // 2. Listen to auth state transitions (e.g. PASSWORD_RECOVERY from hash tokens)
+    const searchParams =
+      typeof window !== "undefined"
+        ? new URLSearchParams(window.location.search)
+        : null;
+    const urlError =
+      searchParams?.get("error_description") ||
+      searchParams?.get("error") ||
+      null;
+    const tokenHash = searchParams?.get("token_hash") || null;
+    const otpType = searchParams?.get("type") || null;
+    const authCode = searchParams?.get("code") || null;
+    const hasHashRecovery =
+      typeof window !== "undefined" &&
+      window.location.hash.includes("type=recovery");
+
+    // 1. Listen only for genuine PASSWORD_RECOVERY events (e.g. from implicit #access_token hash)
     const { data: authListener } = supabase.auth.onAuthStateChange(
       (event, session) => {
         if (!mounted) return;
-        if (session) {
-          setIsSessionInvalid(false);
-          setIsSessionChecking(false);
+        if (event === "PASSWORD_RECOVERY" && session) {
+          const grantKey = `hash_${session.access_token.slice(-16)}`;
+          if (!isTokenMarkedConsumed(grantKey)) {
+            activeTokenKeyRef.current = grantKey;
+            window.sessionStorage.setItem(ACTIVE_RECOVERY_GRANT_KEY, grantKey);
+            setIsSessionInvalid(false);
+            setIsSessionChecking(false);
+          }
         } else if (event === "SIGNED_OUT") {
           setIsSessionInvalid(true);
           setIsSessionChecking(false);
@@ -118,26 +184,173 @@ export function ResetPasswordPortal() {
       }
     );
 
-    // 3. Initial check
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    // 2. Strict one-time verification of the recovery link
+    const verifyInitialRecoveryState = async () => {
+      if (urlError) {
+        setIsSessionInvalid(true);
+        setSessionErrorMessage(urlError);
+        setIsSessionChecking(false);
+        return;
+      }
+
+      // Case A: Direct link with ?token_hash=...&type=recovery or ?code=...
+      const incomingTokenKey = tokenHash || authCode;
+      if (incomingTokenKey) {
+        // Reject immediately if this exact token was already used to change a password
+        if (isTokenMarkedConsumed(incomingTokenKey)) {
+          setIsSessionInvalid(true);
+          setSessionErrorMessage(
+            "This password reset link has already been used. Please request a new password reset link from the sign-in page."
+          );
+          setIsSessionChecking(false);
+          return;
+        }
+
+        let verifyPromise = inFlightTokenVerifications.get(incomingTokenKey);
+        if (!verifyPromise) {
+          verifyPromise = (async () => {
+            if (tokenHash && (!otpType || otpType === "recovery")) {
+              const { data, error } = await supabase.auth.verifyOtp({
+                token_hash: tokenHash,
+                type: "recovery",
+              });
+              if (error || !data.session) {
+                return {
+                  valid: false,
+                  errorMessage:
+                    "This password reset link is invalid, expired, or has already been used. Please request a new password reset link.",
+                };
+              }
+              return { valid: true };
+            }
+
+            if (authCode) {
+              const { data, error } =
+                await supabase.auth.exchangeCodeForSession(authCode);
+              if (error || !data.session) {
+                return {
+                  valid: false,
+                  errorMessage:
+                    "This password reset link is invalid, expired, or has already been used. Please request a new password reset link.",
+                };
+              }
+              return { valid: true };
+            }
+
+            return { valid: false };
+          })().finally(() => {
+            setTimeout(() => {
+              inFlightTokenVerifications.delete(incomingTokenKey);
+            }, 2000);
+          });
+
+          inFlightTokenVerifications.set(incomingTokenKey, verifyPromise);
+        }
+
+        const result = await verifyPromise;
+        if (!mounted) return;
+
+        // CRITICAL: Never fall back to getSession() if the one-time token failed verification!
+        if (!result.valid) {
+          setIsSessionInvalid(true);
+          setSessionErrorMessage(
+            result.errorMessage ||
+              "This password reset link has already been used or has expired."
+          );
+          setIsSessionChecking(false);
+          return;
+        }
+
+        // Token verified for the first time: issue one-time grant & scrub token from URL bar
+        activeTokenKeyRef.current = incomingTokenKey;
+        try {
+          window.sessionStorage.setItem(
+            ACTIVE_RECOVERY_GRANT_KEY,
+            incomingTokenKey
+          );
+          window.history.replaceState({}, "", "/reset-password");
+        } catch {
+          // Ignore history/storage errors
+        }
+
+        setIsSessionInvalid(false);
+        setIsSessionChecking(false);
+        return;
+      }
+
+      // Case B: Arrived via /auth/callback redirect (cookie) or in-tab refresh with active grant
+      const hasVerifiedCookie =
+        typeof document !== "undefined" &&
+        document.cookie
+          .split("; ")
+          .some((c) => c === "examnest_recovery_verified=1");
+      const existingGrant =
+        typeof window !== "undefined"
+          ? window.sessionStorage.getItem(ACTIVE_RECOVERY_GRANT_KEY)
+          : null;
+
+      if (hasVerifiedCookie) {
+        const grantId = existingGrant || `cb_${Date.now()}`;
+        activeTokenKeyRef.current = grantId;
+        try {
+          window.sessionStorage.setItem(ACTIVE_RECOVERY_GRANT_KEY, grantId);
+          document.cookie =
+            "examnest_recovery_verified=; path=/; max-age=0; SameSite=Lax";
+        } catch {
+          // Ignore storage errors
+        }
+      }
+
+      const activeGrant =
+        activeTokenKeyRef.current ||
+        (existingGrant && !isTokenMarkedConsumed(existingGrant)
+          ? existingGrant
+          : null);
+
+      if (!activeGrant && !hasHashRecovery) {
+        setIsSessionInvalid(true);
+        setSessionErrorMessage(
+          "This password reset link has already been used or has expired. Please request a new password reset link from the sign-in page."
+        );
+        setIsSessionChecking(false);
+        return;
+      }
+
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
       if (!mounted) return;
-      if (session) {
+
+      if (session && activeGrant) {
+        activeTokenKeyRef.current = activeGrant;
         setIsSessionInvalid(false);
         setIsSessionChecking(false);
       } else {
-        // Allow a small grace period for client-side hash parsing (#access_token=...)
+        // Allow a short grace period for #access_token=...&type=recovery hash parsing
         setTimeout(() => {
           if (!mounted) return;
-          supabase.auth.getSession().then(({ data: { session: retrySession } }) => {
-            if (!mounted) return;
-            if (!retrySession) {
-              setIsSessionInvalid(true);
-            }
-            setIsSessionChecking(false);
-          });
-        }, 350);
+          supabase.auth
+            .getSession()
+            .then(({ data: { session: retrySession } }) => {
+              if (!mounted) return;
+              const grantAfterWait =
+                activeTokenKeyRef.current ||
+                window.sessionStorage.getItem(ACTIVE_RECOVERY_GRANT_KEY);
+              if (!retrySession || !grantAfterWait) {
+                setIsSessionInvalid(true);
+                setSessionErrorMessage(
+                  "This password reset link is invalid or has already been used. Please request a fresh link from the sign-in page."
+                );
+              } else {
+                setIsSessionInvalid(false);
+              }
+              setIsSessionChecking(false);
+            });
+        }, 500);
       }
-    });
+    };
+
+    void verifyInitialRecoveryState();
 
     return () => {
       mounted = false;
@@ -145,8 +358,13 @@ export function ResetPasswordPortal() {
     };
   }, []);
 
-  const handleDirectToDashboard = () => {
+  const handleDirectToDashboard = async () => {
     setIsNavigatingDashboard(true);
+    // Permanently consume the one-time recovery link so it cannot be reused later
+    consumeRecoveryGrantPermanently(activeTokenKeyRef.current);
+    await registerSingleDeviceLogin(
+      typeof navigator !== "undefined" ? navigator.userAgent : "Web Browser"
+    );
     router.push("/app/dashboard");
     router.refresh();
   };
@@ -174,12 +392,23 @@ export function ResetPasswordPortal() {
 
       const { error } = await supabase.auth.updateUser({
         password: parsed.data.password,
+        data: {
+          year: new Date().getFullYear(),
+        },
       });
 
       if (error) {
         setFormError(error.message);
         return;
       }
+
+      // Immediately burn the one-time recovery token & grant upon password update
+      consumeRecoveryGrantPermanently(activeTokenKeyRef.current);
+
+      // Register this device as the sole active session & expire any other logged-in devices
+      await registerSingleDeviceLogin(
+        typeof navigator !== "undefined" ? navigator.userAgent : "Web Browser"
+      );
 
       setStatusBanner(
         "Password successfully updated! Redirecting to your dashboard..."

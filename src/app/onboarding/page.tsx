@@ -1,6 +1,8 @@
 import { redirect } from "next/navigation";
 
+import { SingleSessionGuard } from "@/components/auth/SingleSessionGuard";
 import StudentOnboarding from "@/components/auth/StudentOnboarding";
+import { verifyEmailSecurityOnServer } from "@/app/(auth)/actions";
 import { getStudentAcademicContext } from "@/lib/academic/student-context";
 import {
   createServerSupabaseClient,
@@ -11,13 +13,22 @@ import { getUniversities } from "./actions";
 export default async function OnboardingPage() {
   const user = await getAuthenticatedUser();
 
-  if (!user) {
+  if (!user || !user.email) {
     redirect("/sign-in");
   }
 
   const supabase = await createServerSupabaseClient();
 
-  // Ensure base profile exists in Supabase for the authenticated student
+  // Gatekeeper check: block temporary/burner email accounts BEFORE creating any row in `profiles`
+  const emailCheck = await verifyEmailSecurityOnServer(user.email);
+  if (!emailCheck.allowed) {
+    await supabase.auth.signOut();
+    redirect(
+      "/sign-in?error=Temporary+or+disposable+email+services+are+strictly+blocked"
+    );
+  }
+
+  // Ensure base profile exists in Supabase for the verified student
   await supabase
     .from("profiles")
     .upsert(
@@ -59,6 +70,7 @@ export default async function OnboardingPage() {
       </div>
 
       <div className="relative z-10 animate-in fade-in zoom-in-[0.99] duration-500 ease-out">
+        <SingleSessionGuard />
         <StudentOnboarding initialUniversities={initialUniversities} />
       </div>
     </main>

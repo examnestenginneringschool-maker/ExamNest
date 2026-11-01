@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { SingleSessionGuard } from "@/components/auth/SingleSessionGuard";
 import { getAuthenticatedUser } from "@/lib/supabase/server";
 import { getStudentAcademicContext } from "@/lib/academic/student-context";
 
@@ -20,5 +21,10 @@ export default async function StudentLayout({
     redirect("/onboarding");
   }
 
-  return <>{children}</>;
+  return (
+    <>
+      <SingleSessionGuard />
+      {children}
+    </>
+  );
 }
