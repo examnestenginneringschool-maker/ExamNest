@@ -3,6 +3,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { LayoutDashboard, LogOut, User } from "lucide-react";
+import { clearSingleDeviceSession } from "@/app/(auth)/actions";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 
 interface UserMenuProps {
@@ -41,8 +42,13 @@ export function UserMenu({
   const handleSignOut = async () => {
     try {
       setSigningOut(true);
+      await clearSingleDeviceSession();
       const supabase = createBrowserSupabaseClient();
-      await supabase.auth.signOut();
+      await supabase.auth.signOut({ scope: "local" });
+      if (typeof document !== "undefined") {
+        document.cookie =
+          "examnest_device_token=; path=/; max-age=0; SameSite=Lax";
+      }
       setOpen(false);
       router.push("/sign-in");
       router.refresh();

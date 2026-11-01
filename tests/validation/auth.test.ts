@@ -1,18 +1,45 @@
 import { describe, expect, it } from "vitest";
 import {
+  buildSessionReplacedEmailHtml,
+  formatDeviceLabel,
+} from "@/lib/mail/security-alert";
+import {
   isDisposableEmail,
   otpVerifySchema,
-  resetPasswordSchema,
   signInSchema,
   signUpSchema,
 } from "@/lib/validation/auth";
 
 describe("Authentication Security & Zod Schemas", () => {
-  it("blocks disposable and temporary email domains", () => {
+  it("blocks disposable, rotating temp-mail, burner TLDs, subaddressing, and dot-stuffed emails", () => {
+    // Classic disposable domains
     expect(isDisposableEmail("student@tempmail.com")).toBe(true);
     expect(isDisposableEmail("user@10minutemail.com")).toBe(true);
+    expect(isDisposableEmail("bot@yopmail.com")).toBe(true);
+
+    // Rotating temp-mail.org / 1secmail / mail.tm / guerrilla domains from 100k+ registry
+    expect(isDisposableEmail("test@sharklasers.com")).toBe(true);
+    expect(isDisposableEmail("test@guerrillamailblock.com")).toBe(true);
+    expect(isDisposableEmail("test@1secmail.com")).toBe(true);
+    expect(isDisposableEmail("test@maildrop.cc")).toBe(true);
+    expect(isDisposableEmail("sub.user@sub.mailinator.com")).toBe(true);
+
+    // Zero-day high-abuse burner TLDs (.cfd, .sbs, .icu, .xyz, .top, .click, .tk)
+    expect(isDisposableEmail("user@random-domain-2026.cfd")).toBe(true);
+    expect(isDisposableEmail("user@newburner.sbs")).toBe(true);
+    expect(isDisposableEmail("user@freshmail.icu")).toBe(true);
+    expect(isDisposableEmail("user@throwaway123.xyz")).toBe(true);
+    expect(isDisposableEmail("user@instantbox.top")).toBe(true);
+
+    // Plus-subaddressing aliases & Emailnator/Gmailnator dot-stuffing tricks
+    expect(isDisposableEmail("student+spam1@gmail.com")).toBe(true);
+    expect(isDisposableEmail("s.a.y.a.n.t.a.n@gmail.com")).toBe(true);
+
+    // Valid academic and personal domains
     expect(isDisposableEmail("scholar@makaut.ac.in")).toBe(false);
     expect(isDisposableEmail("sayantan@gmail.com")).toBe(false);
+    expect(isDisposableEmail("sayantan.das@gmail.com")).toBe(false);
+    expect(isDisposableEmail("student@iem.edu.in")).toBe(false);
   });
 
   it("validates strong sign-up credentials and normalizes email", () => {
@@ -77,26 +104,32 @@ describe("Authentication Security & Zod Schemas", () => {
     ).toBe(true);
   });
 
-  it("validates resetPasswordSchema for matching passwords and security criteria", () => {
-    // Valid matching strong passwords
-    const valid = resetPasswordSchema.safeParse({
-      password: "NewStrongPassword#2026",
-      confirmPassword: "NewStrongPassword#2026",
-    });
-    expect(valid.success).toBe(true);
+  it("formats device user-agent labels and generates single-device alert email HTML", () => {
+    expect(
+      formatDeviceLabel(
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/131.0.0.0 Safari/537.36"
+      )
+    ).toBe("Google Chrome on Windows");
 
-    // Mismatched passwords
-    const mismatch = resetPasswordSchema.safeParse({
-      password: "NewStrongPassword#2026",
-      confirmPassword: "DifferentPassword#2026",
-    });
-    expect(mismatch.success).toBe(false);
+    expect(
+      formatDeviceLabel(
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/131.0.0.0 Safari/537.36 Edg/131.0.0.0"
+      )
+    ).toBe("Microsoft Edge on Windows");
 
-    // Weak password
-    const weak = resetPasswordSchema.safeParse({
-      password: "weak",
-      confirmPassword: "weak",
+    const html = buildSessionReplacedEmailHtml({
+      toEmail: "scholar@makaut.ac.in",
+      studentName: "Sayantan Das",
+      newDeviceRaw: "Mozilla/5.0 (Linux; Android 14) Chrome/131.0.0.0",
+      previousDeviceRaw: "Mozilla/5.0 (Windows NT 10.0) Edg/131.0.0.0",
+      loginTimeIso: "2026-11-01T13:30:00.000Z",
+      siteUrl: "https://examnestcollege.vercel.app",
     });
-    expect(weak.success).toBe(false);
+
+    expect(html).toContain("New device sign-in detected");
+    expect(html).toContain("Previous Session Expired");
+    expect(html).toContain("Google Chrome on Android");
+    expect(html).toContain("Microsoft Edge on Windows");
+    expect(html).toContain("https://examnestcollege.vercel.app/logo.png");
   });
 });

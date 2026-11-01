@@ -14,7 +14,12 @@ import {
 } from "lucide-react";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 import {
+  registerSingleDeviceLogin,
+  verifyEmailSecurityOnServer,
+} from "@/app/(auth)/actions";
+import {
   emailSchema,
+  isDisposableEmail,
   otpVerifySchema,
   signInSchema,
   signUpSchema,
@@ -154,6 +159,8 @@ export function AuthInteractivePortal({ mode }: AuthInteractivePortalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isOAuthLoading, setIsOAuthLoading] = useState(false);
   const [googleScriptLoaded, setGoogleScriptLoaded] = useState(false);
+  const [googleScriptError, setGoogleScriptError] = useState(false);
+  const [gsiRetrySeed, setGsiRetrySeed] = useState(0);
   const [formError, setFormError] = useState("");
   const [statusBanner, setStatusBanner] = useState("");
 
@@ -162,6 +169,28 @@ export function AuthInteractivePortal({ mode }: AuthInteractivePortalProps) {
   const rawNonceRef = useRef<string>("");
 
   const pwdStrength = getPasswordStrengthInfo(password);
+  const isTempEmailDetected =
+    email.includes("@") && isDisposableEmail(email.trim());
+
+  // Display session replacement or callback error notices from query parameters
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    const reason = params.get("reason");
+    const urlErr = params.get("error_description") || params.get("error");
+
+    if (reason === "session_replaced") {
+      queueMicrotask(() => {
+        setFormError(
+          "Your session expired because your account was signed in on another device or browser."
+        );
+      });
+    } else if (urlErr) {
+      queueMicrotask(() => {
+        setFormError(urlErr);
+      });
+    }
+  }, []);
 
   // Countdown timer for OTP resend
   useEffect(() => {
@@ -211,8 +240,17 @@ export function AuthInteractivePortal({ mode }: AuthInteractivePortalProps) {
 
             if (error) {
               setFormError(error.message);
+              // Regenerate nonce so a retry on the same page has a fresh token
+              setGsiRetrySeed((s) => s + 1);
               return;
             }
+
+            // Enforce single-device session & expire any older browser/device sessions
+            await registerSingleDeviceLogin(
+              typeof navigator !== "undefined"
+                ? navigator.userAgent
+                : "Google Sign-In"
+            );
 
             // Dashboard layout automatically redirects first-time students to /onboarding
             router.push("/app/dashboard");
@@ -223,6 +261,7 @@ export function AuthInteractivePortal({ mode }: AuthInteractivePortalProps) {
                 ? err.message
                 : "Google authentication failed."
             );
+            setGsiRetrySeed((s) => s + 1);
           } finally {
             setIsOAuthLoading(false);
           }
@@ -251,7 +290,7 @@ export function AuthInteractivePortal({ mode }: AuthInteractivePortalProps) {
     if ((googleScriptLoaded || window.google?.accounts?.id) && step === "form") {
       void initGoogleIdentityButton();
     }
-  }, [googleScriptLoaded, initGoogleIdentityButton, step]);
+  }, [googleScriptLoaded, initGoogleIdentityButton, step, gsiRetrySeed]);
 
   const handleOtpChange = (index: number, rawValue: string) => {
     setFormError("");
@@ -328,6 +367,17 @@ export function AuthInteractivePortal({ mode }: AuthInteractivePortalProps) {
 
       try {
         setIsSubmitting(true);
+
+        // Server-side multi-layer disposable email & MX record verification
+        const emailSecurity = await verifyEmailSecurityOnServer(validEmail);
+        if (!emailSecurity.allowed) {
+          setFormError(
+            emailSecurity.reason ||
+              "Temporary or disposable email services are strictly blocked."
+          );
+          return;
+        }
+
         const supabase = createBrowserSupabaseClient();
         const origin =
           typeof window !== "undefined" ? window.location.origin : "";
@@ -341,6 +391,7 @@ export function AuthInteractivePortal({ mode }: AuthInteractivePortalProps) {
               full_name: validName,
               first_name: firstName,
               last_name: lastName,
+              year: new Date().getFullYear(),
             },
           },
         });
@@ -364,6 +415,11 @@ export function AuthInteractivePortal({ mode }: AuthInteractivePortalProps) {
 
         // If email confirmation is disabled in Supabase, session is returned immediately
         if (data.session) {
+          await registerSingleDeviceLogin(
+            typeof navigator !== "undefined"
+              ? navigator.userAgent
+              : "Web Browser"
+          );
           router.push("/onboarding");
           router.refresh();
           return;
@@ -404,6 +460,19 @@ export function AuthInteractivePortal({ mode }: AuthInteractivePortalProps) {
 
     try {
       setIsSubmitting(true);
+
+      // Server-side disposable email & MX record check (also blocks pre-existing temp-mail accounts)
+      const emailSecurity = await verifyEmailSecurityOnServer(
+        parsedSignIn.data.email
+      );
+      if (!emailSecurity.allowed) {
+        setFormError(
+          emailSecurity.reason ||
+            "Temporary or disposable email services are strictly blocked."
+        );
+        return;
+      }
+
       const supabase = createBrowserSupabaseClient();
 
       const { error } = await supabase.auth.signInWithPassword({
@@ -423,6 +492,11 @@ export function AuthInteractivePortal({ mode }: AuthInteractivePortalProps) {
         setFormError("Invalid email or password.");
         return;
       }
+
+      // Register this device as the sole active session & immediately expire older devices
+      await registerSingleDeviceLogin(
+        typeof navigator !== "undefined" ? navigator.userAgent : "Web Browser"
+      );
 
       router.push("/app/dashboard");
       router.refresh();
@@ -453,6 +527,18 @@ export function AuthInteractivePortal({ mode }: AuthInteractivePortalProps) {
 
     try {
       setIsSubmitting(true);
+
+      const emailSecurity = await verifyEmailSecurityOnServer(
+        parsedOtp.data.email
+      );
+      if (!emailSecurity.allowed) {
+        setFormError(
+          emailSecurity.reason ||
+            "Temporary or disposable email services are strictly blocked."
+        );
+        return;
+      }
+
       const supabase = createBrowserSupabaseClient();
 
       const { error } = await supabase.auth.verifyOtp({
@@ -465,6 +551,10 @@ export function AuthInteractivePortal({ mode }: AuthInteractivePortalProps) {
         setFormError(error.message || "Invalid or expired verification code.");
         return;
       }
+
+      await registerSingleDeviceLogin(
+        typeof navigator !== "undefined" ? navigator.userAgent : "Web Browser"
+      );
 
       router.push("/onboarding");
       router.refresh();
@@ -486,11 +576,22 @@ export function AuthInteractivePortal({ mode }: AuthInteractivePortalProps) {
 
     const parsedEmail = emailSchema.safeParse(email);
     if (!parsedEmail.success) {
-      setFormError("Invalid email address.");
+      setFormError(
+        parsedEmail.error.issues[0]?.message || "Invalid email address."
+      );
       return;
     }
 
     try {
+      const emailSecurity = await verifyEmailSecurityOnServer(parsedEmail.data);
+      if (!emailSecurity.allowed) {
+        setFormError(
+          emailSecurity.reason ||
+            "Temporary or disposable email services are strictly blocked."
+        );
+        return;
+      }
+
       const supabase = createBrowserSupabaseClient();
       const { error } = await supabase.auth.resend({
         type: "signup",
@@ -520,27 +621,53 @@ export function AuthInteractivePortal({ mode }: AuthInteractivePortalProps) {
     const parsedEmail = emailSchema.safeParse(email);
     if (!parsedEmail.success) {
       setFormError(
-        "Enter your email address above first to reset your password."
+        parsedEmail.error.issues[0]?.message ||
+          "Enter a valid email address above first to reset your password."
       );
       return;
     }
 
     try {
       setIsSubmitting(true);
+
+      const emailSecurity = await verifyEmailSecurityOnServer(parsedEmail.data);
+      if (!emailSecurity.allowed) {
+        setFormError(
+          emailSecurity.reason ||
+            "Temporary or disposable email services are strictly blocked."
+        );
+        return;
+      }
+
       const supabase = createBrowserSupabaseClient();
       const origin =
         typeof window !== "undefined" ? window.location.origin : "";
 
-      await supabase.auth.resetPasswordForEmail(parsedEmail.data, {
-        redirectTo: `${origin}/auth/callback?next=/reset-password`,
-      });
+      if (typeof document !== "undefined") {
+        document.cookie =
+          "examnest_recovery_flow=1; path=/; max-age=3600; SameSite=Lax";
+      }
+
+      const { error } = await supabase.auth.resetPasswordForEmail(
+        parsedEmail.data,
+        {
+          redirectTo: `${origin}/reset-password`,
+        }
+      );
+
+      if (error) {
+        setFormError(error.message);
+        return;
+      }
 
       setStatusBanner(
         "If an account exists for this email, a password reset link has been sent."
       );
-    } catch {
-      setStatusBanner(
-        "If an account exists for this email, a password reset link has been sent."
+    } catch (err) {
+      setFormError(
+        err instanceof Error
+          ? err.message
+          : "Unable to send password reset email right now."
       );
     } finally {
       setIsSubmitting(false);
@@ -693,6 +820,7 @@ export function AuthInteractivePortal({ mode }: AuthInteractivePortalProps) {
           src="https://accounts.google.com/gsi/client"
           strategy="afterInteractive"
           onLoad={() => setGoogleScriptLoaded(true)}
+          onError={() => setGoogleScriptError(true)}
         />
       )}
 
@@ -740,12 +868,23 @@ export function AuthInteractivePortal({ mode }: AuthInteractivePortalProps) {
         )}
 
         {/* Email */}
-        <div className="rounded-2xl bg-white px-4 py-2.5 border border-[#f0f2f8] shadow-[0_6px_24px_rgba(23,27,42,0.04)] focus-within:border-[#5B4DFF]/50 focus-within:shadow-[0_8px_28px_rgba(91,77,255,0.10)] transition-all">
+        <div
+          className={`rounded-2xl bg-white px-4 py-2.5 border shadow-[0_6px_24px_rgba(23,27,42,0.04)] transition-all ${
+            isTempEmailDetected
+              ? "border-rose-400 focus-within:border-rose-500"
+              : "border-[#f0f2f8] focus-within:border-[#5B4DFF]/50 focus-within:shadow-[0_8px_28px_rgba(91,77,255,0.10)]"
+          }`}
+        >
           <label
             htmlFor="auth-email"
-            className="block text-[11px] font-semibold text-[#8c90a4]"
+            className="flex items-center gap-2 text-[11px] font-semibold text-[#8c90a4]"
           >
-            Email
+            <span>Email</span>
+            {isTempEmailDetected && (
+              <span className="text-[11px] font-bold text-rose-500">
+                • Temporary email blocked
+              </span>
+            )}
           </label>
           <input
             id="auth-email"
@@ -858,8 +997,8 @@ export function AuthInteractivePortal({ mode }: AuthInteractivePortalProps) {
         <div className="border-t border-[#eceef6] w-full" />
       </div>
 
-      {/* Bottom 'Continue with Google' Button (Direct GSI ID Token if NEXT_PUBLIC_GOOGLE_CLIENT_ID is set) */}
-      {googleClientId ? (
+      {/* Bottom 'Continue with Google' Button (Direct GSI ID Token if loaded, with automatic standard OAuth fallback) */}
+      {googleClientId && !googleScriptError ? (
         <div className="relative w-full flex flex-col items-center">
           {isOAuthLoading && (
             <div className="mb-2 inline-flex items-center gap-2 text-xs font-semibold text-[#5B4DFF]">
