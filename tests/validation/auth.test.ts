@@ -3,8 +3,11 @@ import {
   buildSessionReplacedEmailHtml,
   formatDeviceLabel,
 } from "@/lib/mail/security-alert";
+import { parseJwtPayload } from "@/lib/supabase/jwt";
 import {
+  detectIdentifierType,
   isDisposableEmail,
+  normalizePhoneNumber,
   otpVerifySchema,
   signInSchema,
   signUpSchema,
@@ -42,24 +45,36 @@ describe("Authentication Security & Zod Schemas", () => {
     expect(isDisposableEmail("student@iem.edu.in")).toBe(false);
   });
 
-  it("validates strong sign-up credentials and normalizes email", () => {
+  it("validates strong sign-up credentials with mandatory phone number and normalizes email & E.164 phone", () => {
     const result = signUpSchema.safeParse({
       fullName: "Sayantan Das",
       email: "  Sayantan.Das@University.edu.in ",
+      phone: "98765 43210",
       password: "StrongPassword#2026",
     });
 
     expect(result.success).toBe(true);
     if (result.success) {
       expect(result.data.email).toBe("sayantan.das@university.edu.in");
+      expect(result.data.phone).toBe("+919876543210");
       expect(result.data.fullName).toBe("Sayantan Das");
     }
+
+    // Missing or invalid phone number on sign-up must fail
+    const missingPhone = signUpSchema.safeParse({
+      fullName: "Sayantan Das",
+      email: "sayantan@university.edu.in",
+      phone: "12345",
+      password: "StrongPassword#2026",
+    });
+    expect(missingPhone.success).toBe(false);
   });
 
   it("rejects weak passwords or disposable emails on sign-up", () => {
     const weakPwd = signUpSchema.safeParse({
       fullName: "Sayantan Das",
       email: "sayantan@gmail.com",
+      phone: "+919876543210",
       password: "weakpassword", // no uppercase or number/symbol
     });
     expect(weakPwd.success).toBe(false);
@@ -67,41 +82,100 @@ describe("Authentication Security & Zod Schemas", () => {
     const tempEmail = signUpSchema.safeParse({
       fullName: "Sayantan Das",
       email: "bot@mailinator.com",
+      phone: "+919876543210",
       password: "StrongPassword#2026",
     });
     expect(tempEmail.success).toBe(false);
   });
 
-  it("validates 6-digit OTP codes strictly", () => {
+  it("validates 6-digit OTP codes for both Email ID and Phone Number identifiers", () => {
     expect(
       otpVerifySchema.safeParse({
-        email: "student@college.edu",
+        identifier: "student@college.edu",
         token: "482910",
       }).success
     ).toBe(true);
 
     expect(
       otpVerifySchema.safeParse({
-        email: "student@college.edu",
+        identifier: "+91 98765 43210",
+        token: "482910",
+      }).success
+    ).toBe(true);
+
+    expect(
+      otpVerifySchema.safeParse({
+        identifier: "student@college.edu",
         token: "12345",
       }).success
     ).toBe(false);
 
     expect(
       otpVerifySchema.safeParse({
-        email: "student@college.edu",
+        identifier: "student@college.edu",
         token: "12ab56",
       }).success
     ).toBe(false);
   });
 
-  it("validates sign-in inputs cleanly", () => {
+  it("validates sign-in inputs for both Email ID and Phone Number cleanly", () => {
+    expect(detectIdentifierType("student@college.edu")).toBe("email");
+    expect(detectIdentifierType("+91 98765 43210")).toBe("phone");
+    expect(normalizePhoneNumber("09876543210")).toBe("+919876543210");
+
     expect(
       signInSchema.safeParse({
-        email: "student@college.edu",
+        identifier: "student@college.edu",
         password: "secretpassword",
       }).success
     ).toBe(true);
+
+    expect(
+      signInSchema.safeParse({
+        identifier: "9876543210",
+        password: "secretpassword",
+      }).success
+    ).toBe(true);
+  });
+
+  it("decodes and validates RFC 7519 JWT payload structure and expiration", () => {
+    const header = Buffer.from(
+      JSON.stringify({ alg: "HS256", typ: "JWT" })
+    ).toString("base64url");
+    const futureExp = Math.floor(Date.now() / 1000) + 3600;
+    const payload = Buffer.from(
+      JSON.stringify({
+        sub: "f47ac10b-58cc-4372-a567-0e02b2c3d479",
+        aud: "authenticated",
+        exp: futureExp,
+        iat: futureExp - 3600,
+        email: "scholar@makaut.ac.in",
+        phone: "+919876543210",
+        role: "authenticated",
+        user_metadata: {
+          full_name: "Sayantan Das",
+          phone_number: "+919876543210",
+        },
+      })
+    ).toString("base64url");
+    const token = `${header}.${payload}.signature_part`;
+
+    const decoded = parseJwtPayload(token);
+    expect(decoded).not.toBeNull();
+    expect(decoded?.sub).toBe("f47ac10b-58cc-4372-a567-0e02b2c3d479");
+    expect(decoded?.email).toBe("scholar@makaut.ac.in");
+    expect(decoded?.user_metadata?.phone_number).toBe("+919876543210");
+
+    // Expired JWT must return null
+    const expiredPayload = Buffer.from(
+      JSON.stringify({
+        sub: "f47ac10b-58cc-4372-a567-0e02b2c3d479",
+        aud: "authenticated",
+        exp: Math.floor(Date.now() / 1000) - 600,
+        iat: Math.floor(Date.now() / 1000) - 4200,
+      })
+    ).toString("base64url");
+    expect(parseJwtPayload(`${header}.${expiredPayload}.sig`)).toBeNull();
   });
 
   it("formats device user-agent labels and generates single-device alert email HTML", () => {

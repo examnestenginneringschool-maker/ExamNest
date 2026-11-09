@@ -281,6 +281,98 @@ export const emailSchema = z
       "Temporary or disposable email services are strictly blocked. Please use a valid personal or university email.",
   });
 
+/**
+ * Normalizes a student phone number into E.164 format (defaulting 10-digit Indian mobile numbers to +91).
+ */
+export function normalizePhoneNumber(raw: string): string {
+  const trimmed = raw.trim();
+  if (!trimmed) return "";
+
+  const hasPlus = trimmed.startsWith("+");
+  const digits = trimmed.replace(/\D/g, "");
+
+  if (!digits) return "";
+
+  // Standard 10-digit Indian mobile number (starts with 6, 7, 8, or 9)
+  if (!hasPlus && digits.length === 10 && /^[6-9]\d{9}$/.test(digits)) {
+    return `+91${digits}`;
+  }
+
+  // 11-digit number prefixed with 0 (e.g., 09876543210)
+  if (!hasPlus && digits.length === 11 && /^0[6-9]\d{9}$/.test(digits)) {
+    return `+91${digits.slice(1)}`;
+  }
+
+  // 12-digit number prefixed with 91 (e.g., 919876543210)
+  if (digits.length === 12 && /^91[6-9]\d{9}$/.test(digits)) {
+    return `+${digits}`;
+  }
+
+  // E.164 international format
+  return `+${digits}`;
+}
+
+/**
+ * Validates whether a raw string is a valid mobile phone number.
+ */
+export function isValidPhoneNumber(raw: string): boolean {
+  const normalized = normalizePhoneNumber(raw);
+  // If +91 (India), enforce valid 10-digit mobile starting with 6-9
+  if (normalized.startsWith("+91")) {
+    return /^\+91[6-9]\d{9}$/.test(normalized);
+  }
+  // Standard E.164 international mobile number (10 to 15 digits total)
+  return /^\+[1-9]\d{9,14}$/.test(normalized);
+}
+
+/**
+ * Detects whether a user login identifier is an Email ID or a Phone Number.
+ */
+export function detectIdentifierType(raw: string): "email" | "phone" {
+  const trimmed = raw.trim();
+  if (trimmed.includes("@") || /[a-zA-Z]/.test(trimmed)) {
+    return "email";
+  }
+  return "phone";
+}
+
+export const phoneSchema = z
+  .string()
+  .trim()
+  .min(10, "Please enter a valid 10-digit mobile number.")
+  .refine((val) => isValidPhoneNumber(val), {
+    message:
+      "Please enter a valid 10-digit mobile number (e.g. +91 98765 43210).",
+  })
+  .transform((val) => normalizePhoneNumber(val));
+
+export const loginIdentifierSchema = z
+  .string()
+  .trim()
+  .min(1, "Please enter your email address or phone number.")
+  .superRefine((val, ctx) => {
+    const type = detectIdentifierType(val);
+    if (type === "email") {
+      const emailRes = emailSchema.safeParse(val);
+      if (!emailRes.success) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message:
+            emailRes.error.issues[0]?.message ||
+            "Please enter a valid email address.",
+        });
+      }
+    } else {
+      if (!isValidPhoneNumber(val)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message:
+            "Please enter a valid 10-digit mobile number or email address.",
+        });
+      }
+    }
+  });
+
 export const passwordSignUpSchema = z
   .string()
   .min(8, "Password must be at least 8 characters.")
@@ -303,16 +395,17 @@ export const signUpSchema = z.object({
     .max(60, "Full name must be 60 characters or fewer.")
     .regex(/^[a-zA-Z\s.'-]+$/, "Full name can only contain letters and spaces."),
   email: emailSchema,
+  phone: phoneSchema,
   password: passwordSignUpSchema,
 });
 
 export const signInSchema = z.object({
-  email: emailSchema,
-  password: z.string().min(6, "Invalid email or password."),
+  identifier: loginIdentifierSchema,
+  password: z.string().min(6, "Invalid credentials or password."),
 });
 
 export const otpVerifySchema = z.object({
-  email: emailSchema,
+  identifier: loginIdentifierSchema,
   token: z
     .string()
     .trim()
