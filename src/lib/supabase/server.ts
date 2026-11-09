@@ -4,6 +4,7 @@ import { createServerClient } from "@supabase/ssr";
 import { createClient } from "@supabase/supabase-js";
 import type { User } from "@supabase/supabase-js";
 import { isDisposableEmail } from "@/lib/validation/auth";
+import { parseJwtPayload, type ExamNestJwtPayload } from "@/lib/supabase/jwt";
 
 function getSupabaseEnv() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -56,37 +57,67 @@ export async function createServerSupabaseClient() {
 export type AuthenticatedStudent = {
   id: string;
   email: string;
+  phone: string | null;
   fullName: string;
   firstName: string;
   avatarUrl: string | null;
   emailConfirmedAt: string | null;
+  jwt: ExamNestJwtPayload | null;
+  accessToken: string | null;
   rawUser: User;
 };
 
 /**
- * Cryptographically verifies the current user session against Supabase Auth via getUser().
+ * Cryptographically verifies the current user session against Supabase Auth via getUser()
+ * and extracts the RFC 7519 JWT payload (`header.payload.signature`) from the active session.
  * Wrapped in React.cache() so layouts and pages share a single network round-trip per request.
  */
 export const getAuthenticatedUser = cache(
   async (): Promise<AuthenticatedStudent | null> => {
     try {
       const supabase = await createServerSupabaseClient();
-      const {
-        data: { user },
-        error,
-      } = await supabase.auth.getUser();
+      const [
+        {
+          data: { user },
+          error,
+        },
+        {
+          data: { session },
+        },
+      ] = await Promise.all([
+        supabase.auth.getUser(),
+        supabase.auth.getSession(),
+      ]);
 
-      if (error || !user || !user.email || isDisposableEmail(user.email)) {
+      if (error || !user) {
         return null;
       }
 
+      if (!user.email && !user.phone) {
+        return null;
+      }
+
+      if (user.email && isDisposableEmail(user.email)) {
+        return null;
+      }
+
+      const accessToken = session?.access_token ?? null;
+      const jwt = parseJwtPayload(accessToken);
+
       const meta = user.user_metadata ?? {};
+      const phone =
+        user.phone ||
+        (typeof meta.phone_number === "string" ? meta.phone_number : null) ||
+        jwt?.phone ||
+        null;
+
       const fullName =
         (
           meta.full_name ||
           meta.name ||
           [meta.first_name, meta.last_name].filter(Boolean).join(" ") ||
           user.email?.split("@")[0] ||
+          phone ||
           "Student"
         )
           .toString()
@@ -103,10 +134,13 @@ export const getAuthenticatedUser = cache(
       return {
         id: user.id,
         email: user.email ?? "",
+        phone,
         fullName,
         firstName,
         avatarUrl,
         emailConfirmedAt: user.email_confirmed_at ?? null,
+        jwt,
+        accessToken,
         rawUser: user,
       };
     } catch {

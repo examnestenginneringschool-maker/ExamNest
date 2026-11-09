@@ -1,7 +1,6 @@
 "use client";
 
-import React, { useCallback, useEffect, useRef, useState } from "react";
-import Script from "next/script";
+import React, { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   AlertCircle,
@@ -20,6 +19,8 @@ import {
 import {
   emailSchema,
   isDisposableEmail,
+  isValidPhoneNumber,
+  normalizePhoneNumber,
   otpVerifySchema,
   signInSchema,
   signUpSchema,
@@ -27,65 +28,6 @@ import {
 
 interface AuthInteractivePortalProps {
   mode: "sign-in" | "sign-up";
-}
-
-interface GoogleCredentialResponse {
-  credential?: string;
-}
-
-interface GoogleAccountsId {
-  initialize: (config: {
-    client_id: string;
-    callback: (response: GoogleCredentialResponse) => void;
-    nonce?: string;
-    ux_mode?: "popup" | "redirect";
-    context?: "signin" | "signup" | "use";
-    auto_select?: boolean;
-  }) => void;
-  renderButton: (
-    parent: HTMLElement,
-    options: {
-      type?: "standard" | "icon";
-      theme?: "outline" | "filled_blue" | "filled_black";
-      size?: "large" | "medium" | "small";
-      text?: "signin_with" | "signup_with" | "continue_with";
-      shape?: "pill" | "rectangular" | "circle" | "square";
-      logo_alignment?: "left" | "center";
-      width?: number;
-    }
-  ) => void;
-}
-
-declare global {
-  interface Window {
-    google?: {
-      accounts?: {
-        id?: GoogleAccountsId;
-      };
-    };
-  }
-}
-
-async function generateNoncePair(): Promise<{
-  rawNonce: string;
-  hashedNonce: string;
-}> {
-  const randomBytes = new Uint8Array(32);
-  crypto.getRandomValues(randomBytes);
-  const rawNonce = Array.from(randomBytes, (b) =>
-    b.toString(16).padStart(2, "0")
-  ).join("");
-
-  const encoder = new TextEncoder();
-  const hashBuffer = await crypto.subtle.digest(
-    "SHA-256",
-    encoder.encode(rawNonce)
-  );
-  const hashedNonce = Array.from(new Uint8Array(hashBuffer), (b) =>
-    b.toString(16).padStart(2, "0")
-  ).join("");
-
-  return { rawNonce, hashedNonce };
 }
 
 function getPasswordStrengthInfo(password: string) {
@@ -138,11 +80,11 @@ function getPasswordStrengthInfo(password: string) {
 export function AuthInteractivePortal({ mode }: AuthInteractivePortalProps) {
   const router = useRouter();
   const isSignIn = mode === "sign-in";
-  const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
 
   const [step, setStep] = useState<"form" | "otp">("form");
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
@@ -157,20 +99,17 @@ export function AuthInteractivePortal({ mode }: AuthInteractivePortalProps) {
   ]);
   const [resendCooldown, setResendCooldown] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isOAuthLoading, setIsOAuthLoading] = useState(false);
-  const [googleScriptLoaded, setGoogleScriptLoaded] = useState(false);
-  const [googleScriptError, setGoogleScriptError] = useState(false);
-  const [gsiRetrySeed, setGsiRetrySeed] = useState(0);
   const [formError, setFormError] = useState("");
   const [statusBanner, setStatusBanner] = useState("");
 
   const otpInputRefs = useRef<(HTMLInputElement | null)[]>([]);
-  const googleBtnContainerRef = useRef<HTMLDivElement>(null);
-  const rawNonceRef = useRef<string>("");
 
   const pwdStrength = getPasswordStrengthInfo(password);
   const isTempEmailDetected =
     email.includes("@") && isDisposableEmail(email.trim());
+
+  const isSignUpPhoneValid =
+    phone.trim().length > 0 && isValidPhoneNumber(phone.trim());
 
   // Display session replacement or callback error notices from query parameters
   useEffect(() => {
@@ -200,97 +139,6 @@ export function AuthInteractivePortal({ mode }: AuthInteractivePortalProps) {
     }, 1000);
     return () => clearInterval(timer);
   }, [resendCooldown]);
-
-  // Direct Google Identity Services (signInWithIdToken) so Google displays "Sign in to ExamNest"
-  // instead of the raw *.supabase.co domain.
-  const initGoogleIdentityButton = useCallback(async () => {
-    if (
-      !googleClientId ||
-      !window.google?.accounts?.id ||
-      !googleBtnContainerRef.current
-    ) {
-      return;
-    }
-
-    try {
-      const { rawNonce, hashedNonce } = await generateNoncePair();
-      rawNonceRef.current = rawNonce;
-
-      window.google.accounts.id.initialize({
-        client_id: googleClientId,
-        nonce: hashedNonce,
-        ux_mode: "popup",
-        context: isSignIn ? "signin" : "signup",
-        callback: async (response: GoogleCredentialResponse) => {
-          if (!response.credential) {
-            setFormError("Google authentication did not return a credential.");
-            return;
-          }
-
-          try {
-            setIsOAuthLoading(true);
-            setFormError("");
-            const supabase = createBrowserSupabaseClient();
-
-            const { error } = await supabase.auth.signInWithIdToken({
-              provider: "google",
-              token: response.credential,
-              nonce: rawNonceRef.current,
-            });
-
-            if (error) {
-              setFormError(error.message);
-              // Regenerate nonce so a retry on the same page has a fresh token
-              setGsiRetrySeed((s) => s + 1);
-              return;
-            }
-
-            // Enforce single-device session & expire any older browser/device sessions
-            await registerSingleDeviceLogin(
-              typeof navigator !== "undefined"
-                ? navigator.userAgent
-                : "Google Sign-In"
-            );
-
-            // Dashboard layout automatically redirects first-time students to /onboarding
-            router.push("/app/dashboard");
-            router.refresh();
-          } catch (err) {
-            setFormError(
-              err instanceof Error
-                ? err.message
-                : "Google authentication failed."
-            );
-            setGsiRetrySeed((s) => s + 1);
-          } finally {
-            setIsOAuthLoading(false);
-          }
-        },
-      });
-
-      const container = googleBtnContainerRef.current;
-      container.innerHTML = "";
-      const width = Math.min(Math.max(container.offsetWidth || 340, 240), 400);
-
-      window.google.accounts.id.renderButton(container, {
-        type: "standard",
-        theme: "outline",
-        size: "large",
-        text: "continue_with",
-        shape: "pill",
-        logo_alignment: "center",
-        width,
-      });
-    } catch {
-      // Ignore initialization error and allow fallback OAuth button
-    }
-  }, [googleClientId, isSignIn, router]);
-
-  useEffect(() => {
-    if ((googleScriptLoaded || window.google?.accounts?.id) && step === "form") {
-      void initGoogleIdentityButton();
-    }
-  }, [googleScriptLoaded, initGoogleIdentityButton, step, gsiRetrySeed]);
 
   const handleOtpChange = (index: number, rawValue: string) => {
     setFormError("");
@@ -339,12 +187,13 @@ export function AuthInteractivePortal({ mode }: AuthInteractivePortalProps) {
     setStatusBanner("");
 
     // ===============================================================
-    // FLOW A: SIGN UP -> CREATE SUPABASE ACCOUNT & SHOW OTP SCREEN
+    // FLOW A: SIGN UP -> REQUIRE NAME + EMAIL + PHONE + PASSWORD
     // ===============================================================
     if (!isSignIn) {
       const parsed = signUpSchema.safeParse({
         fullName,
         email,
+        phone,
         password,
       });
 
@@ -359,6 +208,7 @@ export function AuthInteractivePortal({ mode }: AuthInteractivePortalProps) {
       const {
         fullName: validName,
         email: validEmail,
+        phone: validPhone,
         password: validPassword,
       } = parsed.data;
       const nameParts = validName.split(/\s+/);
@@ -391,6 +241,7 @@ export function AuthInteractivePortal({ mode }: AuthInteractivePortalProps) {
               full_name: validName,
               first_name: firstName,
               last_name: lastName,
+              phone_number: validPhone,
               year: new Date().getFullYear(),
             },
           },
@@ -425,7 +276,7 @@ export function AuthInteractivePortal({ mode }: AuthInteractivePortalProps) {
           return;
         }
 
-        // Otherwise, transition to the 6-digit OTP verification view
+        // Transition to the 6-digit OTP verification view
         setStep("otp");
         setResendCooldown(60);
         setTimeout(() => {
@@ -444,10 +295,19 @@ export function AuthInteractivePortal({ mode }: AuthInteractivePortalProps) {
     }
 
     // ===============================================================
-    // FLOW B: SIGN IN -> SUPABASE PASSWORD AUTHENTICATION
+    // FLOW B: SIGN IN -> MANUAL EMAIL & PASSWORD AUTHENTICATION
     // ===============================================================
+    const parsedEmail = emailSchema.safeParse(email);
+    if (!parsedEmail.success) {
+      setFormError(
+        parsedEmail.error.issues[0]?.message ||
+          "Please enter a valid email address."
+      );
+      return;
+    }
+
     const parsedSignIn = signInSchema.safeParse({
-      email,
+      identifier: parsedEmail.data,
       password,
     });
 
@@ -461,10 +321,8 @@ export function AuthInteractivePortal({ mode }: AuthInteractivePortalProps) {
     try {
       setIsSubmitting(true);
 
-      // Server-side disposable email & MX record check (also blocks pre-existing temp-mail accounts)
-      const emailSecurity = await verifyEmailSecurityOnServer(
-        parsedSignIn.data.email
-      );
+      // Server-side disposable email & MX record check
+      const emailSecurity = await verifyEmailSecurityOnServer(parsedEmail.data);
       if (!emailSecurity.allowed) {
         setFormError(
           emailSecurity.reason ||
@@ -476,7 +334,7 @@ export function AuthInteractivePortal({ mode }: AuthInteractivePortalProps) {
       const supabase = createBrowserSupabaseClient();
 
       const { error } = await supabase.auth.signInWithPassword({
-        email: parsedSignIn.data.email,
+        email: parsedEmail.data,
         password: parsedSignIn.data.password,
       });
 
@@ -513,7 +371,7 @@ export function AuthInteractivePortal({ mode }: AuthInteractivePortalProps) {
     setStatusBanner("");
 
     const parsedOtp = otpVerifySchema.safeParse({
-      email,
+      identifier: email,
       token: otpDigits.join(""),
     });
 
@@ -528,9 +386,8 @@ export function AuthInteractivePortal({ mode }: AuthInteractivePortalProps) {
     try {
       setIsSubmitting(true);
 
-      const emailSecurity = await verifyEmailSecurityOnServer(
-        parsedOtp.data.email
-      );
+      const validEmail = emailSchema.parse(email);
+      const emailSecurity = await verifyEmailSecurityOnServer(validEmail);
       if (!emailSecurity.allowed) {
         setFormError(
           emailSecurity.reason ||
@@ -542,7 +399,7 @@ export function AuthInteractivePortal({ mode }: AuthInteractivePortalProps) {
       const supabase = createBrowserSupabaseClient();
 
       const { error } = await supabase.auth.verifyOtp({
-        email: parsedOtp.data.email,
+        email: validEmail,
         token: parsedOtp.data.token,
         type: "signup",
       });
@@ -674,35 +531,6 @@ export function AuthInteractivePortal({ mode }: AuthInteractivePortalProps) {
     }
   };
 
-  const handleFallbackGoogleOAuth = async () => {
-    setFormError("");
-    setStatusBanner("");
-
-    try {
-      setIsOAuthLoading(true);
-      const supabase = createBrowserSupabaseClient();
-      const origin =
-        typeof window !== "undefined" ? window.location.origin : "";
-
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: "google",
-        options: {
-          redirectTo: `${origin}/auth/callback`,
-        },
-      });
-
-      if (error) {
-        setFormError(error.message);
-        setIsOAuthLoading(false);
-      }
-    } catch (err) {
-      setFormError(
-        err instanceof Error ? err.message : "Unable to start Google Sign-In."
-      );
-      setIsOAuthLoading(false);
-    }
-  };
-
   // ===================================================================
   // STEP 2: MINIMAL 6-DIGIT OTP VERIFICATION (ONLY AFTER SIGN-UP SUBMIT)
   // ===================================================================
@@ -810,20 +638,11 @@ export function AuthInteractivePortal({ mode }: AuthInteractivePortalProps) {
     );
   }
 
-  // ===================================================================
-  // STEP 1: ULTRA-CLEAN MINIMALIST SIGN IN / CREATE ACCOUNT FORM
-  // ===================================================================
+  // =======================================
+  // STEP 1: SIGN IN / CREATE ACCOUNT FORM
+  // =======================================
   return (
     <div className="w-full animate-auth-fade-in">
-      {googleClientId && (
-        <Script
-          src="https://accounts.google.com/gsi/client"
-          strategy="afterInteractive"
-          onLoad={() => setGoogleScriptLoaded(true)}
-          onError={() => setGoogleScriptError(true)}
-        />
-      )}
-
       <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[#171b2a] mb-6">
         {isSignIn ? "Sign In" : "Create Account"}
       </h2>
@@ -856,7 +675,7 @@ export function AuthInteractivePortal({ mode }: AuthInteractivePortalProps) {
               id="auth-fullname"
               type="text"
               autoComplete="name"
-              placeholder="Sayantan Das"
+              placeholder="Tony Stark"
               value={fullName}
               onChange={(e) => {
                 setFullName(e.target.value);
@@ -890,7 +709,7 @@ export function AuthInteractivePortal({ mode }: AuthInteractivePortalProps) {
             id="auth-email"
             type="email"
             autoComplete="email"
-            placeholder="student@university.edu.in"
+            placeholder="tonystark@mit.edu / tonystark@gmail.com"
             value={email}
             onChange={(e) => {
               setEmail(e.target.value);
@@ -900,7 +719,43 @@ export function AuthInteractivePortal({ mode }: AuthInteractivePortalProps) {
           />
         </div>
 
-        {/* Password (with dynamic red-to-green strength condition text on top-left when typing on Sign-Up) */}
+        {/* Phone Number (Only in Create Account) */}
+        {!isSignIn && (
+          <div className="rounded-2xl bg-white px-4 py-2.5 border border-[#f0f2f8] shadow-[0_6px_24px_rgba(23,27,42,0.04)] focus-within:border-[#5B4DFF]/50 focus-within:shadow-[0_8px_28px_rgba(91,77,255,0.10)] transition-all">
+            <label
+              htmlFor="auth-phone"
+              className="flex items-center gap-2 text-[11px] font-semibold text-[#8c90a4]"
+            >
+              <span>Phone Number</span>
+              {phone.trim().length > 0 && (
+                <span
+                  className={`text-[11px] font-bold ${
+                    isSignUpPhoneValid ? "text-emerald-600" : "text-amber-500"
+                  }`}
+                >
+                  {isSignUpPhoneValid
+                    ? `• ${normalizePhoneNumber(phone)}`
+                    : "• Enter 10-digit mobile number"}
+                </span>
+              )}
+            </label>
+            <input
+              id="auth-phone"
+              type="tel"
+              inputMode="tel"
+              autoComplete="tel"
+              placeholder="+91 98765 43210"
+              value={phone}
+              onChange={(e) => {
+                setPhone(e.target.value);
+                setFormError("");
+              }}
+              className="w-full mt-0.5 bg-transparent text-xs sm:text-sm font-bold text-[#171b2a] placeholder:text-[#c0c4d6] placeholder:font-medium outline-none"
+            />
+          </div>
+        )}
+
+        {/* Password */}
         <div className="rounded-2xl bg-white px-4 py-2.5 border border-[#f0f2f8] shadow-[0_6px_24px_rgba(23,27,42,0.04)] focus-within:border-[#5B4DFF]/50 focus-within:shadow-[0_8px_28px_rgba(91,77,255,0.10)] transition-all relative">
           <label
             htmlFor="auth-password"
@@ -971,7 +826,7 @@ export function AuthInteractivePortal({ mode }: AuthInteractivePortalProps) {
         <div className="pt-2">
           <button
             type="submit"
-            disabled={isSubmitting || isOAuthLoading}
+            disabled={isSubmitting}
             className="w-full py-3.5 px-6 rounded-full bg-[#5B4DFF] hover:bg-[#402ae6] text-white font-bold text-xs sm:text-sm shadow-[0_10px_25px_rgba(91,77,255,0.32)] hover:shadow-[0_14px_30px_rgba(91,77,255,0.42)] transition-all flex items-center justify-center gap-2 active:scale-[0.99] cursor-pointer disabled:opacity-60"
           >
             {isSubmitting ? (
@@ -987,62 +842,6 @@ export function AuthInteractivePortal({ mode }: AuthInteractivePortalProps) {
           </button>
         </div>
       </form>
-
-      {/* Minimal 'or' Divider */}
-      <div className="relative flex items-center justify-center my-5">
-        <div className="border-t border-[#eceef6] w-full" />
-        <span className="bg-white px-3 text-xs font-medium text-[#8c90a4] shrink-0">
-          or
-        </span>
-        <div className="border-t border-[#eceef6] w-full" />
-      </div>
-
-      {/* Bottom 'Continue with Google' Button (Direct GSI ID Token if loaded, with automatic standard OAuth fallback) */}
-      {googleClientId && !googleScriptError ? (
-        <div className="relative w-full flex flex-col items-center">
-          {isOAuthLoading && (
-            <div className="mb-2 inline-flex items-center gap-2 text-xs font-semibold text-[#5B4DFF]">
-              <Loader2 className="h-3.5 w-3.5 animate-spin" />
-              <span>Signing in with Google...</span>
-            </div>
-          )}
-          <div
-            ref={googleBtnContainerRef}
-            className="w-full flex justify-center min-h-[44px]"
-          />
-        </div>
-      ) : (
-        <button
-          type="button"
-          disabled={isSubmitting || isOAuthLoading}
-          onClick={handleFallbackGoogleOAuth}
-          className="w-full py-3 px-5 rounded-full bg-white hover:bg-[#FAF8FF] border border-[#e5e8f4] text-[#171b2a] font-bold text-xs sm:text-sm shadow-[0_4px_16px_rgba(23,27,42,0.04)] hover:border-[#5B4DFF]/40 transition-all flex items-center justify-center gap-2.5 active:scale-[0.99] cursor-pointer disabled:opacity-60"
-        >
-          {isOAuthLoading ? (
-            <Loader2 className="h-4 w-4 animate-spin text-[#5B4DFF]" />
-          ) : (
-            <svg className="h-4 w-4 shrink-0" viewBox="0 0 24 24">
-              <path
-                fill="#4285F4"
-                d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"
-              />
-              <path
-                fill="#34A853"
-                d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.11-6.72-4.96H1.29v3.14C3.26 21.3 7.31 24 12 24z"
-              />
-              <path
-                fill="#FBBC05"
-                d="M5.28 14.24c-.24-.72-.38-1.49-.38-2.24s.14-1.52.38-2.24V6.62H1.29C.47 8.24 0 10.06 0 12s.47 3.76 1.29 5.38l3.99-3.14z"
-              />
-              <path
-                fill="#EA4335"
-                d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.26 2.7 1.29 6.62l3.99 3.14c.95-2.85 3.6-4.96 6.72-4.96z"
-              />
-            </svg>
-          )}
-          <span>Continue with Google</span>
-        </button>
-      )}
     </div>
   );
 }
