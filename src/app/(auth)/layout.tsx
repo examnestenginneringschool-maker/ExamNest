@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
@@ -60,15 +59,17 @@ export default function AuthLayout({
               </p>
             </div>
 
-            {/* 3D Academic Folder Illustration */}
+            {/* Animated Student Authentication Hero Illustration */}
             <div className="relative z-10 mt-auto pt-4 flex items-center justify-center">
-              <Image
-                src="/auth-hero.jpg"
-                alt="ExamNest Study Organizer"
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/auth_hero.svg"
+                alt="ExamNest Student Authentication"
                 width={300}
-                height={300}
-                priority
-                className="w-56 xl:w-64 h-auto object-contain rounded-2xl pointer-events-none"
+                height={310}
+                decoding="async"
+                fetchPriority="high"
+                className="w-60 xl:w-68 h-auto object-contain pointer-events-none select-none"
               />
             </div>
           </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import {
   ChevronRight,
   Bookmark,
@@ -37,6 +38,7 @@ type TopicReaderWorkspaceProps = {
   onNextTopic?: () => void;
   hasNextTopic: boolean;
   nextTopicTitle?: string;
+  nextUnit?: { unitNumber: number; title: string } | null;
 };
 
 export function TopicReaderWorkspace({
@@ -50,6 +52,7 @@ export function TopicReaderWorkspace({
   onNextTopic,
   hasNextTopic,
   nextTopicTitle,
+  nextUnit,
 }: TopicReaderWorkspaceProps) {
   // Reader display controls
   const [fontSize, setFontSize] = useState<"sm" | "base" | "lg">("base");
@@ -97,13 +100,23 @@ export function TopicReaderWorkspace({
       {/* ======================================================== */}
       <div className="bg-white p-3 sm:px-5 rounded-2xl border border-slate-200/80 shadow-[0_4px_16px_rgba(15,23,42,0.03)] flex flex-wrap items-center justify-between gap-3">
         {/* Dynamic Breadcrumbs */}
-        <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium truncate max-w-full sm:max-w-md">
-          <span className="text-slate-700 hover:text-indigo-600 cursor-pointer">
+        <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium truncate max-w-full sm:max-w-lg">
+          <Link
+            href={`/app/subjects/${subjectId}`}
+            className="text-slate-700 hover:text-indigo-600 transition-colors truncate"
+          >
             {subjectName}
-          </span>
+          </Link>
           <ChevronRight className="h-3.5 w-3.5 text-slate-400 shrink-0" />
-          <span className="text-slate-700 hover:text-indigo-600 cursor-pointer">
-            Unit {String(unit.unit_number).padStart(2, "0")}
+          <Link
+            href={`/app/subjects/${subjectId}/notes`}
+            className="text-slate-700 hover:text-indigo-600 transition-colors shrink-0"
+          >
+            Chapters
+          </Link>
+          <ChevronRight className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+          <span className="text-slate-600 shrink-0">
+            Ch {String(unit.unit_number).padStart(2, "0")}
           </span>
           <ChevronRight className="h-3.5 w-3.5 text-slate-400 shrink-0" />
           <span className="text-indigo-700 bg-indigo-50 font-bold px-2 py-0.5 rounded-full truncate">
@@ -531,7 +544,7 @@ export function TopicReaderWorkspace({
               {isCompleted ? "Unit Completed ✓" : "Mark Unit Completed"}
             </button>
 
-            {hasNextTopic && (
+            {hasNextTopic ? (
               <button
                 onClick={onNextTopic}
                 type="button"
@@ -540,6 +553,22 @@ export function TopicReaderWorkspace({
                 <span>Next: {nextTopicTitle || "Topic"}</span>
                 <ArrowRight className="h-3.5 w-3.5" />
               </button>
+            ) : nextUnit ? (
+              <Link
+                href={`/app/subjects/${subjectId}/notes/${nextUnit.unitNumber}`}
+                className="flex items-center gap-1 px-4 py-1.5 rounded-full bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold shadow-xs transition-all active:scale-95"
+              >
+                <span>Next Chapter: {String(nextUnit.unitNumber).padStart(2, "0")}</span>
+                <ArrowRight className="h-3.5 w-3.5" />
+              </Link>
+            ) : (
+              <Link
+                href={`/app/subjects/${subjectId}/notes`}
+                className="flex items-center gap-1 px-4 py-1.5 rounded-full bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold shadow-xs transition-all active:scale-95"
+              >
+                <span>All Chapters</span>
+                <ArrowRight className="h-3.5 w-3.5" />
+              </Link>
             )}
           </div>
         </div>

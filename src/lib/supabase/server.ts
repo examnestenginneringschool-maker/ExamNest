@@ -75,6 +75,15 @@ export type AuthenticatedStudent = {
 export const getAuthenticatedUser = cache(
   async (): Promise<AuthenticatedStudent | null> => {
     try {
+      const cookieStore = await cookies();
+      const hasAuthCookie = cookieStore
+        .getAll()
+        .some((c) => c.name.startsWith("sb-") && c.name.includes("-auth-token"));
+
+      if (!hasAuthCookie) {
+        return null;
+      }
+
       const supabase = await createServerSupabaseClient();
       const [
         {
@@ -98,6 +107,20 @@ export const getAuthenticatedUser = cache(
       }
 
       if (user.email && isDisposableEmail(user.email)) {
+        return null;
+      }
+
+      const activeDeviceToken =
+        typeof user.user_metadata?.active_device_token === "string"
+          ? user.user_metadata.active_device_token
+          : null;
+      const browserDeviceToken =
+        cookieStore.get("examnest_device_token")?.value || null;
+
+      if (
+        activeDeviceToken &&
+        (!browserDeviceToken || activeDeviceToken !== browserDeviceToken)
+      ) {
         return null;
       }
 

@@ -3,12 +3,13 @@ import Link from "next/link";
 import { LegalHeader } from "@/components/legal/LegalHeader";
 import { LegalFooter } from "@/components/legal/LegalFooter";
 import { LegalTableOfContents, type TocItem } from "@/components/legal/LegalTableOfContents";
+import { PLATFORM_INFO } from "@/lib/legal/navigation";
 import { ShieldCheck, Lock, CheckCircle2, Mail } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Student Privacy Policy | ExamNest",
   description:
-    "Learn how ExamNest protects student privacy, academic curriculum data, and account security. We do not sell student data or use third-party advertising trackers.",
+    "Learn how ExamNest protects student privacy, academic curriculum data, payment safety, and account security. We do not sell student data or use third-party advertising trackers.",
 };
 
 const PRIVACY_TOC_ITEMS: TocItem[] = [
@@ -27,7 +28,7 @@ const PRIVACY_TOC_ITEMS: TocItem[] = [
 ];
 
 export default function StudentPrivacyPage() {
-  const lastUpdated = "October 2026";
+  const lastUpdated = PLATFORM_INFO.lastUpdated;
 
   return (
     <div className="min-h-screen lg:h-screen lg:overflow-hidden bg-white text-slate-900 font-sans selection:bg-slate-900 selection:text-white flex flex-col">
@@ -40,7 +41,7 @@ export default function StudentPrivacyPage() {
           <LegalTableOfContents
             items={PRIVACY_TOC_ITEMS}
             title="Privacy Sections"
-            contactEmail="privacy@examnest.com"
+            contactEmail={PLATFORM_INFO.emails.privacy}
           />
         </aside>
 
@@ -127,28 +128,35 @@ export default function StudentPrivacyPage() {
                     <div className="rounded-lg border border-slate-200 p-4 bg-slate-50/40">
                       <h3 className="font-semibold text-slate-900">A. Authentication &amp; Identity Credentials</h3>
                       <p className="mt-1 text-xs sm:text-sm text-slate-600">
-                        When you create an account, we collect your name and email address. Authentication is securely managed through Supabase Authentication. Passwords are never stored in plaintext and are securely hashed using industry-standard cryptographic algorithms (bcrypt).
+                        When you create an account, we collect your full name, email address, and registered mobile phone number. Authentication is securely managed through Supabase Authentication. Passwords are never stored in plaintext and are securely hashed using industry-standard cryptographic algorithms (bcrypt).
                       </p>
                     </div>
 
                     <div className="rounded-lg border border-slate-200 p-4 bg-slate-50/40">
                       <h3 className="font-semibold text-slate-900">B. Academic Placement Profile</h3>
                       <p className="mt-1 text-xs sm:text-sm text-slate-600">
-                        During the onboarding process, you select your university affiliation (e.g. MAKAUT, State or Central University), college, degree program (e.g. B.Tech Computer Science), department, and active semester. This information is saved to your <code className="text-xs bg-slate-200 px-1 py-0.5 rounded font-mono">student_profiles</code> record so the system can filter and present your exact curriculum subjects.
+                        During the onboarding process, you select your university affiliation (e.g. MAKAUT, WBSCTE, State or Central University), college, degree program (e.g. B.Tech Computer Science), department, and active semester. This information is saved to your <code className="text-xs bg-slate-200 px-1 py-0.5 rounded font-mono">student_profiles</code> record so the system can filter and present your exact curriculum subjects.
                       </p>
                     </div>
 
                     <div className="rounded-lg border border-slate-200 p-4 bg-slate-50/40">
                       <h3 className="font-semibold text-slate-900">C. Study Progress &amp; Workspace State</h3>
                       <p className="mt-1 text-xs sm:text-sm text-slate-600">
-                        We record your onboarding completion status and basic bookmarking preferences so that when you sign in, you are returned directly to your relevant semester dashboard and subject notes.
+                        We record your onboarding completion status, enrolled courses or mock test series, and basic bookmarking preferences so that when you sign in, you are returned directly to your relevant semester dashboard and subject notes.
                       </p>
                     </div>
 
                     <div className="rounded-lg border border-slate-200 p-4 bg-slate-50/40">
-                      <h3 className="font-semibold text-slate-900">D. Technical &amp; Operational Telemetry</h3>
+                      <h3 className="font-semibold text-slate-900">D. Technical, Session &amp; Operational Telemetry</h3>
                       <p className="mt-1 text-xs sm:text-sm text-slate-600">
-                        When you access ExamNest, our servers record standard HTTP request data including your IP address, browser user-agent, operating system, and request timestamps. This information is utilized strictly for rate limiting, DDoS defense, preventing unauthorized database scraping, and investigating runtime server errors.
+                        When you access ExamNest, our servers record standard HTTP request data including your IP address, browser user-agent, operating system, active device session token, and request timestamps. This information is utilized strictly for single-device session enforcement, rate limiting, DDoS defense, preventing unauthorized scraping, and investigating runtime server errors.
+                      </p>
+                    </div>
+
+                    <div className="rounded-lg border border-slate-200 p-4 bg-slate-50/40">
+                      <h3 className="font-semibold text-slate-900">E. Payment &amp; Enrollment Transaction Metadata</h3>
+                      <p className="mt-1 text-xs sm:text-sm text-slate-600">
+                        When you purchase a course, subject bundle, or mock test series, our authorized payment gateways process your payment securely. ExamNest receives and stores only non-sensitive transaction metadata—such as transaction reference IDs, order timestamps, amount paid, payment status, and electronic receipt records—to provision instant digital access, verify wrong-batch replacement requests, and maintain statutory billing records.
                       </p>
                     </div>
                   </div>
@@ -162,10 +170,10 @@ export default function StudentPrivacyPage() {
                 </h2>
                 <div className="mt-4 space-y-3">
                   <p>
-                    To maintain standard boundaries and eliminate intrusive surveillance, ExamNest intentionally does not collect:
+                    To maintain standard boundaries and eliminate intrusive surveillance, ExamNest intentionally does not collect or store:
                   </p>
                   <ul className="list-disc pl-5 space-y-1.5 text-xs sm:text-sm text-slate-600">
-                    <li>Financial, payment card, or banking details (the academic companion is provided free for students).</li>
+                    <li>Raw credit or debit card numbers, CVV security codes, UPI PINs, or net-banking passwords (all payments are handled exclusively by authorized, PCI-DSS compliant payment gateways).</li>
                     <li>Biometric identifiers or facial geometry.</li>
                     <li>Microphone, camera, or contact list data from your mobile or desktop device.</li>
                     <li>Precise GPS location coordinates.</li>
@@ -180,12 +188,13 @@ export default function StudentPrivacyPage() {
                   4. How We Use Student Information
                 </h2>
                 <div className="mt-4 space-y-3">
-                  <p>We process your data exclusively for legitimate educational purposes:</p>
+                  <p>We process your data exclusively for legitimate educational and service purposes:</p>
                   <ul className="list-disc pl-5 space-y-1.5 text-xs sm:text-sm text-slate-600">
-                    <li><strong>Curriculum Resolution:</strong> Mapping your selected university, degree, and semester to the correct subject syllabi, derivation steps, and study modules.</li>
-                    <li><strong>Authentication &amp; Session Management:</strong> Verifying your identity across authenticated sessions and preventing unauthorized account takeover.</li>
-                    <li><strong>System Reliability:</strong> Benchmarking database query latency, identifying slow API routes, and optimizing serverless edge execution times.</li>
-                    <li><strong>Security &amp; Abuse Prevention:</strong> Enforcing rate limits, detecting bot scrapers, and blocking disposable email domains that compromise system integrity.</li>
+                    <li><strong>Curriculum Resolution &amp; Digital Delivery:</strong> Mapping your selected university, degree, and semester to the correct subject syllabi, and instantly provisioning purchased courses, study notes, and test series.</li>
+                    <li><strong>Authentication &amp; Single-Device Protection:</strong> Verifying your identity across authenticated sessions, sending new-device security notifications, and preventing unauthorized account sharing.</li>
+                    <li><strong>Forensic Anti-Piracy Watermarking:</strong> Displaying authenticated identifiers (email, registered mobile number, and unique user hash) on protected video streams and downloadable study PDFs to protect intellectual property.</li>
+                    <li><strong>Billing Support &amp; Statutory Compliance:</strong> Issuing payment confirmation receipts, auditing download eligibility for wrong-batch replacements, handling gateway reconciliation queries, and responding to grievance escalations.</li>
+                    <li><strong>Security &amp; Abuse Prevention:</strong> Enforcing rate limits, detecting automated scrapers, and blocking disposable email domains that compromise platform integrity.</li>
                   </ul>
                 </div>
               </section>
@@ -217,7 +226,7 @@ export default function StudentPrivacyPage() {
                   <p>
                     To provide high availability and fast page delivery, we work with trusted cloud infrastructure providers bound by strict data processing and confidentiality agreements:
                   </p>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs sm:text-sm mt-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs sm:text-sm mt-3">
                     <div className="rounded-lg border border-slate-200 p-3 bg-slate-50/50">
                       <div className="font-semibold text-slate-900">Supabase Inc.</div>
                       <div className="text-slate-500 mt-1">Managed PostgreSQL database, identity authentication, and row-level access control.</div>
@@ -225,6 +234,10 @@ export default function StudentPrivacyPage() {
                     <div className="rounded-lg border border-slate-200 p-3 bg-slate-50/50">
                       <div className="font-semibold text-slate-900">Vercel Inc.</div>
                       <div className="text-slate-500 mt-1">Global serverless compute, Next.js application hosting, and CDN edge asset distribution.</div>
+                    </div>
+                    <div className="rounded-lg border border-slate-200 p-3 bg-slate-50/50">
+                      <div className="font-semibold text-slate-900">Authorized Payment Gateways</div>
+                      <div className="text-slate-500 mt-1">PCI-DSS compliant processing for UPI, debit/credit cards, and net-banking transactions.</div>
                     </div>
                   </div>
                   <p className="text-xs text-slate-500 mt-2">
@@ -260,7 +273,7 @@ export default function StudentPrivacyPage() {
                   <ul className="list-disc pl-5 space-y-1.5 text-xs sm:text-sm text-slate-600">
                     <li><strong>Right of Access &amp; Portability:</strong> You can review your enrolled academic choices and account details from your workspace profile at any time.</li>
                     <li><strong>Right of Rectification:</strong> If you change your semester, branch, or college, you can update your track directly through your profile settings.</li>
-                    <li><strong>Right to Erasure (Account Deletion):</strong> You may request the complete deletion of your account at any time. Upon your email request to <code className="text-xs bg-slate-200 px-1 py-0.5 rounded font-mono">privacy@examnest.com</code>, all records in <code className="text-xs bg-slate-200 px-1 py-0.5 rounded font-mono">profiles</code> and <code className="text-xs bg-slate-200 px-1 py-0.5 rounded font-mono">student_profiles</code> are irrevocably purged from active databases within 30 calendar days.</li>
+                    <li><strong>Right to Erasure (Account Deletion):</strong> You may request the complete deletion of your account at any time. Upon your email request to <code className="text-xs bg-slate-200 px-1 py-0.5 rounded font-mono">{PLATFORM_INFO.emails.privacy}</code>, all records in <code className="text-xs bg-slate-200 px-1 py-0.5 rounded font-mono">profiles</code> and <code className="text-xs bg-slate-200 px-1 py-0.5 rounded font-mono">student_profiles</code> are irrevocably purged from active databases within 30 calendar days, excluding minimal billing records required by statutory Indian tax and accounting laws.</li>
                   </ul>
                 </div>
               </section>
@@ -324,10 +337,36 @@ export default function StudentPrivacyPage() {
                       <span>ExamNest Privacy &amp; Data Stewardship</span>
                     </div>
                     <p className="text-xs sm:text-sm text-slate-600">
-                      Email: <a href="mailto:privacy@examnest.com" className="font-semibold text-slate-900 underline hover:text-slate-700">privacy@examnest.com</a>
+                      Privacy Email:{" "}
+                      <a
+                        href={`mailto:${PLATFORM_INFO.emails.privacy}`}
+                        className="font-semibold text-slate-900 underline hover:text-slate-700"
+                      >
+                        {PLATFORM_INFO.emails.privacy}
+                      </a>
+                    </p>
+                    <p className="text-xs sm:text-sm text-slate-600">
+                      Grievance Escalations:{" "}
+                      <a
+                        href={`mailto:${PLATFORM_INFO.emails.grievance}`}
+                        className="font-semibold text-slate-900 underline hover:text-slate-700"
+                      >
+                        {PLATFORM_INFO.emails.grievance}
+                      </a>{" "}
+                      · Helpline:{" "}
+                      <a
+                        href={PLATFORM_INFO.phoneHref}
+                        className="font-semibold text-slate-900 underline hover:text-slate-700"
+                      >
+                        {PLATFORM_INFO.phoneDisplay}
+                      </a>
                     </p>
                     <p className="text-xs text-slate-500">
-                      Response SLA: Standard inquiries and account deletion requests are reviewed within 48 business hours.
+                      Operating Address: {PLATFORM_INFO.address.full} · See our{" "}
+                      <Link href="/contact" className="font-semibold text-slate-800 underline hover:text-slate-950">
+                        Contact Us &amp; Grievance Redressal
+                      </Link>{" "}
+                      page for full statutory details.
                     </p>
                   </div>
                 </div>

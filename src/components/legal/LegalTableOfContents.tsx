@@ -13,12 +13,14 @@ interface LegalTableOfContentsProps {
   items: TocItem[];
   title?: string;
   contactEmail?: string;
+  contactLabel?: string;
 }
 
 export function LegalTableOfContents({
   items,
   title = "Table of Contents",
-  contactEmail = "privacy@examnest.com",
+  contactEmail = "support@examnestcollege.vercel.app",
+  contactLabel = "Need clarification?",
 }: LegalTableOfContentsProps) {
   const [activeId, setActiveId] = useState<string>(items[0]?.id || "");
   const [isMobileOpen, setIsMobileOpen] = useState(false);
@@ -201,12 +203,12 @@ export function LegalTableOfContents({
 
         {/* Bottom Support Callout in Left Container */}
         <div className="mt-8 pt-4 border-t border-slate-200/80 text-[11px] text-slate-500 space-y-1">
-          <p className="font-semibold text-slate-700">Need clarification?</p>
+          <p className="font-semibold text-slate-700">{contactLabel}</p>
           <p className="leading-relaxed">
-            Contact our stewardship team at{" "}
+            Contact our team at{" "}
             <a
               href={`mailto:${contactEmail}`}
-              className="text-slate-900 font-semibold underline hover:text-slate-700"
+              className="text-slate-900 font-semibold underline hover:text-slate-700 break-all"
             >
               {contactEmail}
             </a>

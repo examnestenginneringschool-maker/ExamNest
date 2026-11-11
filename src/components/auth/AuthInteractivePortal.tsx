@@ -744,7 +744,7 @@ export function AuthInteractivePortal({ mode }: AuthInteractivePortalProps) {
               type="tel"
               inputMode="tel"
               autoComplete="tel"
-              placeholder="+91 98765 43210"
+              placeholder="+91 XXXXX XXXXX"
               value={phone}
               onChange={(e) => {
                 setPhone(e.target.value);

@@ -127,6 +127,7 @@ export function DashboardTiltPreview({
   const containerRef = useRef<HTMLDivElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
   const glareRef = useRef<HTMLDivElement>(null);
+  const rectRef = useRef<DOMRect | null>(null);
 
   const isHoveredRef = useRef(false);
   const targetXRef = useRef(0);
@@ -145,8 +146,8 @@ export function DashboardTiltPreview({
     const tick = () => {
       if (!cardRef.current) return;
 
-      currentXRef.current = lerp(currentXRef.current, targetXRef.current, 0.07);
-      currentYRef.current = lerp(currentYRef.current, targetYRef.current, 0.07);
+      currentXRef.current = lerp(currentXRef.current, targetXRef.current, 0.08);
+      currentYRef.current = lerp(currentYRef.current, targetYRef.current, 0.08);
 
       const isNearRest =
         !isHoveredRef.current &&
@@ -174,15 +175,18 @@ export function DashboardTiltPreview({
   const handleMouseEnter = () => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     isHoveredRef.current = true;
+    if (cardRef.current) {
+      rectRef.current = cardRef.current.getBoundingClientRect();
+    }
     if (glareRef.current) glareRef.current.style.opacity = "0.25";
     startTiltLoop();
   };
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (!isHoveredRef.current) return;
     if (!cardRef.current) return;
 
-    const rect = cardRef.current.getBoundingClientRect();
+    const rect = rectRef.current ?? cardRef.current.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
 
@@ -205,6 +209,7 @@ export function DashboardTiltPreview({
 
   const handleMouseLeave = () => {
     isHoveredRef.current = false;
+    rectRef.current = null;
     targetXRef.current = 0;
     targetYRef.current = 0;
     if (glareRef.current) glareRef.current.style.opacity = "0";
@@ -255,7 +260,7 @@ export function DashboardTiltPreview({
         onMouseEnter={handleMouseEnter}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
-        className="relative rounded-2xl sm:rounded-3xl bg-[#f7f8fc] border border-[#e2e5f0] shadow-2xl p-4 md:p-6 transition-transform duration-300 ease-out [transform-style:preserve-3d] will-change-transform"
+        className="relative rounded-2xl sm:rounded-3xl bg-[#f7f8fc] border border-[#e2e5f0] shadow-2xl p-4 md:p-6 [transform-style:preserve-3d] will-change-transform"
         style={{
           transform:
             "perspective(1600px) rotateX(0deg) rotateY(0deg) translateY(0px)",

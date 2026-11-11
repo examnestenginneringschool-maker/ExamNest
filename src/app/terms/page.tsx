@@ -3,12 +3,13 @@ import Link from "next/link";
 import { LegalHeader } from "@/components/legal/LegalHeader";
 import { LegalFooter } from "@/components/legal/LegalFooter";
 import { LegalTableOfContents, type TocItem } from "@/components/legal/LegalTableOfContents";
+import { PLATFORM_INFO } from "@/lib/legal/navigation";
 import { Scale, AlertCircle, Mail } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Terms of Use | ExamNest",
+  title: "Terms & Conditions | ExamNest",
   description:
-    "Review the Terms of Use and Conditions for ExamNest. Learn about student usage guidelines, academic integrity, permitted use, and institutional disclaimers.",
+    "Review the Terms & Conditions for ExamNest. Learn about student usage guidelines, digital course access, academic integrity, permitted use, and institutional disclaimers.",
 };
 
 const TERMS_TOC_ITEMS: TocItem[] = [
@@ -27,7 +28,7 @@ const TERMS_TOC_ITEMS: TocItem[] = [
 ];
 
 export default function TermsOfUsePage() {
-  const lastUpdated = "October 2026";
+  const lastUpdated = PLATFORM_INFO.lastUpdated;
 
   return (
     <div className="min-h-screen lg:h-screen lg:overflow-hidden bg-white text-slate-900 font-sans selection:bg-slate-900 selection:text-white flex flex-col">
@@ -40,7 +41,7 @@ export default function TermsOfUsePage() {
           <LegalTableOfContents
             items={TERMS_TOC_ITEMS}
             title="Terms Sections"
-            contactEmail="terms@examnest.com"
+            contactEmail={PLATFORM_INFO.emails.terms}
           />
         </aside>
 
@@ -58,11 +59,11 @@ export default function TermsOfUsePage() {
               </div>
 
               <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-slate-900">
-                Terms of Use
+                Terms &amp; Conditions
               </h1>
 
               <p className="mt-4 text-base sm:text-lg text-slate-600 leading-relaxed">
-                These Terms of Use govern your access to and usage of ExamNest. By creating an account or reviewing study material on this platform, you agree to comply with these terms, our Student Privacy Policy, and standard academic integrity standards.
+                These Terms &amp; Conditions (also referred to as our Terms of Use) govern your access to and usage of ExamNest (<code className="text-xs bg-slate-100 px-1.5 py-0.5 rounded font-mono text-slate-700">examnestcollege.vercel.app</code>). By creating an account, purchasing a course bundle, or reviewing study material on this platform, you agree to comply with these terms, our Student Privacy Policy, Refund &amp; Cancellation Policy, and Fair Usage Policy.
               </p>
 
               <div className="mt-6 flex flex-wrap items-center gap-y-2 gap-x-6 text-xs text-slate-500 font-medium">
@@ -81,7 +82,10 @@ export default function TermsOfUsePage() {
                 <span>Important Institutional Notice &amp; Academic Scope</span>
               </div>
               <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-                ExamNest is an <strong>independent educational study companion</strong> created by engineering students for engineering students. ExamNest is not an official branch, authorized distributor, or affiliate of Maulana Abul Kalam Azad University of Technology (MAKAUT), the All India Council for Technical Education (AICTE), or any specific university administration. Course codes, syllabus outlines, and university guidelines are referenced under fair dealing and educational alignment principles to assist students in self-directed study.
+                ExamNest is an <strong>independent, private educational technology platform</strong>. ExamNest is not affiliated with, associated with, authorized by, endorsed by, or officially connected to Maulana Abul Kalam Azad University of Technology (MAKAUT), West Bengal State Council of Technical Education (WBSCTE), the All India Council for Technical Education (AICTE), or any state or central university administration. Course codes, syllabus outlines, and university guidelines are referenced strictly for academic alignment, indexing, and nominative fair use. See our full{" "}
+                <Link href="/academic-disclaimer" className="font-semibold text-slate-900 underline hover:text-slate-700">
+                  Academic Disclaimer
+                </Link>.
               </p>
             </div>
 
@@ -94,7 +98,11 @@ export default function TermsOfUsePage() {
                 </h2>
                 <div className="mt-4 space-y-3">
                   <p>
-                    By accessing, browsing, registering for, or using ExamNest (&quot;the Platform&quot;, &quot;we&quot;, &quot;us&quot;, or &quot;our&quot;), you acknowledge that you have read, understood, and agreed to be legally bound by these Terms of Use and our <Link href="/privacy" className="font-semibold text-slate-900 underline hover:text-slate-700">Student Privacy Policy</Link>.
+                    By accessing, browsing, registering for, purchasing digital content on, or using ExamNest (&quot;the Platform&quot;, &quot;we&quot;, &quot;us&quot;, or &quot;our&quot;), you acknowledge that you have read, understood, and agreed to be legally bound by these Terms &amp; Conditions along with our{" "}
+                    <Link href="/privacy" className="font-semibold text-slate-900 underline hover:text-slate-700">Student Privacy Policy</Link>,{" "}
+                    <Link href="/refund-policy" className="font-semibold text-slate-900 underline hover:text-slate-700">Refund &amp; Cancellation Policy</Link>,{" "}
+                    <Link href="/shipping-delivery" className="font-semibold text-slate-900 underline hover:text-slate-700">Shipping &amp; Delivery Policy</Link>, and{" "}
+                    <Link href="/fair-usage" className="font-semibold text-slate-900 underline hover:text-slate-700">Fair Usage Policy</Link>.
                   </p>
                   <p>
                     If you do not accept these Terms in full, you must refrain from registering an account and immediately discontinue your use of the Platform.
@@ -109,10 +117,12 @@ export default function TermsOfUsePage() {
                 </h2>
                 <div className="mt-4 space-y-3">
                   <p>
-                    ExamNest is organized as a specialized academic workspace designed to address curriculum friction for collegiate engineering students. The Platform indexes and structures university syllabus blueprints, peer-verified lecture notes, step-by-step mathematical proofs, and past exam question archives.
+                    ExamNest is organized as a specialized academic workspace designed to address curriculum friction for collegiate engineering students. The Platform provides digital educational resources and services—including university syllabus blueprints, online recorded video lectures, downloadable notes, step-by-step mathematical proofs, solved previous year questions (PYQs), and online mock tests.
                   </p>
                   <p>
-                    <strong>Independent Status:</strong> You expressly understand that ExamNest operates independently. While our subject codes and modules are structured in alignment with AICTE guidelines and state university curricular tracks (such as MAKAUT), ExamNest is not an official administrative service of any degree-awarding board. For administrative matters such as examination admit cards, registration numbers, re-evaluation requests, and official grade sheets, students must always consult their official university portals.
+                    <strong>Digital Services, Strict No-Refund Policy &amp; Independent Status:</strong> All purchases on ExamNest represent non-tangible, digital intellectual property provisioned electronically as described in our{" "}
+                    <Link href="/shipping-delivery" className="font-semibold text-slate-900 underline hover:text-slate-700">Shipping &amp; Delivery Policy</Link>. Once a batch, course, or subject bundle is activated on your account, all sales are final under a strict <strong>No-Refund and No-Cancellation Policy</strong>; if you accidentally purchase an incorrect batch, ExamNest does not issue monetary refunds but may replace or transfer your enrollment from our side strictly provided you have not downloaded any notes or PDFs from that batch (see our{" "}
+                    <Link href="/refund-policy" className="font-semibold text-slate-900 underline hover:text-slate-700">Refund &amp; Cancellation Policy</Link>). While our subject codes and modules are structured in alignment with AICTE guidelines and state technical curricula (such as MAKAUT and WBSCTE), ExamNest is not an official administrative service of any degree-awarding board. For official admit cards, registration numbers, re-evaluation requests, and grade sheets, students must always consult their university portals.
                   </p>
                 </div>
               </section>
@@ -126,7 +136,7 @@ export default function TermsOfUsePage() {
                   <p>To register an account on ExamNest, you must meet the following eligibility requirements:</p>
                   <ul className="list-disc pl-5 space-y-1.5 text-xs sm:text-sm text-slate-600">
                     <li>You must be at least 16 years of age or possess parental/guardian consent if required by your jurisdiction.</li>
-                    <li>You must provide an authentic, valid email address owned and accessible by you.</li>
+                    <li>You must provide an authentic, valid email address and valid mobile phone number owned and accessible by you.</li>
                     <li>
                       <strong>Disposable &amp; Burner Email Prohibition:</strong> To safeguard the community, protect platform resources, and prevent abusive scraping, the registration of accounts using temporary or disposable email domains is strictly barred. Our security proxy enforces real-time disposable email verification; accounts registered using temporary domains are blocked from accessing protected student routes.
                     </li>
@@ -142,10 +152,11 @@ export default function TermsOfUsePage() {
                 </h2>
                 <div className="mt-4 space-y-3">
                   <p>
-                    Subject to your compliance with these Terms, ExamNest grants you a revocable, non-exclusive, non-transferable, personal license to access and read the study materials, derivation steps, unit notes, and question archives solely for your own individual, non-commercial educational study.
+                    Subject to your compliance with these Terms and our{" "}
+                    <Link href="/fair-usage" className="font-semibold text-slate-900 underline hover:text-slate-700">Fair Usage Policy</Link>, ExamNest grants you a revocable, non-exclusive, non-transferable, single-user license strictly intended for your own individual, non-commercial personal learning.
                   </p>
                   <p>
-                    You may read content on your personal desktop or mobile browser. You may not print or recompile bulk materials for commercial resale, distribution through unauthorized fee-based tutoring apps, or public reposting.
+                    ExamNest enforces a strict Single-Device Active Session policy: simultaneous logins across distinct IP ranges or unauthorized devices will trigger automatic session expiration. You may not share login credentials, screen-record or rip video streams, or print, recompile, or redistribute watermarked study PDFs on Telegram, WhatsApp, Google Drive, or third-party platforms.
                   </p>
                 </div>
               </section>
@@ -201,7 +212,10 @@ export default function TermsOfUsePage() {
                     <strong>Statutory Curricula:</strong> The names of universities, college affiliations, standard course codes (e.g. BS-PH101, BS-M101), and statutory syllabus guidelines are the intellectual property of their respective governing boards. ExamNest makes no claim of ownership over official university syllabus blueprints and uses them solely for pedagogical identification and educational navigation.
                   </p>
                   <p>
-                    <strong>Proprietary Compilations:</strong> The original pedagogical explanations, mathematical proofs, LaTeX-formatted derivations, custom circuit diagrams, platform source code, and user interface designs are the intellectual property of ExamNest and its academic contributors. All rights not expressly granted are reserved.
+                    <strong>Proprietary Compilations:</strong> The original pedagogical explanations, mathematical proofs, LaTeX-formatted derivations, custom circuit diagrams, recorded lectures, mock test banks, platform source code, and user interface designs are the intellectual property of ExamNest and its academic contributors. All rights not expressly granted are reserved. For full details on forensic watermarking and takedown notices, see our{" "}
+                    <Link href="/copyright-policy" className="font-semibold text-slate-900 underline hover:text-slate-700">
+                      Copyright &amp; IP Policy
+                    </Link>.
                   </p>
                 </div>
               </section>
@@ -213,12 +227,15 @@ export default function TermsOfUsePage() {
                 </h2>
                 <div className="mt-4 space-y-3">
                   <p>
-                    While our contributor collective rigorously peer-reviews every lecture unit, derivation step, and formula sheet for accuracy:
+                    While our contributor collective rigorously peer-reviews every lecture unit, derivation step, and formula sheet for accuracy (please also review our full{" "}
+                    <Link href="/academic-disclaimer" className="font-semibold text-slate-900 underline hover:text-slate-700">
+                      Academic Disclaimer
+                    </Link>):
                   </p>
                   <ul className="list-disc pl-5 space-y-1.5 text-xs sm:text-sm text-slate-600">
                     <li>The Platform and all study materials are provided on an <strong>&quot;AS IS&quot;</strong> and <strong>&quot;AS AVAILABLE&quot;</strong> basis, without warranties of any kind, whether express, statutory, or implied.</li>
-                    <li>Universities may revise syllabus sub-clauses, question paper weighting, or credit rules without notice. Students are encouraged to cross-reference with official circulars issued by their respective universities.</li>
-                    <li>ExamNest makes no guarantee that using our study materials will produce specific academic grades, passing scores, or GPA outcomes.</li>
+                    <li>Universities may revise syllabus sub-clauses, question paper weighting, or credit rules without notice. Students are encouraged to cross-reference official model curricula, textbooks, and circulars issued by their respective universities.</li>
+                    <li>ExamNest makes no guarantee that specific solved questions will reappear in university semester examinations or that using our study materials will produce specific letter grades, SGPA/CGPA scores, or passing outcomes.</li>
                   </ul>
                 </div>
               </section>
@@ -242,12 +259,12 @@ export default function TermsOfUsePage() {
                 </h2>
                 <div className="mt-4 space-y-3">
                   <p>
-                    We reserve the right, at our sole discretion, to suspend, disable, or permanently terminate your access to ExamNest without prior notice if:
+                    We reserve the right, at our sole discretion, to suspend, disable, or permanently terminate your access to ExamNest without prior notice or refund if:
                   </p>
                   <ul className="list-disc pl-5 space-y-1.5 text-xs sm:text-sm text-slate-600">
-                    <li>You violate any provision of these Terms of Use.</li>
+                    <li>You violate any provision of these Terms &amp; Conditions, our Fair Usage Policy, or our Copyright &amp; IP Policy.</li>
                     <li>You register using a temporary, disposable, or invalid email address.</li>
-                    <li>You engage in automated web scraping or attempt to circumvent security controls.</li>
+                    <li>You engage in credential sharing, stream ripping, screen recording, watermarked PDF distribution, or automated web scraping.</li>
                     <li>Your activity places an unreasonable or disproportionately heavy load on our infrastructure.</li>
                   </ul>
                 </div>
@@ -260,7 +277,7 @@ export default function TermsOfUsePage() {
                 </h2>
                 <div className="mt-4 space-y-3">
                   <p>
-                    We may revise these Terms of Use periodically to reflect changes in our services, applicable legal regulations, or operational requirements. Updated terms become effective immediately upon being published on this page. Your continued access to the Platform following the publication of revised terms constitutes your binding acceptance of the updated terms.
+                    We may revise these Terms &amp; Conditions periodically to reflect changes in our services, applicable legal regulations, or operational requirements. Updated terms become effective immediately upon being published on this page. Your continued access to the Platform following the publication of revised terms constitutes your binding acceptance of the updated terms.
                   </p>
                 </div>
               </section>
@@ -272,7 +289,7 @@ export default function TermsOfUsePage() {
                 </h2>
                 <div className="mt-4 space-y-3">
                   <p>
-                    For questions regarding these Terms of Use, curriculum attribution notices, or intellectual property inquiries, please contact our legal and charter team:
+                    For questions regarding these Terms &amp; Conditions, curriculum attribution notices, or intellectual property inquiries, please contact our legal and compliance team:
                   </p>
 
                   <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50/70 p-5 space-y-2">
@@ -281,10 +298,20 @@ export default function TermsOfUsePage() {
                       <span>ExamNest Academic &amp; Legal Charter</span>
                     </div>
                     <p className="text-xs sm:text-sm text-slate-600">
-                      Email: <a href="mailto:terms@examnest.com" className="font-semibold text-slate-900 underline hover:text-slate-700">terms@examnest.com</a>
+                      Legal / Terms Email:{" "}
+                      <a href={`mailto:${PLATFORM_INFO.emails.terms}`} className="font-semibold text-slate-900 underline hover:text-slate-700">
+                        {PLATFORM_INFO.emails.terms}
+                      </a>{" "}
+                      · Escalations:{" "}
+                      <a href={`mailto:${PLATFORM_INFO.emails.grievance}`} className="font-semibold text-slate-900 underline hover:text-slate-700">
+                        {PLATFORM_INFO.emails.grievance}
+                      </a>
                     </p>
                     <p className="text-xs text-slate-500">
-                      Inquiries regarding terms, academic honor codes, and curriculum references are typically reviewed within 48 business hours.
+                      Helpline: {PLATFORM_INFO.phoneDisplay} · Operating Address: {PLATFORM_INFO.address.full} · View full details on{" "}
+                      <Link href="/contact" className="font-semibold text-slate-800 underline hover:text-slate-950">
+                        Contact Us &amp; Grievance Redressal
+                      </Link>.
                     </p>
                   </div>
                 </div>

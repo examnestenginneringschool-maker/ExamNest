@@ -26,7 +26,7 @@ export interface ExamNestJwtPayload {
   iss?: string;
   /** Verified Student Email */
   email?: string;
-  /** Verified Student Phone (E.164 format, e.g. +919876543210) */
+  /** Verified Student Phone (E.164 format, e.g. +91XXXXXXXXXX) */
   phone?: string;
   /** PostgreSQL RLS role ("authenticated") */
   role?: string;
