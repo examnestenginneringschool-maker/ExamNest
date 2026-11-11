@@ -440,6 +440,7 @@ export function DashboardCalendar() {
           >
             <input
               type="text"
+              name="event-title"
               placeholder="Event title (e.g. Physics Viva)"
               value={newTitle}
               onChange={(e) => setNewTitle(e.target.value)}
@@ -449,6 +450,7 @@ export function DashboardCalendar() {
 
             <div className="flex items-center gap-2">
               <select
+                name="event-category"
                 value={newCategory}
                 onChange={(e) =>
                   setNewCategory(e.target.value as CalendarEvent["category"])
@@ -464,6 +466,7 @@ export function DashboardCalendar() {
 
               <input
                 type="text"
+                name="event-time"
                 placeholder="10:00 AM"
                 value={newTime}
                 onChange={(e) => setNewTime(e.target.value)}

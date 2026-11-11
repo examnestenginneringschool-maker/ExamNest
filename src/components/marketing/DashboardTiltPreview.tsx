@@ -796,6 +796,7 @@ export function DashboardTiltPreview({
                   >
                     <input
                       type="checkbox"
+                      name={`preview-task-${task.id}`}
                       checked={task.completed}
                       onChange={() => toggleTask(task.id)}
                       className="mt-0.5 rounded text-[#402ae6] focus:ring-0 transition-transform active:scale-90 cursor-pointer"

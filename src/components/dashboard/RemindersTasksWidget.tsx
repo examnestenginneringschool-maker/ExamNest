@@ -208,6 +208,7 @@ export function RemindersTasksWidget() {
         >
           <input
             type="text"
+            name="task-title"
             placeholder="Task description (e.g. Submit Lab 3)"
             value={newTitle}
             onChange={(e) => setNewTitle(e.target.value)}
@@ -218,6 +219,7 @@ export function RemindersTasksWidget() {
 
           <input
             type="text"
+            name="task-subtitle"
             placeholder="Due date / subject (e.g. Due 28 Oct · Physics)"
             value={newSubtitle}
             onChange={(e) => setNewSubtitle(e.target.value)}
