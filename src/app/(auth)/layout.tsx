@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { LogoImage } from "@/components/brand/Logo";
+import { PageTransition } from "@/components/ui/ViewTransitions";
 
 export default function AuthLayout({
   children,
@@ -16,7 +17,8 @@ export default function AuthLayout({
   const isResetPassword = pathname?.includes("reset-password") ?? false;
 
   return (
-    <div className="relative min-h-screen w-full flex flex-col items-center justify-center bg-[#FAF8FF] px-4 py-8 sm:px-6 lg:px-10 overflow-hidden selection:bg-[#5B4DFF] selection:text-white">
+    <PageTransition>
+      <div className="relative min-h-screen w-full flex flex-col items-center justify-center bg-[#FAF8FF] px-4 py-8 sm:px-6 lg:px-10 overflow-hidden selection:bg-[#5B4DFF] selection:text-white">
       {/* 1. Ambient Background Glows */}
       <div className="pointer-events-none fixed inset-0 overflow-hidden">
         <div className="absolute -top-32 left-1/2 -translate-x-1/2 w-[780px] h-[380px] bg-[#F6C844]/18 rounded-full blur-3xl aura-glow-left" />
@@ -127,6 +129,7 @@ export default function AuthLayout({
           </div>
         </div>
       </div>
-    </div>
+      </div>
+    </PageTransition>
   );
 }

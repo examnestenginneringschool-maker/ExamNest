@@ -12,6 +12,7 @@ import {
   ChaptersGridClient,
   type ChapterGridItem,
 } from "@/components/notes/ChaptersGridClient";
+import { PageTransition } from "@/components/ui/ViewTransitions";
 
 type PageProps = {
   params: Promise<{
@@ -108,7 +109,8 @@ export default async function NotesChaptersPage({ params }: PageProps) {
   }));
 
   return (
-    <main className="min-h-screen bg-[#faf8ff] text-slate-900 antialiased selection:bg-indigo-500 selection:text-white">
+    <PageTransition>
+      <main className="min-h-screen bg-[#faf8ff] text-slate-900 antialiased selection:bg-indigo-500 selection:text-white">
       <WorkspaceHeader
         subjectId={subject.id}
         subjectName={subject.name}
@@ -157,6 +159,7 @@ export default async function NotesChaptersPage({ params }: PageProps) {
           />
         )}
       </div>
-    </main>
+      </main>
+    </PageTransition>
   );
 }

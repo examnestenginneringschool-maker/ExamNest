@@ -426,3 +426,63 @@ export type SignUpInput = z.infer<typeof signUpSchema>;
 export type SignInInput = z.infer<typeof signInSchema>;
 export type OtpVerifyInput = z.infer<typeof otpVerifySchema>;
 export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;
+
+export interface PasswordStrengthInfo {
+  score: number;
+  text: string;
+  colorClass: string;
+  barColorClass: string;
+}
+
+export function getPasswordStrengthInfo(
+  password: string
+): PasswordStrengthInfo | null {
+  if (!password) {
+    return null;
+  }
+
+  const hasMinLen = password.length >= 8;
+  const hasUpper = /[A-Z]/.test(password);
+  const hasLower = /[a-z]/.test(password);
+  const hasNumberOrSymbol = /[0-9!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(
+    password
+  );
+
+  const score = [hasMinLen, hasUpper, hasLower, hasNumberOrSymbol].filter(
+    Boolean
+  ).length;
+
+  if (!hasMinLen) {
+    return {
+      score: 1,
+      text: "Weak · Must be at least 8 characters",
+      colorClass: "text-rose-500",
+      barColorClass: "bg-rose-500",
+    };
+  }
+
+  if (score <= 2) {
+    return {
+      score: 2,
+      text: "Weak · Add uppercase, number, or symbol",
+      colorClass: "text-rose-500",
+      barColorClass: "bg-rose-500",
+    };
+  }
+
+  if (score === 3) {
+    return {
+      score: 3,
+      text: "Good · Almost strong password",
+      colorClass: "text-amber-500",
+      barColorClass: "bg-amber-500",
+    };
+  }
+
+  return {
+    score: 4,
+    text: "Strong password",
+    colorClass: "text-emerald-600",
+    barColorClass: "bg-emerald-500",
+  };
+}

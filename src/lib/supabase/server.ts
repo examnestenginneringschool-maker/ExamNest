@@ -62,6 +62,10 @@ export type AuthenticatedStudent = {
   firstName: string;
   avatarUrl: string | null;
   emailConfirmedAt: string | null;
+  authProviders: string[];
+  hasPasswordAuth: boolean;
+  activeDeviceInfo: string | null;
+  activeLoginAt: string | null;
   jwt: ExamNestJwtPayload | null;
   accessToken: string | null;
   rawUser: User;
@@ -148,11 +152,41 @@ export const getAuthenticatedUser = cache(
 
       const firstName = fullName.split(/\s+/)[0] || "Student";
       const avatarUrl =
-        typeof meta.avatar_url === "string"
+        meta.avatar_url === ""
+          ? null
+          : typeof meta.avatar_url === "string" && meta.avatar_url.trim().length > 0
           ? meta.avatar_url
-          : typeof meta.picture === "string"
+          : typeof meta.picture === "string" && meta.picture.trim().length > 0
           ? meta.picture
           : null;
+
+      const appMeta = user.app_metadata ?? {};
+      const providerSet = new Set<string>();
+      if (typeof appMeta.provider === "string" && appMeta.provider) {
+        providerSet.add(appMeta.provider);
+      }
+      if (Array.isArray(appMeta.providers)) {
+        for (const p of appMeta.providers) {
+          if (typeof p === "string" && p) providerSet.add(p);
+        }
+      }
+      if (Array.isArray(user.identities)) {
+        for (const identity of user.identities) {
+          if (typeof identity?.provider === "string" && identity.provider) {
+            providerSet.add(identity.provider);
+          }
+        }
+      }
+      const authProviders = Array.from(providerSet);
+      const hasPasswordAuth =
+        authProviders.length === 0 || authProviders.includes("email");
+
+      const activeDeviceInfo =
+        typeof meta.active_device_info === "string"
+          ? meta.active_device_info
+          : null;
+      const activeLoginAt =
+        typeof meta.active_login_at === "string" ? meta.active_login_at : null;
 
       return {
         id: user.id,
@@ -162,6 +196,10 @@ export const getAuthenticatedUser = cache(
         firstName,
         avatarUrl,
         emailConfirmedAt: user.email_confirmed_at ?? null,
+        authProviders,
+        hasPasswordAuth,
+        activeDeviceInfo,
+        activeLoginAt,
         jwt,
         accessToken,
         rawUser: user,

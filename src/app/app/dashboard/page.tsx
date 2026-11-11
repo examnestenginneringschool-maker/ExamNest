@@ -12,6 +12,7 @@ import { StudyFocusCards } from "@/components/dashboard/StudyFocusCards";
 import { DashboardCalendar } from "@/components/dashboard/DashboardCalendar";
 import { SubjectUpdatesFeed } from "@/components/dashboard/SubjectUpdatesFeed";
 import { RemindersTasksWidget } from "@/components/dashboard/RemindersTasksWidget";
+import { PageTransition } from "@/components/ui/ViewTransitions";
 
 export default async function DashboardPage() {
   const user = await getAuthenticatedUser();
@@ -54,7 +55,8 @@ export default async function DashboardPage() {
   const subjectIds = subjects.map((s) => s.id);
 
   return (
-    <main className="min-h-screen bg-[#F8FAFD] text-slate-800 flex flex-col font-sans">
+    <PageTransition>
+      <main className="min-h-screen bg-[#F8FAFD] text-slate-800 flex flex-col font-sans">
       {/* 1. Sticky Navigation Header */}
       <DashboardHeader
         universityName={universityName}
@@ -105,6 +107,7 @@ export default async function DashboardPage() {
           <RemindersTasksWidget />
         </aside>
       </div>
-    </main>
+      </main>
+    </PageTransition>
   );
 }

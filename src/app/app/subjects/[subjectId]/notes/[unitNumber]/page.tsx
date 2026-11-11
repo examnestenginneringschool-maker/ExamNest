@@ -9,6 +9,7 @@ import { WorkspaceHeader } from "@/components/notes/WorkspaceHeader";
 import { NotesWorkspaceClient } from "@/components/notes/NotesWorkspaceClient";
 import type { NoteUnit, Topic } from "@/components/notes/UnitSection";
 import type { TopicBlock } from "@/components/notes/NoteBlockRenderer";
+import { PageTransition } from "@/components/ui/ViewTransitions";
 
 type PageProps = {
   params: Promise<{
@@ -146,7 +147,8 @@ export default async function ChapterNotesReaderPage({
   }
 
   return (
-    <main className="min-h-screen bg-[#faf8ff] text-slate-900 antialiased selection:bg-indigo-500 selection:text-white">
+    <PageTransition>
+      <main className="min-h-screen bg-[#faf8ff] text-slate-900 antialiased selection:bg-indigo-500 selection:text-white">
       <WorkspaceHeader
         subjectId={subject.id}
         subjectName={subject.name}
@@ -176,6 +178,7 @@ export default async function ChapterNotesReaderPage({
           blocksByTopic={blocksByTopicRecord}
         />
       </div>
-    </main>
+      </main>
+    </PageTransition>
   );
 }

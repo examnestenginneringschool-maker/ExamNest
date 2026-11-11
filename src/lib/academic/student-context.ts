@@ -374,79 +374,81 @@ export const getStudentAcademicContext = cache(
 /**
  * Fetches curriculum subjects and unit note counts in a single/batched operation.
  */
-export async function getCurriculumSubjectsWithNotes(
-  universityId: string,
-  courseId: string,
-  semesterNumber: number,
-  departmentId: string
-): Promise<{ subjects: CurriculumSubject[]; noteUnitCount: Map<string, number> }> {
-  const supabase = await createServerSupabaseClient();
+export const getCurriculumSubjectsWithNotes = cache(
+  async function getCurriculumSubjectsWithNotes(
+    universityId: string,
+    courseId: string,
+    semesterNumber: number,
+    departmentId: string
+  ): Promise<{ subjects: CurriculumSubject[]; noteUnitCount: Map<string, number> }> {
+    const supabase = await createServerSupabaseClient();
 
-  const { data: curriculumRows, error: curriculumError } = await supabase
-    .from("curriculum_subjects")
-    .select(`
-      id,
-      department_id,
-      subject:subjects (
+    const { data: curriculumRows, error: curriculumError } = await supabase
+      .from("curriculum_subjects")
+      .select(`
         id,
-        code,
-        name,
-        slug,
-        category,
-        subject_type,
-        description
-      )
-    `)
-    .eq("university_id", universityId)
-    .eq("course_id", courseId)
-    .eq("semester_number", semesterNumber)
-    .eq("is_active", true)
-    .or(`department_id.is.null,department_id.eq.${departmentId}`);
+        department_id,
+        subject:subjects (
+          id,
+          code,
+          name,
+          slug,
+          category,
+          subject_type,
+          description
+        )
+      `)
+      .eq("university_id", universityId)
+      .eq("course_id", courseId)
+      .eq("semester_number", semesterNumber)
+      .eq("is_active", true)
+      .or(`department_id.is.null,department_id.eq.${departmentId}`);
 
-  if (curriculumError) {
-    throw new Error(curriculumError.message);
-  }
-
-  const subjectMap = new Map<string, CurriculumSubject>();
-  for (const row of curriculumRows ?? []) {
-    const rawSubject = Array.isArray(row.subject) ? row.subject[0] : row.subject;
-    if (!rawSubject) continue;
-
-    subjectMap.set(rawSubject.id, {
-      id: rawSubject.id,
-      code: rawSubject.code,
-      name: rawSubject.name,
-      slug: rawSubject.slug,
-      category: rawSubject.category ?? null,
-      subject_type: rawSubject.subject_type,
-      description: rawSubject.description ?? null,
-      noteUnitsCount: 0,
-    });
-  }
-
-  const subjects = Array.from(subjectMap.values()).sort((a, b) =>
-    a.code.localeCompare(b.code)
-  );
-
-  const subjectIds = subjects.map((s) => s.id);
-  const noteUnitCount = new Map<string, number>();
-
-  if (subjectIds.length > 0) {
-    const { data: noteRows } = await supabase
-      .from("subject_note_units")
-      .select("subject_id")
-      .in("subject_id", subjectIds)
-      .eq("is_active", true);
-
-    for (const row of noteRows ?? []) {
-      const count = (noteUnitCount.get(row.subject_id) ?? 0) + 1;
-      noteUnitCount.set(row.subject_id, count);
+    if (curriculumError) {
+      throw new Error(curriculumError.message);
     }
 
-    for (const subject of subjects) {
-      subject.noteUnitsCount = noteUnitCount.get(subject.id) ?? 0;
-    }
-  }
+    const subjectMap = new Map<string, CurriculumSubject>();
+    for (const row of curriculumRows ?? []) {
+      const rawSubject = Array.isArray(row.subject) ? row.subject[0] : row.subject;
+      if (!rawSubject) continue;
 
-  return { subjects, noteUnitCount };
-}
+      subjectMap.set(rawSubject.id, {
+        id: rawSubject.id,
+        code: rawSubject.code,
+        name: rawSubject.name,
+        slug: rawSubject.slug,
+        category: rawSubject.category ?? null,
+        subject_type: rawSubject.subject_type,
+        description: rawSubject.description ?? null,
+        noteUnitsCount: 0,
+      });
+    }
+
+    const subjects = Array.from(subjectMap.values()).sort((a, b) =>
+      a.code.localeCompare(b.code)
+    );
+
+    const subjectIds = subjects.map((s) => s.id);
+    const noteUnitCount = new Map<string, number>();
+
+    if (subjectIds.length > 0) {
+      const { data: noteRows } = await supabase
+        .from("subject_note_units")
+        .select("subject_id")
+        .in("subject_id", subjectIds)
+        .eq("is_active", true);
+
+      for (const row of noteRows ?? []) {
+        const count = (noteUnitCount.get(row.subject_id) ?? 0) + 1;
+        noteUnitCount.set(row.subject_id, count);
+      }
+
+      for (const subject of subjects) {
+        subject.noteUnitsCount = noteUnitCount.get(subject.id) ?? 0;
+      }
+    }
+
+    return { subjects, noteUnitCount };
+  }
+);
