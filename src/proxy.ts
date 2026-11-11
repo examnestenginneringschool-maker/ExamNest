@@ -158,10 +158,10 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(redirectUrl);
   }
 
-  // 2. Redirect already-authenticated students away from /sign-in or /sign-up
+  // 2. Redirect already-authenticated students away from "/", "/sign-in", or "/sign-up"
   // (Only if their device session is valid and not displaced)
   if (
-    isAuthRoute &&
+    (isAuthRoute || pathname === "/") &&
     user &&
     !isDeviceDisplaced &&
     searchParams.get("reason") !== "session_replaced"

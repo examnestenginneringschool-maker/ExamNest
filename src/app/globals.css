@@ -20,9 +20,7 @@ body {
   font-family: var(--font-plus-jakarta-sans), "Plus Jakarta Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
-/* ========================================================= */
 /* Custom ExamNest Scrollbars (Cross-browser, Theme-aligned) */
-/* ========================================================= */
 
 /* Firefox & standard CSS */
 * {
@@ -176,4 +174,80 @@ body {
 .animate-auth-fade-in {
   animation: authFadeIn 0.32s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
+
+@keyframes loaderMessagePop {
+  0% {
+    opacity: 0;
+    transform: translateY(14px) scale(0.88);
+  }
+  65% {
+    opacity: 1;
+    transform: translateY(-2px) scale(1.03);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-loader-pop {
+  animation: loaderMessagePop 0.42s cubic-bezier(0.22, 1.2, 0.36, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-loader-pop {
+    animation: none;
+  }
+}
+
+/* ========================================================= */
+/* Chapter Grid Cards — Individual Color-Bar Hover & Click   */
+/* ========================================================= */
+
+.chapter-card {
+  background: linear-gradient(135deg, #ffffff 0%, #ffffff 58%, #f4f6fb 100%);
+  border-color: rgba(226, 232, 240, 0.85);
+  box-shadow:
+    0 10px 28px -6px rgba(15, 23, 42, 0.08),
+    0 2px 6px -1px rgba(15, 23, 42, 0.04);
+}
+
+.group:hover .chapter-card {
+  background: linear-gradient(135deg, #ffffff 0%, var(--chapter-hover-bg) 100%);
+  border-color: var(--chapter-hover-border);
+  box-shadow:
+    0 20px 42px -10px rgb(var(--chapter-glow-rgb) / 0.36),
+    0 8px 20px -4px rgb(var(--chapter-glow-rgb) / 0.18),
+    0 4px 10px -2px rgba(15, 23, 42, 0.05);
+}
+
+.group:active .chapter-card,
+.chapter-card[data-pending="true"] {
+  background: linear-gradient(135deg, var(--chapter-hover-bg) 0%, var(--chapter-click-bg) 100%);
+  border-color: var(--chapter-click-border);
+  box-shadow:
+    0 12px 26px -8px rgb(var(--chapter-glow-rgb) / 0.28),
+    0 2px 6px -1px rgba(15, 23, 42, 0.04);
+}
+
+.group:hover .chapter-card-title,
+.group:hover .chapter-card-open,
+.group:active .chapter-card-title,
+.group:active .chapter-card-open,
+.chapter-card[data-pending="true"] .chapter-card-title,
+.chapter-card[data-pending="true"] .chapter-card-open {
+  color: var(--chapter-cap);
+}
+
+.group:hover .chapter-card-icon {
+  background-color: var(--chapter-hover-bg);
+  color: var(--chapter-cap);
+}
+
+.group:active .chapter-card-icon,
+.chapter-card[data-pending="true"] .chapter-card-icon {
+  background-color: rgba(255, 255, 255, 0.72);
+  color: var(--chapter-cap);
+}
+
 

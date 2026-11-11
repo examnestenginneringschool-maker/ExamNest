@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { Logo } from "@/components/brand/Logo";
+import { POLICY_BRANCHES, type LegalDocKey } from "@/lib/legal/navigation";
 
 interface LegalFooterProps {
   className?: string;
-  currentDoc?: "privacy" | "terms";
+  currentDoc?: LegalDocKey;
 }
 
 export function LegalFooter({ className = "", currentDoc }: LegalFooterProps) {
@@ -13,9 +14,8 @@ export function LegalFooter({ className = "", currentDoc }: LegalFooterProps) {
     <footer
       className={`w-full border-t border-slate-200/80 pt-8 pb-10 text-xs text-slate-500 ${className}`}
     >
-      {/* Top Row: Identity & Legal Links */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-100">
-        {/* Left: Brand Identity */}
+      {/* Top Row: Identity */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-100">
         <div className="flex items-center gap-3">
           <Link href="/" className="inline-flex items-center gap-2 group">
             <Logo size="xs" withText={true} />
@@ -26,37 +26,50 @@ export function LegalFooter({ className = "", currentDoc }: LegalFooterProps) {
           </span>
         </div>
 
-        {/* Right: Only Student Privacy Policy & Terms of Use */}
-        <nav aria-label="Legal navigation" className="flex items-center gap-4 text-xs font-semibold">
-          <Link
-            href="/privacy"
-            className={`transition-colors ${
-              currentDoc === "privacy"
-                ? "text-slate-950 font-bold underline decoration-slate-400 decoration-2 underline-offset-4"
-                : "text-slate-600 hover:text-slate-950"
-            }`}
-          >
-            Student Privacy Policy
-          </Link>
-          <span className="text-slate-300 text-xs">•</span>
-          <Link
-            href="/terms"
-            className={`transition-colors ${
-              currentDoc === "terms"
-                ? "text-slate-950 font-bold underline decoration-slate-400 decoration-2 underline-offset-4"
-                : "text-slate-600 hover:text-slate-950"
-            }`}
-          >
-            Terms of Use
-          </Link>
-        </nav>
+        <Link
+          href="/"
+          className="text-xs font-semibold text-slate-600 hover:text-slate-950 transition-colors"
+        >
+          Return to ExamNest Home →
+        </Link>
+      </div>
+
+      {/* Middle Row: 3 Branch Directories */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 py-6 border-b border-slate-100">
+        {POLICY_BRANCHES.map((branch) => (
+          <div key={branch.id}>
+            <h3 className="text-[11px] font-bold uppercase tracking-wider text-slate-800 mb-2.5">
+              {branch.label}
+            </h3>
+            <ul className="space-y-1.5">
+              {branch.items.map((item) => {
+                const isActive = currentDoc === item.key;
+                return (
+                  <li key={item.key}>
+                    <Link
+                      href={item.href}
+                      className={`text-xs transition-colors ${
+                        isActive
+                          ? "text-slate-950 font-bold underline decoration-slate-400 decoration-2 underline-offset-4"
+                          : "text-slate-600 hover:text-slate-950 font-medium"
+                      }`}
+                    >
+                      {item.label}
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        ))}
       </div>
 
       {/* Bottom Row: Minimalist Legal Notice */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-4 text-[11px] text-slate-400 leading-relaxed">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-5 text-[11px] text-slate-400 leading-relaxed">
         <p>© {currentYear} ExamNest. All rights reserved.</p>
         <p className="sm:text-right">
-          Independent initiative. All university trademarks belong to their respective authorities.
+          Independent initiative. All university trademarks belong to their
+          respective authorities.
         </p>
       </div>
     </footer>

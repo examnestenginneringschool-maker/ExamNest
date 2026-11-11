@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
   BookOpen,
@@ -21,6 +22,8 @@ type FloatingNavMenuProps = {
 export function FloatingNavMenu({ subjectId }: FloatingNavMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const pathname = usePathname();
+  const isNotesRoute = pathname?.startsWith(`/app/subjects/${subjectId}/notes`) ?? false;
 
   // Close when clicking outside
   useEffect(() => {
@@ -96,20 +99,34 @@ export function FloatingNavMenu({ subjectId }: FloatingNavMenuProps) {
           <Link
             href={`/app/subjects/${subjectId}`}
             onClick={() => setIsOpen(false)}
-            className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-slate-600 hover:bg-slate-50 hover:text-slate-900 font-medium transition-colors"
+            className={`flex items-center justify-between px-3 py-2 rounded-xl transition-colors ${
+              !isNotesRoute
+                ? "bg-amber-50 text-amber-900 font-bold border border-amber-200/60 shadow-xs"
+                : "text-slate-600 hover:bg-slate-50 hover:text-slate-900 font-medium"
+            }`}
           >
-            <BookOpen className="h-4 w-4 text-slate-400" />
-            <span>Subject Overview</span>
+            <div className="flex items-center gap-2.5">
+              <BookOpen className={`h-4 w-4 ${!isNotesRoute ? "text-amber-600" : "text-slate-400"}`} />
+              <span>Subject Overview</span>
+            </div>
+            {!isNotesRoute && <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />}
           </Link>
 
-          {/* Active notes item */}
-          <div className="flex items-center justify-between px-3 py-2 rounded-xl bg-amber-50 text-amber-900 font-bold border border-amber-200/60 shadow-xs">
+          <Link
+            href={`/app/subjects/${subjectId}/notes`}
+            onClick={() => setIsOpen(false)}
+            className={`flex items-center justify-between px-3 py-2 rounded-xl transition-colors ${
+              isNotesRoute
+                ? "bg-amber-50 text-amber-900 font-bold border border-amber-200/60 shadow-xs"
+                : "text-slate-600 hover:bg-slate-50 hover:text-slate-900 font-medium"
+            }`}
+          >
             <div className="flex items-center gap-2.5">
-              <FileText className="h-4 w-4 text-amber-600" />
+              <FileText className={`h-4 w-4 ${isNotesRoute ? "text-amber-600" : "text-slate-400"}`} />
               <span>Notes &amp; Units</span>
             </div>
-            <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
-          </div>
+            {isNotesRoute && <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />}
+          </Link>
 
           <Link
             href={`/app/subjects/${subjectId}`}

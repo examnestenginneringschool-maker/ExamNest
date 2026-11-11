@@ -12,6 +12,7 @@ type StoredSession = {
   subjectId: string;
   unitNumber: number;
   unitTitle: string;
+  topicId?: string;
   topicTitle?: string;
   timestamp: number;
   completed?: boolean;
@@ -58,6 +59,16 @@ export function ResumeLearningBanner({ subjectId }: ResumeLearningBannerProps) {
   const handleDismiss = () => {
     setIsDismissed(true);
   };
+
+  const hasValidUnit =
+    Number.isInteger(session.unitNumber) && session.unitNumber > 0;
+  const resumeHref = hasValidUnit
+    ? session.topicId
+      ? `/app/subjects/${subjectId}/notes/${session.unitNumber}?topic=${encodeURIComponent(
+          session.topicId
+        )}`
+      : `/app/subjects/${subjectId}/notes/${session.unitNumber}`
+    : `/app/subjects/${subjectId}/notes`;
 
   return (
     <div className="relative rounded-3xl bg-white p-5 sm:p-6 border border-slate-200/80 shadow-[0_8px_30px_-6px_rgba(24,24,41,0.05)] mb-8 transition-all">
@@ -108,7 +119,7 @@ export function ResumeLearningBanner({ subjectId }: ResumeLearningBannerProps) {
           </Link>
 
           <Link
-            href={`/app/subjects/${subjectId}/notes`}
+            href={resumeHref}
             className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-full bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold shadow-xs hover:shadow-md transition-all active:scale-95"
           >
             <span>Resume</span>

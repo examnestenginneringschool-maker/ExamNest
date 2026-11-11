@@ -12,6 +12,9 @@ type NotesWorkspaceClientProps = {
   subjectName: string;
   semesterNumber: number;
   units: NoteUnit[];
+  totalUnitsCount?: number;
+  initialTopicId?: string | null;
+  nextUnit?: { unitNumber: number; title: string } | null;
   topicsByUnit: Record<string, Topic[]>;
   blocksByTopic: Record<string, TopicBlock[]>;
 };
@@ -21,6 +24,9 @@ export function NotesWorkspaceClient({
   subjectName,
   semesterNumber,
   units,
+  totalUnitsCount,
+  initialTopicId,
+  nextUnit,
   topicsByUnit,
   blocksByTopic,
 }: NotesWorkspaceClientProps) {
@@ -54,6 +60,9 @@ export function NotesWorkspaceClient({
 
   const [activeTopicId, setActiveTopicId] = useState<string | null>(() => {
     const firstUnitTopics = units[0] ? topicsByUnit[units[0].id] ?? [] : [];
+    if (initialTopicId && firstUnitTopics.some((t) => t.id === initialTopicId)) {
+      return initialTopicId;
+    }
     return firstUnitTopics[0]?.id ?? null;
   });
 
@@ -72,6 +81,7 @@ export function NotesWorkspaceClient({
           subjectId,
           unitNumber: activeUnit.unit_number,
           unitTitle: activeUnit.title,
+          topicId: activeTopic?.id,
           topicTitle: activeTopic?.title,
           timestamp: Date.now(),
           completed: false,
@@ -124,9 +134,12 @@ export function NotesWorkspaceClient({
         {/* Left Column: Syllabus & Course Navigator (4 cols on lg ~ 340-380px) */}
         <div className="lg:col-span-4 xl:col-span-4 sticky top-24 self-start">
           <SyllabusNavigator
+            subjectId={subjectId}
             subjectName={subjectName}
             semesterNumber={semesterNumber}
             units={navigatorUnits}
+            totalUnitsCount={totalUnitsCount}
+            singleChapterMode={units.length === 1}
             activeUnitNumber={activeUnitNumber}
             activeTopicId={activeTopic?.id ?? null}
             onSelectTopic={handleSelectTopic}
@@ -147,6 +160,7 @@ export function NotesWorkspaceClient({
               onNextTopic={handleNextTopic}
               hasNextTopic={hasNextTopic}
               nextTopicTitle={nextTopic ? `${nextTopic.topic_number} ${nextTopic.title}` : undefined}
+              nextUnit={nextUnit}
             />
           ) : (
             <div className="p-12 text-center bg-white rounded-2xl border border-slate-200 text-slate-400">

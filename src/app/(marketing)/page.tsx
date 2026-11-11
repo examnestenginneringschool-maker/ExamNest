@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getAuthenticatedUser } from "@/lib/supabase/server";
-import { UserMenu } from "@/components/auth/UserMenu";
 import {
   ArrowRight,
   CheckCircle2,
@@ -19,6 +18,7 @@ import {
   Globe2,
 } from "lucide-react";
 import { DashboardTiltPreview } from "@/components/marketing/DashboardTiltPreview";
+import { MarketingHeader } from "@/components/marketing/MarketingHeader";
 import { Logo } from "@/components/brand/Logo";
 
 export default async function HomePage() {
@@ -29,85 +29,12 @@ export default async function HomePage() {
     redirect("/app/dashboard");
   }
 
-  const isAuthenticated = false;
-  const studentName = "Student";
-  const studentPhoto = null;
-
   return (
     <div className="min-h-screen bg-[#faf8ff] text-[#171b2a] font-sans selection:bg-[#402ae6] selection:text-white">
       {/* ===================================================== */}
-      {/* 1. TOP NAVIGATION HEADER (Auth & Sign-Up Aware)        */}
+      {/* 1. TOP NAVIGATION HEADER                              */}
       {/* ===================================================== */}
-      <header className="fixed top-0 w-full z-50 bg-[#faf8ff]/85 backdrop-blur-xl border-b border-[#e2e5f0]/80 shadow-[0_1px_8px_rgba(24,24,41,0.03)] transition-all duration-300">
-        <div className="h-20 max-w-7xl mx-auto px-6 lg:px-12 flex items-center justify-between gap-4">
-          {/* Logo */}
-          <Link href="/" className="group flex items-center">
-            <Logo size="md" subtitle="The Engineering School" />
-          </Link>
-
-          {/* Nav Links */}
-          <nav className="hidden lg:flex items-center gap-7 text-xs font-semibold text-[#5d5c73]">
-            <a
-              href="#problem-architecture"
-              className="hover:text-[#402ae6] transition-colors py-1 hover:-translate-y-0.5 inline-block"
-            >
-              Curriculum Architecture
-            </a>
-            <a
-              href="#curriculum-matrix"
-              className="hover:text-[#402ae6] transition-colors py-1 hover:-translate-y-0.5 inline-block"
-            >
-              Syllabus Matrix
-            </a>
-            <a
-              href="#open-charter"
-              className="hover:text-[#402ae6] transition-colors py-1 hover:-translate-y-0.5 inline-block"
-            >
-              Contributors
-            </a>
-          </nav>
-
-          {/* Auth Aware Action Buttons */}
-          <div className="flex items-center gap-3">
-            {isAuthenticated ? (
-              <div className="flex items-center gap-3">
-                <Link
-                  href="/app/dashboard"
-                  className="inline-flex items-center gap-2 rounded-full bg-[#402ae6] hover:bg-[#341ec7] px-4 sm:px-5 py-2.5 text-xs font-bold text-white shadow-[0_4px_14px_rgba(64,42,230,0.25)] transition-all transform hover:-translate-y-0.5 active:translate-y-0"
-                >
-                  <span>Dashboard</span>
-                  <ArrowRight className="h-3.5 w-3.5" />
-                </Link>
-
-                <div className="flex items-center gap-2 pl-2 border-l border-[#e2e5f0]">
-                  <UserMenu
-                    studentName={studentName}
-                    avatarUrl={studentPhoto}
-                  />
-                  <div className="text-left hidden sm:block">
-                    <div className="text-xs font-bold text-[#171b2a] leading-tight">
-                      {studentName}
-                    </div>
-                    <div className="text-[10px] text-[#717588]">
-                      CSE Student
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div className="flex items-center">
-                <Link
-                  href="/sign-up"
-                  className="btn-shimmer inline-flex items-center gap-1.5 rounded-full bg-[#f6c844] hover:bg-[#402ae6] text-[#6c5400] hover:text-white px-4 sm:px-5 py-2.5 text-xs font-bold shadow-sm hover:shadow-md transition-all transform hover:-translate-y-0.5 active:translate-y-0"
-                >
-                  <span>Get Started</span>
-                  <ArrowRight className="h-3.5 w-3.5" />
-                </Link>
-              </div>
-            )}
-          </div>
-        </div>
-      </header>
+      <MarketingHeader />
 
       {/* ===================================================== */}
       {/* 2. HERO SECTION & INTERACTIVE 3D PERSPECTIVE PREVIEW   */}
@@ -148,37 +75,25 @@ export default async function HomePage() {
               past exam question archives into one structured workspace.
             </p>
 
-            {/* Action Buttons: Sign-Up vs Signed-In */}
+            {/* Action Buttons */}
             <div className="flex flex-col items-center justify-center mt-8">
-              {isAuthenticated ? (
-                <Link
-                  href="/app/dashboard"
-                  className="btn-shimmer px-8 py-3.5 rounded-full bg-[#f6c844] text-[#6c5400] font-bold text-sm shadow-md hover:shadow-lg hover:bg-[#402ae6] hover:text-white transition-all transform hover:-translate-y-0.5 active:translate-y-0 flex items-center gap-2"
-                >
-                  <span>Go to the Dashboard</span>
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
-              ) : (
-                <>
-                  <Link
-                    href="/sign-up"
-                    className="btn-shimmer px-8 py-3.5 rounded-full bg-[#f6c844] text-[#6c5400] font-bold text-sm shadow-md hover:shadow-xl hover:bg-[#402ae6] hover:text-white transition-all transform hover:-translate-y-0.5 active:translate-y-0 flex items-center gap-2"
-                  >
-                    <span>Get Started Here</span>
-                    <ArrowRight className="h-4 w-4" />
-                  </Link>
+              <Link
+                href="/sign-up"
+                className="btn-shimmer px-8 py-3.5 rounded-full bg-[#f6c844] text-[#6c5400] font-bold text-sm shadow-md hover:shadow-xl hover:bg-[#402ae6] hover:text-white transition-all transform hover:-translate-y-0.5 active:translate-y-0 flex items-center gap-2"
+              >
+                <span>Get Started Here</span>
+                <ArrowRight className="h-4 w-4" />
+              </Link>
 
-                  <p className="mt-3.5 text-xs text-[#5d5c73] font-medium">
-                    Already have an account?{" "}
-                    <Link
-                      href="/sign-in"
-                      className="font-bold text-[#402ae6] hover:text-[#3311dc] hover:underline underline-offset-4 transition-colors"
-                    >
-                      Sign In
-                    </Link>
-                  </p>
-                </>
-              )}
+              <p className="mt-3.5 text-xs text-[#5d5c73] font-medium">
+                Already have an account?{" "}
+                <Link
+                  href="/sign-in"
+                  className="font-bold text-[#402ae6] hover:text-[#3311dc] hover:underline underline-offset-4 transition-colors"
+                >
+                  Sign In
+                </Link>
+              </p>
             </div>
 
             {/* Trust Badges */}
@@ -199,11 +114,7 @@ export default async function HomePage() {
           </div>
 
           {/* Interactive 3D Tilt Showcase Component (Smooth, Low-Sensitivity) */}
-          <DashboardTiltPreview
-            studentName={studentName}
-            studentPhoto={studentPhoto}
-            isAuthenticated={isAuthenticated}
-          />
+          <DashboardTiltPreview />
         </section>
 
         {/* ===================================================== */}
@@ -427,7 +338,7 @@ export default async function HomePage() {
                     <span>18 Detailed Derivations</span>
                   </div>
                   <Link
-                    href={isAuthenticated ? "/app/dashboard" : "/sign-up"}
+                    href="/sign-up"
                     className="text-xs font-bold text-[#402ae6] hover:underline flex items-center gap-1 group"
                   >
                     <span>Open Blueprint</span>
@@ -509,7 +420,7 @@ export default async function HomePage() {
                     <span>24 Step-by-Step Proofs</span>
                   </div>
                   <Link
-                    href={isAuthenticated ? "/app/dashboard" : "/sign-up"}
+                    href="/sign-up"
                     className="text-xs font-bold text-[#755b00] hover:underline flex items-center gap-1 group"
                   >
                     <span>Open Blueprint</span>
@@ -592,7 +503,7 @@ export default async function HomePage() {
                     <span>15 Circuit Schematics</span>
                   </div>
                   <Link
-                    href={isAuthenticated ? "/app/dashboard" : "/sign-up"}
+                    href="/sign-up"
                     className="text-xs font-bold text-emerald-700 hover:underline flex items-center gap-1 group"
                   >
                     <span>Open Blueprint</span>
@@ -675,7 +586,7 @@ export default async function HomePage() {
                     <span>32 Verified C Algorithms</span>
                   </div>
                   <Link
-                    href={isAuthenticated ? "/app/dashboard" : "/sign-up"}
+                    href="/sign-up"
                     className="text-xs font-bold text-[#402ae6] hover:underline flex items-center gap-1 group"
                   >
                     <span>Open Blueprint</span>
@@ -732,23 +643,13 @@ export default async function HomePage() {
                 </div>
 
                 <div className="flex flex-wrap items-center gap-3 pt-2">
-                  {isAuthenticated ? (
-                    <Link
-                      href="/app/dashboard"
-                      className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#f6c844] text-[#6c5400] text-xs font-bold shadow-md hover:bg-white hover:text-[#171b2a] transition-all transform hover:-translate-y-0.5"
-                    >
-                      <span>Continue in Workspace</span>
-                      <ArrowRight className="h-3.5 w-3.5" />
-                    </Link>
-                  ) : (
-                    <Link
-                      href="/sign-up"
-                      className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#f6c844] text-[#6c5400] text-xs font-bold shadow-md hover:bg-white hover:text-[#171b2a] transition-all transform hover:-translate-y-0.5"
-                    >
-                      <span>Create Free Student Account</span>
-                      <ArrowRight className="h-3.5 w-3.5" />
-                    </Link>
-                  )}
+                  <Link
+                    href="/sign-up"
+                    className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#f6c844] text-[#6c5400] text-xs font-bold shadow-md hover:bg-white hover:text-[#171b2a] transition-all transform hover:-translate-y-0.5"
+                  >
+                    <span>Create Free Student Account</span>
+                    <ArrowRight className="h-3.5 w-3.5" />
+                  </Link>
 
                   <a
                     href="#curriculum-matrix"
@@ -792,7 +693,7 @@ export default async function HomePage() {
               <ul className="space-y-2.5 text-xs text-[#5d5c73]">
                 <li>
                   <Link
-                    href={isAuthenticated ? "/app/dashboard" : "/sign-in"}
+                    href="/sign-in"
                     className="hover:text-[#402ae6] transition-colors"
                   >
                     Student Dashboard

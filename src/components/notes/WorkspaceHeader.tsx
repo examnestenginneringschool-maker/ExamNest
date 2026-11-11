@@ -12,6 +12,9 @@ type WorkspaceHeaderProps = {
   departmentCode: string;
   semesterNumber: number;
   studentName?: string;
+  backHref?: string;
+  backLabel?: string;
+  backTitle?: string;
 };
 
 export function WorkspaceHeader({
@@ -24,18 +27,23 @@ export function WorkspaceHeader({
   departmentCode,
   semesterNumber,
   studentName,
+  backHref,
+  backLabel = "Back",
+  backTitle = "Back to Subject Overview",
 }: WorkspaceHeaderProps) {
+  const resolvedBackHref = backHref ?? `/app/subjects/${subjectId}`;
+
   return (
     <header className="h-20 bg-white/80 backdrop-blur-md border-b border-slate-100 sticky top-0 z-40 px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-4 transition-all">
       {/* Left side: Back Button & Academic Subject Breadcrumb */}
       <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
         <Link
-          href={`/app/subjects/${subjectId}`}
+          href={resolvedBackHref}
           className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white border border-slate-200/80 shadow-xs hover:shadow-sm hover:border-slate-300 text-slate-700 text-xs font-semibold transition-all active:scale-95 shrink-0"
-          title="Back to Subject Overview"
+          title={backTitle}
         >
           <ArrowLeft className="h-4 w-4 text-slate-500" />
-          <span className="hidden sm:inline">Back</span>
+          <span className="hidden sm:inline">{backLabel}</span>
         </Link>
 
         {/* University, College, Subject Chip */}

@@ -1,7 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import Link from "next/link";
 import {
+  ArrowLeft,
   BookOpen,
   Search,
   ChevronDown,
@@ -31,6 +33,8 @@ type SyllabusNavigatorProps = {
   subjectName: string;
   semesterNumber: number;
   units: NavigatorUnit[];
+  totalUnitsCount?: number;
+  singleChapterMode?: boolean;
   activeUnitNumber: number | null;
   activeTopicId: string | null;
   onSelectTopic: (unitNumber: number, topicId: string) => void;
@@ -114,6 +118,8 @@ export function SyllabusNavigator({
   subjectName,
   semesterNumber,
   units,
+  totalUnitsCount,
+  singleChapterMode = false,
   activeUnitNumber,
   activeTopicId,
   onSelectTopic,
@@ -134,6 +140,10 @@ export function SyllabusNavigator({
     () => units.reduce((acc, u) => acc + u.topics.length, 0),
     [units]
   );
+
+  const resolvedTotalUnits = totalUnitsCount ?? units.length;
+  const activeSingleUnit = singleChapterMode && units.length === 1 ? units[0] : null;
+  const completedCount = progress.completedUnits.length;
 
   const toggleUnit = (unitNumber: number) => {
     setExpandedUnits((prev) => ({
@@ -171,25 +181,59 @@ export function SyllabusNavigator({
 
   return (
     <aside className="flex flex-col gap-3.5 h-full">
-      {/* Course Header & Search Card */}
+      {/* Course / Chapter Header & Search Card */}
       <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-[0_4px_20px_-4px_rgba(15,23,42,0.04)] flex flex-col gap-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <span className="h-9 w-9 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
-              <BookOpen className="h-4 w-4" />
+        {activeSingleUnit && subjectId && (
+          <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
+            <Link
+              href={`/app/subjects/${subjectId}/notes`}
+              className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-indigo-600 transition-colors"
+            >
+              <ArrowLeft className="h-3.5 w-3.5" />
+              <span>All Chapters</span>
+            </Link>
+            <span className="bg-amber-100 text-amber-800 text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0">
+              Sem {semesterNumber} Exam
             </span>
-            <div className="flex flex-col">
-              <h2 className="text-sm font-bold text-slate-900 leading-tight">
-                Course Outline
+          </div>
+        )}
+
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2.5 min-w-0">
+            {activeSingleUnit ? (
+              <span
+                className={`h-9 w-9 rounded-xl flex items-center justify-center text-xs font-extrabold shrink-0 ${
+                  progress.completedUnits.includes(activeSingleUnit.unit_number)
+                    ? "bg-emerald-50 text-emerald-700 border border-emerald-200/70"
+                    : "bg-indigo-50 text-indigo-600"
+                }`}
+              >
+                {progress.completedUnits.includes(activeSingleUnit.unit_number)
+                  ? "✓"
+                  : String(activeSingleUnit.unit_number).padStart(2, "0")}
+              </span>
+            ) : (
+              <span className="h-9 w-9 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
+                <BookOpen className="h-4 w-4" />
+              </span>
+            )}
+            <div className="flex flex-col min-w-0">
+              <h2 className="text-sm font-bold text-slate-900 leading-tight truncate">
+                {activeSingleUnit ? activeSingleUnit.title : "Course Outline"}
               </h2>
-              <span className="text-[11px] font-medium text-slate-400 mt-0.5">
-                {subjectName} · {units.length} units · {totalTopics} topics
+              <span className="text-[11px] font-medium text-slate-400 mt-0.5 truncate">
+                {activeSingleUnit
+                  ? `${subjectName} · ${totalTopics} ${totalTopics === 1 ? "topic" : "topics"}`
+                  : `${subjectName} · ${units.length} units · ${totalTopics} topics`}
               </span>
             </div>
           </div>
-          <span className="bg-amber-100 text-amber-800 text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0">
-            Sem {semesterNumber} Exam
-          </span>
+
+          {!activeSingleUnit && (
+            <span className="bg-amber-100 text-amber-800 text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0">
+              Sem {semesterNumber} Exam
+            </span>
+          )}
         </div>
 
         {/* Live Topic Search Input */}
@@ -199,12 +243,13 @@ export function SyllabusNavigator({
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder={`Search within ${totalTopics} topics...`}
+            placeholder={`Search within ${totalTopics} ${totalTopics === 1 ? "topic" : "topics"}...`}
             className="w-full pl-8 pr-3 py-1.5 bg-slate-50 border border-slate-200/80 text-slate-900 placeholder:text-slate-400 rounded-full text-xs font-medium focus:outline-none focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-500/10 transition-all"
           />
           {searchQuery && (
             <button
               onClick={() => setSearchQuery("")}
+              type="button"
               className="absolute right-3 text-slate-400 hover:text-slate-600 text-xs"
             >
               ×
@@ -213,9 +258,89 @@ export function SyllabusNavigator({
         </div>
       </div>
 
-      {/* Units & Topics Accordion List */}
+      {/* Chapter Topics List (Single Chapter Direct View OR Multi-Unit Accordion) */}
       <div className="bg-white p-3.5 rounded-2xl border border-slate-200/80 shadow-[0_4px_20px_-4px_rgba(15,23,42,0.04)] flex flex-col gap-2 flex-1">
-        {filteredUnits.length === 0 ? (
+        {activeSingleUnit ? (
+          (() => {
+            const visibleTopics = searchQuery.trim()
+              ? activeSingleUnit.topics.filter((t) =>
+                  isSearchMatch(t.title, searchQuery, t.topic_number)
+                )
+              : activeSingleUnit.topics;
+
+            if (activeSingleUnit.topics.length === 0) {
+              return (
+                <div className="py-8 text-center text-xs text-slate-400 italic">
+                  Topics for this chapter are coming soon.
+                </div>
+              );
+            }
+
+            if (visibleTopics.length === 0) {
+              return (
+                <div className="py-8 text-center text-xs text-slate-400">
+                  No topics matched &quot;{searchQuery}&quot;
+                </div>
+              );
+            }
+
+            return (
+              <div className="flex flex-col gap-1.5">
+                <div className="flex items-center justify-between px-2 pb-1">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                    Chapter Topics
+                  </span>
+                  <span className="text-[11px] font-medium text-slate-400">
+                    {visibleTopics.length} shown
+                  </span>
+                </div>
+
+                {visibleTopics.map((topic) => {
+                  const isActive = activeTopicId === topic.id;
+
+                  return (
+                    <button
+                      key={topic.id}
+                      type="button"
+                      onClick={() => onSelectTopic(activeSingleUnit.unit_number, topic.id)}
+                      className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-left transition-all cursor-pointer ${
+                        isActive
+                          ? "bg-indigo-50/70 shadow-xs border border-indigo-200/80 text-indigo-900 font-semibold"
+                          : "hover:bg-slate-50 border border-transparent text-slate-700 hover:text-slate-900"
+                      }`}
+                    >
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <span
+                          className={`text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0 transition-colors ${
+                            isActive
+                              ? "bg-indigo-600 text-white"
+                              : "bg-slate-100 text-slate-600"
+                          }`}
+                        >
+                          {topic.topic_number}
+                        </span>
+                        <span className="text-xs leading-snug line-clamp-2">
+                          {topic.title}
+                        </span>
+                      </div>
+
+                      <div className="flex items-center gap-1.5 shrink-0 ml-2">
+                        {topic.is_important && (
+                          <span title="Important topic" className="flex items-center">
+                            <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
+                          </span>
+                        )}
+                        {isActive && (
+                          <span className="w-1.5 h-1.5 rounded-full bg-indigo-600" />
+                        )}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            );
+          })()
+        ) : filteredUnits.length === 0 ? (
           <div className="py-8 text-center text-xs text-slate-400">
             No topics matched &quot;{searchQuery}&quot;
           </div>
@@ -346,15 +471,15 @@ export function SyllabusNavigator({
               Exam Coverage Index
             </span>
             <span className="text-[10px] font-medium text-slate-400">
-              {progress.completedUnits.length > 0
-                ? `${progress.completedUnits.length} of ${units.length} Units Completed`
+              {completedCount > 0 && resolvedTotalUnits > 0
+                ? `${Math.min(completedCount, resolvedTotalUnits)} of ${resolvedTotalUnits} Chapters Completed`
                 : "Structured University Notes"}
             </span>
           </div>
         </div>
         <span className="bg-amber-100 text-amber-900 text-[10px] font-bold px-2 py-0.5 rounded-full">
-          {progress.completedUnits.length > 0
-            ? `${Math.round((progress.completedUnits.length / units.length) * 100)}% Done`
+          {completedCount > 0 && resolvedTotalUnits > 0
+            ? `${Math.min(100, Math.round((completedCount / resolvedTotalUnits) * 100))}% Done`
             : "A+ Track"}
         </span>
       </div>

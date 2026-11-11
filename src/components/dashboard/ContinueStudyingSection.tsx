@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { useSubjectProgress } from "@/lib/academic/progress-store";
 import type { CurriculumSubject } from "@/lib/academic/student-context";
+import { formatSubjectType } from "@/components/dashboard/SubjectCard";
 
 type SubjectVisual = {
   icon: LucideIcon;
@@ -149,7 +150,7 @@ function SubjectStudyCard({ subject }: { subject: CurriculumSubject }) {
           >
             {isAllDone
               ? `${subject.code} · Done 🎉`
-              : `${subject.code} · ${subject.subject_type === "theory" ? "Theory" : "Practical"}`}
+              : `${subject.code} · ${formatSubjectType(subject.subject_type)}`}
           </span>
         </div>
 
