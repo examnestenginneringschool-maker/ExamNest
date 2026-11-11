@@ -971,6 +971,9 @@ function SearchBar({
       <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#717588]" />
       <input
         type="text"
+        name="onboarding-search"
+        aria-label={placeholder}
+        autoComplete="off"
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}

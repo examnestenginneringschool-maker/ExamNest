@@ -241,6 +241,9 @@ export function SyllabusNavigator({
           <Search className="absolute left-3 text-slate-400 h-3.5 w-3.5" />
           <input
             type="text"
+            name="topic-search"
+            aria-label="Search topics"
+            autoComplete="off"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder={`Search within ${totalTopics} ${totalTopics === 1 ? "topic" : "topics"}...`}

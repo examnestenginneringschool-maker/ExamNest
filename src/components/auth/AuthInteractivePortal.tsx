@@ -583,7 +583,9 @@ export function AuthInteractivePortal({ mode }: AuthInteractivePortalProps) {
                   otpInputRefs.current[idx] = el;
                 }}
                 type="text"
+                name={`otp-digit-${idx + 1}`}
                 inputMode="numeric"
+                autoComplete={idx === 0 ? "one-time-code" : "off"}
                 maxLength={1}
                 value={digit}
                 onChange={(e) => handleOtpChange(idx, e.target.value)}
@@ -805,6 +807,7 @@ export function AuthInteractivePortal({ mode }: AuthInteractivePortalProps) {
             <label className="inline-flex items-center gap-2 cursor-pointer select-none text-[#717588] font-medium">
               <input
                 type="checkbox"
+                name="remember-me"
                 checked={rememberMe}
                 onChange={(e) => setRememberMe(e.target.checked)}
                 className="w-4 h-4 rounded accent-[#5B4DFF] cursor-pointer"
