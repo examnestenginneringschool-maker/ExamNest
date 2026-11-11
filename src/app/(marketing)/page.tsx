@@ -20,6 +20,7 @@ import {
 import { DashboardTiltPreview } from "@/components/marketing/DashboardTiltPreview";
 import { MarketingHeader } from "@/components/marketing/MarketingHeader";
 import { Logo } from "@/components/brand/Logo";
+import { PageTransition } from "@/components/ui/ViewTransitions";
 
 export default async function HomePage() {
   const user = await getAuthenticatedUser();
@@ -30,7 +31,8 @@ export default async function HomePage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#faf8ff] text-[#171b2a] font-sans selection:bg-[#402ae6] selection:text-white">
+    <PageTransition>
+      <div className="min-h-screen bg-[#faf8ff] text-[#171b2a] font-sans selection:bg-[#402ae6] selection:text-white">
       {/* ===================================================== */}
       {/* 1. TOP NAVIGATION HEADER                              */}
       {/* ===================================================== */}
@@ -835,6 +837,7 @@ export default async function HomePage() {
           </div>
         </div>
       </footer>
-    </div>
+      </div>
+    </PageTransition>
   );
 }

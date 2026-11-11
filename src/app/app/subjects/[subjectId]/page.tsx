@@ -11,6 +11,7 @@ import { SubjectHero } from "@/components/subject/SubjectHero";
 import { SubjectStatsRow } from "@/components/subject/SubjectStatsRow";
 import { ResumeLearningBanner } from "@/components/subject/ResumeLearningBanner";
 import { SubjectWorkspaceGrid } from "@/components/subject/SubjectWorkspaceGrid";
+import { PageTransition } from "@/components/ui/ViewTransitions";
 
 type PageProps = {
   params: Promise<{
@@ -109,7 +110,8 @@ export default async function SubjectPage({ params }: PageProps) {
   const studentName = user.fullName;
 
   return (
-    <main className="min-h-screen bg-[#faf8ff] text-slate-900 antialiased selection:bg-indigo-500 selection:text-white pb-24">
+    <PageTransition>
+      <main className="min-h-screen bg-[#faf8ff] text-slate-900 antialiased selection:bg-indigo-500 selection:text-white pb-24">
       {/* 1. Floating Nav Menu (matching the Notes workspace) */}
       <FloatingNavMenu subjectId={subject.id} />
 
@@ -155,6 +157,7 @@ export default async function SubjectPage({ params }: PageProps) {
           unitsCount={totalUnits}
         />
       </div>
-    </main>
+      </main>
+    </PageTransition>
   );
 }

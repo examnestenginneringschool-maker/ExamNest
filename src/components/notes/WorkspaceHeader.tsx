@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ArrowLeft, Building2, School, ChevronDown } from "lucide-react";
-import { UserMenu } from "@/components/auth/UserMenu";
+import { StudentHeaderName, UserMenu } from "@/components/auth/UserMenu";
 
 type WorkspaceHeaderProps = {
   subjectId: string;
@@ -83,7 +83,7 @@ export function WorkspaceHeader({
           {studentName && (
             <div className="hidden sm:flex flex-col text-left">
               <span className="text-xs font-bold text-slate-800 leading-tight">
-                {studentName}
+                <StudentHeaderName fallbackName={studentName} />
               </span>
               <span className="text-[11px] text-slate-400 font-medium">
                 {departmentCode} Student
