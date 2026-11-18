@@ -43,7 +43,7 @@ export async function createServerSupabaseClient() {
             );
           } catch {
             // Called from a Server Component where setting cookies is ignored
-            // (session refresh is handled by src/proxy.ts).
+            // (session refresh is handled by src/middleware.ts).
           }
         },
       },
