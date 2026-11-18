@@ -65,7 +65,7 @@ export function ProfileFeedbackView() {
       setMessage("");
       setResult({
         type: "success",
-        text: "Thank you! Your feedback has been sent directly to the ExamNest team.",
+        text: "Thank you! Your feedback has been sent directly to the Qoncepto team.",
       });
     } catch {
       setResult({

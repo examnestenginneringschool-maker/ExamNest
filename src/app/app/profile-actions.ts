@@ -1,10 +1,10 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import nodemailer from "nodemailer";
 import { completeOnboarding } from "@/app/onboarding/actions";
 import { getStudentAcademicContext } from "@/lib/academic/student-context";
 import { PLATFORM_INFO } from "@/lib/legal/navigation";
+import { isEmailProviderConfigured, sendPlatformEmail } from "@/lib/mail/mailer";
 import {
   createServerSupabaseClient,
   getAuthenticatedUser,
@@ -166,13 +166,12 @@ export async function submitStudentFeedback(input: {
   const categoryLabel = CATEGORY_LABELS[category];
   const academic = await getStudentAcademicContext(user.id).catch(() => null);
 
-  const smtpHost = process.env.SMTP_HOST || "smtp.gmail.com";
-  const smtpPort = Number(process.env.SMTP_PORT || "587");
-  const smtpUser = process.env.SMTP_USER;
-  const smtpPass = process.env.SMTP_PASS;
-  const recipient = process.env.FEEDBACK_EMAIL || smtpUser;
+  const recipient =
+    process.env.FEEDBACK_EMAIL ||
+    process.env.SMTP_USER ||
+    PLATFORM_INFO.emails.support;
 
-  const subjectLine = `[ExamNest Beta · ${categoryLabel}] from ${user.fullName}`;
+  const subjectLine = `[Qoncepto Beta · ${categoryLabel}] from ${user.fullName}`;
   const fallbackMailto = `mailto:${PLATFORM_INFO.emails.support}?subject=${encodeURIComponent(
     subjectLine
   )}&body=${encodeURIComponent(
@@ -183,7 +182,7 @@ export async function submitStudentFeedback(input: {
     }\nPage: ${pagePath || "/app"}\n\n${message}`
   )}`;
 
-  if (!smtpUser || !smtpPass || !recipient) {
+  if (!isEmailProviderConfigured() || !recipient) {
     return {
       success: false,
       error: "Direct mailer is not configured in this environment.",
@@ -192,16 +191,6 @@ export async function submitStudentFeedback(input: {
   }
 
   try {
-    const transporter = nodemailer.createTransport({
-      host: smtpHost,
-      port: smtpPort,
-      secure: smtpPort === 465,
-      auth: {
-        user: smtpUser,
-        pass: smtpPass,
-      },
-    });
-
     const academicSummary = academic
       ? `${academic.university.short_name || academic.university.name} · ${academic.college.name} · ${academic.course.short_name || academic.course.name} (${academic.department.short_name}) · Semester ${academic.semester.semester_number}`
       : "Not available";
@@ -209,7 +198,7 @@ export async function submitStudentFeedback(input: {
     const html = `
       <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 560px; margin: 0 auto; padding: 24px; background: #faf8ff; border: 1px solid #e2e8f0; border-radius: 16px;">
         <div style="font-size: 11px; font-weight: 800; color: #5B4DFF; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;">
-          ExamNest Early Student Feedback
+          Qoncepto Early Student Feedback
         </div>
         <h2 style="margin: 0 0 16px 0; font-size: 18px; color: #171b2a;">${escapeHtml(categoryLabel)}</h2>
         <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; margin-bottom: 16px; white-space: pre-wrap; font-size: 14px; color: #1e293b; line-height: 1.6;">${escapeHtml(message)}</div>
@@ -222,18 +211,25 @@ export async function submitStudentFeedback(input: {
       </div>
     `;
 
-    await transporter.sendMail({
-      from: process.env.SMTP_FROM || `ExamNest Feedback <${smtpUser}>`,
+    const result = await sendPlatformEmail({
       to: recipient,
       replyTo: user.email || undefined,
       subject: subjectLine,
       html,
     });
 
+    if (!result.sent) {
+      return {
+        success: false,
+        error: result.error || "Unable to send feedback right now.",
+        fallbackMailto,
+      };
+    }
+
     return { success: true };
   } catch (err) {
     console.error(
-      "[ExamNest Feedback] Failed to deliver feedback email:",
+      "[Qoncepto Feedback] Failed to deliver feedback email:",
       err instanceof Error ? err.message : err
     );
     return {

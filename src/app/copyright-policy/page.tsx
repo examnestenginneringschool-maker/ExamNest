@@ -10,9 +10,9 @@ import { PLATFORM_INFO } from "@/lib/legal/navigation";
 import { Copyright, ShieldAlert, Mail } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Copyright & IP Policy | ExamNest",
+  title: "Copyright & IP Policy | Qoncepto",
   description:
-    "Learn about ExamNest's intellectual property ownership, university curriculum attribution, digital forensic watermarking, and anti-piracy enforcement under Indian law.",
+    "Learn about Qoncepto's intellectual property ownership, university curriculum attribution, digital forensic watermarking, and anti-piracy enforcement under Indian law.",
 };
 
 const COPYRIGHT_TOC_ITEMS: TocItem[] = [
@@ -61,7 +61,7 @@ export default function CopyrightPolicyPage() {
               </h1>
 
               <p className="mt-4 text-base sm:text-lg text-slate-600 leading-relaxed">
-                This policy defines the intellectual property ownership of ExamNest study assets, respects statutory university syllabus copyrights, and establishes our dynamic watermarking and anti-piracy enforcement framework.
+                This policy defines the intellectual property ownership of Qoncepto study assets, respects statutory university syllabus copyrights, and establishes our dynamic watermarking and anti-piracy enforcement framework.
               </p>
 
               <div className="mt-6 flex flex-wrap items-center gap-y-2 gap-x-6 text-xs text-slate-500 font-medium">
@@ -79,7 +79,7 @@ export default function CopyrightPolicyPage() {
                 <span>•</span>
                 <span>
                   Document Reference:{" "}
-                  <strong className="text-slate-700">EN-SAF-IP-2026</strong>
+                  <strong className="text-slate-700">QN-SAF-IP-2026</strong>
                 </span>
               </div>
             </header>
@@ -91,7 +91,7 @@ export default function CopyrightPolicyPage() {
                 <span>Zero-Tolerance Content Protection</span>
               </div>
               <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-                Digital streams and downloadable documents on ExamNest carry dynamic digital forensic watermarking linked to the authenticated student account. Unauthorized re-hosting, screen-recording, or mass sharing leads to immediate permanent termination without refund and legal escalation.
+                Digital streams and downloadable documents on Qoncepto carry dynamic digital forensic watermarking linked to the authenticated student account. Unauthorized re-hosting, screen-recording, or mass sharing leads to immediate permanent termination without refund and legal escalation.
               </p>
             </div>
 
@@ -104,7 +104,7 @@ export default function CopyrightPolicyPage() {
                 </h2>
                 <div className="mt-4 space-y-3">
                   <p>
-                    All original content created, compiled, or published on ExamNest (<code className="text-xs bg-slate-100 px-1.5 py-0.5 rounded font-mono text-slate-700">{PLATFORM_INFO.domain}</code>)—including recorded video lectures, structured explanatory notes, step-by-step mathematical proofs, LaTeX-rendered derivations, circuit schematics, solved PYQ explanations, online mock tests, user interface components, branding, logos, and platform source code—is the exclusive intellectual property of ExamNest and its authorized academic contributors.
+                    All original content created, compiled, or published on Qoncepto (<code className="text-xs bg-slate-100 px-1.5 py-0.5 rounded font-mono text-slate-700">{PLATFORM_INFO.domain}</code>)—including recorded video lectures, structured explanatory notes, step-by-step mathematical proofs, LaTeX-rendered derivations, circuit schematics, solved PYQ explanations, online mock tests, user interface components, branding, logos, and platform source code—is the exclusive intellectual property of Qoncepto and its authorized academic contributors.
                   </p>
                   <p>
                     Purchasing a course bundle or creating an account grants a limited, revocable personal study license and does not transfer any ownership, copyright, or commercial distribution rights.
@@ -122,7 +122,7 @@ export default function CopyrightPolicyPage() {
                     Official university names, college titles, statutory syllabus headings, and standard course codes (e.g., under MAKAUT, WBSCTE, AICTE, or state/central universities) belong to their respective governing boards and examination authorities.
                   </p>
                   <p>
-                    ExamNest makes no claim of ownership over official university syllabus blueprints or examination question papers and references them solely for pedagogical indexing, educational alignment, and fair dealing under applicable provisions of the <strong>Indian Copyright Act, 1957</strong>.
+                    Qoncepto makes no claim of ownership over official university syllabus blueprints or examination question papers and references them solely for pedagogical indexing, educational alignment, and fair dealing under applicable provisions of the <strong>Indian Copyright Act, 1957</strong>.
                   </p>
                 </div>
               </section>
@@ -134,7 +134,7 @@ export default function CopyrightPolicyPage() {
                 </h2>
                 <div className="mt-4 space-y-3">
                   <p>
-                    To deter content theft and identify leak sources accurately, ExamNest&apos;s digital video streams and downloadable PDF study documents utilize dynamic digital forensic watermarking.
+                    To deter content theft and identify leak sources accurately, Qoncepto&apos;s digital video streams and downloadable PDF study documents utilize dynamic digital forensic watermarking.
                   </p>
                   <p className="text-xs sm:text-sm text-slate-600">
                     Protected assets visibly or cryptographically embed session identifiers—displaying the authenticated student&apos;s <strong>email address</strong>, <strong>registered mobile number</strong>, and a <strong>unique user hash</strong>. Attempting to blur, strip, crop, or tamper with forensic watermarks is a strict violation of this policy.
@@ -161,7 +161,7 @@ export default function CopyrightPolicyPage() {
                     <li>Ripping, capturing, or re-encoding video streams (HLS/WebRTC) via third-party browser extensions, download managers, or packet sniffers.</li>
                     <li>Screen-recording video lectures or live problem-solving walkthroughs using third-party capture software.</li>
                     <li>Extracting, printing in bulk, re-hosting, selling, or distributing watermarked study PDFs and notes on Telegram groups, WhatsApp channels, Google Drive, Discord, or competitor websites.</li>
-                    <li>Running automated scrapers, bots, or headless browsers to clone ExamNest&apos;s curriculum database or solution archives.</li>
+                    <li>Running automated scrapers, bots, or headless browsers to clone Qoncepto&apos;s curriculum database or solution archives.</li>
                   </ul>
                 </div>
               </section>
@@ -176,7 +176,7 @@ export default function CopyrightPolicyPage() {
                     Any account detected distributing, leaking, reselling, or unlawfully copying proprietary platform assets will face <strong>immediate permanent termination without refund</strong>.
                   </p>
                   <p>
-                    Furthermore, ExamNest reserves the right to pursue civil remedies (including injunctive relief and statutory damages) and initiate criminal prosecution under the <strong>Information Technology Act, 2000</strong> and the <strong>Indian Copyright Act, 1957</strong> against individuals or groups involved in digital piracy.
+                    Furthermore, Qoncepto reserves the right to pursue civil remedies (including injunctive relief and statutory damages) and initiate criminal prosecution under the <strong>Information Technology Act, 2000</strong> and the <strong>Indian Copyright Act, 1957</strong> against individuals or groups involved in digital piracy.
                   </p>
                 </div>
               </section>
@@ -188,13 +188,13 @@ export default function CopyrightPolicyPage() {
                 </h2>
                 <div className="mt-4 space-y-3">
                   <p>
-                    If you are a copyright owner, educator, or institutional representative and believe that any third-party material or reference on ExamNest infringes your intellectual property rights, please submit a written notice containing the exact URL, proof of ownership, and your contact details:
+                    If you are a copyright owner, educator, or institutional representative and believe that any third-party material or reference on Qoncepto infringes your intellectual property rights, please submit a written notice containing the exact URL, proof of ownership, and your contact details:
                   </p>
 
                   <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50/70 p-5 space-y-2">
                     <div className="flex items-center gap-2 font-semibold text-slate-900">
                       <Mail className="h-4 w-4 text-slate-600" />
-                      <span>ExamNest Legal &amp; IP Compliance</span>
+                      <span>Qoncepto Legal &amp; IP Compliance</span>
                     </div>
                     <p className="text-xs sm:text-sm text-slate-600">
                       Legal / IP Email:{" "}

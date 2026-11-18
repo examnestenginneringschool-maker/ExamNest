@@ -7,7 +7,7 @@ export type SubjectProgress = {
   readonly completedTopics: readonly string[];
 };
 
-export const PROGRESS_EVENT = "examnest:progress-update";
+export const PROGRESS_EVENT = "qoncepto:progress-update";
 
 export const EMPTY_PROGRESS: SubjectProgress = Object.freeze({
   completedUnits: Object.freeze([]) as readonly number[],
@@ -28,7 +28,7 @@ export function getSubjectProgress(subjectId?: string): SubjectProgress {
   }
 
   try {
-    const raw = localStorage.getItem(`examnest_completed_${subjectId}`);
+    const raw = localStorage.getItem(`qoncepto_completed_${subjectId}`);
     const cached = memoryCache.get(subjectId);
 
     // If the raw localStorage string has not changed, return cached immutable reference
@@ -86,7 +86,7 @@ export function toggleUnitProgress(subjectId: string, unitNumber: number): boole
 
   const raw = JSON.stringify(updated);
   try {
-    localStorage.setItem(`examnest_completed_${subjectId}`, raw);
+    localStorage.setItem(`qoncepto_completed_${subjectId}`, raw);
   } catch {
     // ignore storage errors
   }
@@ -183,7 +183,7 @@ export function getOverallProgress(
       .map(
         (s) =>
           `${s.id}:${s.noteUnitsCount}:${localStorage.getItem(
-            `examnest_completed_${s.id}`
+            `qoncepto_completed_${s.id}`
           ) || ""}`
       )
       .join("|");

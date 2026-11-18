@@ -58,7 +58,7 @@ export function MarketingHeader() {
           href="/"
           className="flex items-center shrink-0 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#402ae6]/35"
         >
-          <Logo size="md" subtitle="The Engineering School" />
+          <Logo size="md" subtitle="Syllabus To Mastery" />
         </Link>
 
         {/* Right: Single Aligned Navigation Row */}

@@ -502,7 +502,7 @@ export function AuthInteractivePortal({ mode }: AuthInteractivePortalProps) {
 
       if (typeof document !== "undefined") {
         document.cookie =
-          "examnest_recovery_flow=1; path=/; max-age=3600; SameSite=Lax";
+          "qoncepto_recovery_flow=1; path=/; max-age=3600; SameSite=Lax";
       }
 
       const { error } = await supabase.auth.resetPasswordForEmail(

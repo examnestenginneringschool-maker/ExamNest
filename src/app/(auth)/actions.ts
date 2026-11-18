@@ -1,7 +1,5 @@
 "use server";
 
-import crypto from "node:crypto";
-import dns from "node:dns/promises";
 import { cookies } from "next/headers";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import {
@@ -82,18 +80,88 @@ function setCachedDomainResult(domain: string, result: EmailSecurityResult) {
   });
 }
 
+interface DohJsonResponse {
+  Status?: number;
+  Answer?: Array<{
+    type?: number;
+    data?: string;
+  }>;
+}
+
+/**
+ * Edge-compatible DNS MX lookup via DNS-over-HTTPS (Cloudflare DoH with Google DoH fallback).
+ */
+async function resolveMxViaDoH(
+  domain: string
+): Promise<Array<{ exchange: string; priority: number }>> {
+  const endpoints = [
+    `https://cloudflare-dns.com/dns-query?name=${encodeURIComponent(domain)}&type=MX`,
+    `https://dns.google/resolve?name=${encodeURIComponent(domain)}&type=MX`,
+  ];
+
+  let lastError: unknown = null;
+
+  for (const url of endpoints) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 2500);
+    try {
+      const res = await fetch(url, {
+        method: "GET",
+        headers: { Accept: "application/dns-json" },
+        signal: controller.signal,
+      });
+
+      if (!res.ok) {
+        lastError = new Error(`DoH HTTP ${res.status}`);
+        continue;
+      }
+
+      const json = (await res.json()) as DohJsonResponse;
+      // RFC 1035 / DoH RCODEs: 2 = SERVFAIL, 3 = NXDOMAIN (Non-Existent Domain)
+      if (json.Status === 3 || json.Status === 2) {
+        const dnsErr = new Error(
+          `DNS lookup failed with status ${json.Status}`
+        ) as Error & { code?: string };
+        dnsErr.code = json.Status === 3 ? "ENOTFOUND" : "ESERVFAIL";
+        throw dnsErr;
+      }
+
+      const mxRecords: Array<{ exchange: string; priority: number }> = [];
+      for (const ans of json.Answer ?? []) {
+        if (ans.type !== 15 || typeof ans.data !== "string") continue;
+        const parts = ans.data.trim().split(/\s+/);
+        if (parts.length >= 2) {
+          const priority = Number(parts[0]);
+          const exchange = parts.slice(1).join(" ").replace(/\.$/, "");
+          if (exchange) {
+            mxRecords.push({
+              priority: Number.isNaN(priority) ? 10 : priority,
+              exchange,
+            });
+          }
+        }
+      }
+      return mxRecords;
+    } catch (err) {
+      if ((err as { code?: string })?.code) {
+        throw err;
+      }
+      lastError = err;
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
+  throw lastError instanceof Error ? lastError : new Error("DoH lookup failed");
+}
+
 async function inspectCustomDomainOnServer(
   domain: string
 ): Promise<EmailSecurityResult> {
-  // Layer 2: Live DNS MX Record Inspection (MX -> Mail Exchange)
+  // Layer 2: Live DNS MX Record Inspection via DNS-over-HTTPS (MX -> Mail Exchange)
   // Catches brand-new burner domains that point their MX records to temp-mail.org, mail.tm, inboxes.com, etc.
   try {
-    const mxRecords = await Promise.race([
-      dns.resolveMx(domain),
-      new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error("DNS timeout")), 2500)
-      ),
-    ]);
+    const mxRecords = await resolveMxViaDoH(domain);
 
     if (!mxRecords || mxRecords.length === 0) {
       return {
@@ -308,7 +376,7 @@ export async function registerSingleDeviceLogin(deviceInfo?: string): Promise<{
 
     const cookieStore = await cookies();
     const existingDeviceCookie =
-      cookieStore.get("examnest_device_token")?.value || null;
+      cookieStore.get("qoncepto_device_token")?.value || null;
     const previousActiveToken =
       typeof user.user_metadata?.active_device_token === "string"
         ? user.user_metadata.active_device_token
@@ -322,7 +390,7 @@ export async function registerSingleDeviceLogin(deviceInfo?: string): Promise<{
       previousActiveToken && previousActiveToken !== existingDeviceCookie
     );
 
-    const newDeviceToken = crypto.randomUUID();
+    const newDeviceToken = globalThis.crypto.randomUUID();
     const loginTimestamp = new Date().toISOString();
 
     // 1. Revoke all other device refresh tokens in Supabase Auth
@@ -339,7 +407,7 @@ export async function registerSingleDeviceLogin(deviceInfo?: string): Promise<{
     });
 
     // 3. Persist the matching token in this browser's cookies
-    cookieStore.set("examnest_device_token", newDeviceToken, {
+    cookieStore.set("qoncepto_device_token", newDeviceToken, {
       path: "/",
       maxAge: 60 * 60 * 24 * 30, // 30 days
       sameSite: "lax",
@@ -361,10 +429,10 @@ export async function registerSingleDeviceLogin(deviceInfo?: string): Promise<{
       const siteUrl =
         process.env.NEXT_PUBLIC_SITE_URL ||
         process.env.NEXT_PUBLIC_APP_URL ||
-        "https://examnestcollege.vercel.app";
+        "https://qoncepto.vercel.app";
 
-      void import("@/lib/mail/security-alert")
-        .then(({ sendSessionReplacedEmail }) =>
+      await Promise.race([
+        import("@/lib/mail/security-alert").then(({ sendSessionReplacedEmail }) =>
           sendSessionReplacedEmail({
             toEmail: user.email!,
             studentName,
@@ -373,8 +441,9 @@ export async function registerSingleDeviceLogin(deviceInfo?: string): Promise<{
             loginTimeIso: loginTimestamp,
             siteUrl,
           })
-        )
-        .catch(() => {});
+        ),
+        new Promise<void>((resolve) => setTimeout(resolve, 2500)),
+      ]).catch(() => {});
     }
 
     return {
@@ -407,7 +476,7 @@ export async function clearSingleDeviceSession(): Promise<void> {
     }
 
     const cookieStore = await cookies();
-    cookieStore.delete("examnest_device_token");
+    cookieStore.delete("qoncepto_device_token");
   } catch {
     // Ignore errors during sign-out cleanup
   }

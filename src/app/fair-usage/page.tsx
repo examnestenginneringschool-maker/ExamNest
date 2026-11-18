@@ -10,9 +10,9 @@ import { PLATFORM_INFO } from "@/lib/legal/navigation";
 import { Lock, ShieldCheck, XCircle, Mail } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Fair Usage Policy | ExamNest",
+  title: "Fair Usage Policy | Qoncepto",
   description:
-    "Read ExamNest's Fair Usage Policy covering single-user licensing, single-device active session limits, credential sharing prohibitions, and anti-piracy protections.",
+    "Read Qoncepto's Fair Usage Policy covering single-user licensing, single-device active session limits, credential sharing prohibitions, and anti-piracy protections.",
 };
 
 const FAIR_USAGE_TOC_ITEMS: TocItem[] = [
@@ -60,7 +60,7 @@ export default function FairUsagePage() {
               </h1>
 
               <p className="mt-4 text-base sm:text-lg text-slate-600 leading-relaxed">
-                This Fair Usage Policy establishes responsible account boundaries on ExamNest (<code className="text-xs bg-slate-100 px-1.5 py-0.5 rounded font-mono text-slate-700">{PLATFORM_INFO.domain}</code>) to ensure fast, reliable access for every student and protect academic resources from unauthorized redistribution.
+                This Fair Usage Policy establishes responsible account boundaries on Qoncepto (<code className="text-xs bg-slate-100 px-1.5 py-0.5 rounded font-mono text-slate-700">{PLATFORM_INFO.domain}</code>) to ensure fast, reliable access for every student and protect academic resources from unauthorized redistribution.
               </p>
 
               <div className="mt-6 flex flex-wrap items-center gap-y-2 gap-x-6 text-xs text-slate-500 font-medium">
@@ -78,7 +78,7 @@ export default function FairUsagePage() {
                 <span>•</span>
                 <span>
                   Document Reference:{" "}
-                  <strong className="text-slate-700">EN-SAF-FAIR-2026</strong>
+                  <strong className="text-slate-700">QN-SAF-FAIR-2026</strong>
                 </span>
               </div>
             </header>
@@ -90,7 +90,7 @@ export default function FairUsagePage() {
                 <span>Core Account Integrity Principles</span>
               </div>
               <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-                Every ExamNest account and course enrollment is licensed strictly to <strong>one individual student</strong> on <strong>one active browser/device session at a time</strong>. Sharing credentials, stream ripping, screen recording, or redistributing study PDFs triggers automated session protection and permanent account revocation without refund.
+                Every Qoncepto account and course enrollment is licensed strictly to <strong>one individual student</strong> on <strong>one active browser/device session at a time</strong>. Sharing credentials, stream ripping, screen recording, or redistributing study PDFs triggers automated session protection and permanent account revocation without refund.
               </p>
             </div>
 
@@ -103,7 +103,7 @@ export default function FairUsagePage() {
                 </h2>
                 <div className="mt-4 space-y-3">
                   <p>
-                    Every course subscription, subject bundle, and registered student account on ExamNest provides a <strong>non-transferable, revocable, single-user license</strong> strictly intended for individual personal learning.
+                    Every course subscription, subject bundle, and registered student account on Qoncepto provides a <strong>non-transferable, revocable, single-user license</strong> strictly intended for individual personal learning.
                   </p>
                   <p>
                     You may access your study workspace from your personal laptop, desktop, or smartphone sequentially, provided the account remains exclusively under your personal control.
@@ -118,7 +118,7 @@ export default function FairUsagePage() {
                 </h2>
                 <div className="mt-4 space-y-3">
                   <p>
-                    ExamNest enforces a real-time Single-Device Active Session engine:
+                    Qoncepto enforces a real-time Single-Device Active Session engine:
                   </p>
                   <ul className="list-disc pl-5 space-y-1.5 text-xs sm:text-sm text-slate-600">
                     <li>
@@ -211,7 +211,7 @@ export default function FairUsagePage() {
                       className="font-semibold text-slate-900 underline hover:text-slate-700"
                     >
                       Refund &amp; Cancellation Policy
-                    </Link>), and ExamNest reserves the right to pursue civil remedies and criminal action under the <strong>Information Technology Act, 2000</strong> and the <strong>Indian Copyright Act, 1957</strong>. See our{" "}
+                    </Link>), and Qoncepto reserves the right to pursue civil remedies and criminal action under the <strong>Information Technology Act, 2000</strong> and the <strong>Indian Copyright Act, 1957</strong>. See our{" "}
                     <Link
                       href="/copyright-policy"
                       className="font-semibold text-slate-900 underline hover:text-slate-700"
@@ -236,7 +236,7 @@ export default function FairUsagePage() {
                   <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50/70 p-5 space-y-2">
                     <div className="flex items-center gap-2 font-semibold text-slate-900">
                       <Mail className="h-4 w-4 text-slate-600" />
-                      <span>ExamNest Trust &amp; Fair Usage Team</span>
+                      <span>Qoncepto Trust &amp; Fair Usage Team</span>
                     </div>
                     <p className="text-xs sm:text-sm text-slate-600">
                       Support Email:{" "}

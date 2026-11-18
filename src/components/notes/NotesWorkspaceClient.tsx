@@ -11,24 +11,28 @@ type NotesWorkspaceClientProps = {
   subjectId: string;
   subjectName: string;
   semesterNumber: number;
+  studentName?: string;
+  studentEmail?: string;
   units: NoteUnit[];
   totalUnitsCount?: number;
   initialTopicId?: string | null;
   nextUnit?: { unitNumber: number; title: string } | null;
   topicsByUnit: Record<string, Topic[]>;
-  blocksByTopic: Record<string, TopicBlock[]>;
+  blocksByTopic?: Record<string, TopicBlock[]>;
 };
 
 export function NotesWorkspaceClient({
   subjectId,
   subjectName,
   semesterNumber,
+  studentName,
+  studentEmail,
   units,
   totalUnitsCount,
   initialTopicId,
   nextUnit,
   topicsByUnit,
-  blocksByTopic,
+  blocksByTopic = {},
 }: NotesWorkspaceClientProps) {
   // Navigator formatted units
   const navigatorUnits: NavigatorUnit[] = useMemo(() => {
@@ -76,7 +80,7 @@ export function NotesWorkspaceClient({
     if (typeof window === "undefined" || !activeUnit) return;
     try {
       localStorage.setItem(
-        `examnest_resume_${subjectId}`,
+        `qoncepto_resume_${subjectId}`,
         JSON.stringify({
           subjectId,
           unitNumber: activeUnit.unit_number,
@@ -152,6 +156,8 @@ export function NotesWorkspaceClient({
             <TopicReaderWorkspace
               subjectId={subjectId}
               subjectName={subjectName}
+              studentName={studentName}
+              studentEmail={studentEmail}
               unit={activeUnit}
               topic={activeTopic}
               blocks={currentBlocks}

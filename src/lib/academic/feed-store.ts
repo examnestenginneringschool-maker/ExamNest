@@ -14,7 +14,7 @@ export type SubjectUpdateItem = {
   createdAt: number;
 };
 
-export const FEED_UPDATE_EVENT = "examnest:feed-update";
+export const FEED_UPDATE_EVENT = "qoncepto:feed-update";
 
 const EMPTY_FEED: readonly SubjectUpdateItem[] = Object.freeze([]);
 
@@ -49,7 +49,7 @@ export function getRealtimeFeed(subjectIds: string[]): readonly SubjectUpdateIte
   }
 
   try {
-    const raw = localStorage.getItem("examnest_realtime_feed");
+    const raw = localStorage.getItem("qoncepto_realtime_feed");
     if (raw === cachedRawFeed) {
       return cachedFeedItems;
     }
@@ -114,10 +114,10 @@ export function pushSubjectUpdate(
 
   if (typeof window !== "undefined") {
     try {
-      const raw = localStorage.getItem("examnest_realtime_feed");
+      const raw = localStorage.getItem("qoncepto_realtime_feed");
       const current: SubjectUpdateItem[] = raw ? JSON.parse(raw) : [];
       const updated = [newItem, ...current].slice(0, 20); // keep last 20
-      localStorage.setItem("examnest_realtime_feed", JSON.stringify(updated));
+      localStorage.setItem("qoncepto_realtime_feed", JSON.stringify(updated));
     } catch {
       // ignore storage error
     }

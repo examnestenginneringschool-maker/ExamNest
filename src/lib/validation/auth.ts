@@ -1,12 +1,7 @@
 import { z } from "zod";
 import disposableDomainsList from "disposable-email-domains";
 
-/**
- * Comprehensive set of 100,000+ known disposable/temporary email domains,
- * plus rotating temp-mail, mail.tm, temp-mail.org, and burner domains.
- */
-export const DISPOSABLE_EMAIL_DOMAINS = new Set<string>([
-  ...(disposableDomainsList as string[]),
+const EXTRA_DISPOSABLE_DOMAINS = [
   "tempmail.com",
   "temp-mail.org",
   "temp-mail.io",
@@ -70,7 +65,58 @@ export const DISPOSABLE_EMAIL_DOMAINS = new Set<string>([
   "amozix.com",
   "anypsd.com",
   "maxric.com",
+];
+
+let cachedDisposableSet: Set<string> | null = null;
+
+function getDisposableEmailSet(): Set<string> {
+  if (!cachedDisposableSet) {
+    cachedDisposableSet = new Set<string>([
+      ...(disposableDomainsList as string[]),
+      ...EXTRA_DISPOSABLE_DOMAINS,
+    ]);
+  }
+  return cachedDisposableSet;
+}
+
+/**
+ * Lazy-initialized lookup over 100,000+ known disposable/temporary email domains,
+ * avoiding heavy Set allocation on Worker/edge cold starts for mainstream traffic.
+ */
+export const DISPOSABLE_EMAIL_DOMAINS = {
+  has(domain: string): boolean {
+    return getDisposableEmailSet().has(domain);
+  },
+};
+
+const TRUSTED_INSTANT_ALLOW_DOMAINS = new Set([
+  "gmail.com",
+  "googlemail.com",
+  "outlook.com",
+  "hotmail.com",
+  "live.com",
+  "msn.com",
+  "yahoo.com",
+  "yahoo.co.in",
+  "icloud.com",
+  "me.com",
+  "proton.me",
+  "protonmail.com",
+  "zoho.com",
+  "zohomail.in",
+  "rediffmail.com",
 ]);
+
+function isFastAllowedAcademicOrPersonalDomain(domain: string): boolean {
+  return (
+    TRUSTED_INSTANT_ALLOW_DOMAINS.has(domain) ||
+    domain.endsWith(".edu") ||
+    domain.endsWith(".edu.in") ||
+    domain.endsWith(".ac.in") ||
+    domain.endsWith(".ac.uk") ||
+    domain.endsWith(".org.in")
+  );
+}
 
 /**
  * Known disposable or burner MX mail-server host patterns.
@@ -240,6 +286,11 @@ export function isDisposableEmail(email: string): boolean {
     if (dotCount >= 3) {
       return true;
     }
+  }
+
+  // Fast O(1) path for mainstream personal & verified academic domains without allocating 100k Set
+  if (isFastAllowedAcademicOrPersonalDomain(domain)) {
+    return false;
   }
 
   // 1. Direct match against 100,000+ disposable domains

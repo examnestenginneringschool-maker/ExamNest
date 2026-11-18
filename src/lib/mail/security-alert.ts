@@ -1,4 +1,4 @@
-import nodemailer from "nodemailer";
+import { isEmailProviderConfigured, sendPlatformEmail } from "@/lib/mail/mailer";
 import { formatDeviceLabel } from "@/lib/utils/device";
 
 export { formatDeviceLabel };
@@ -37,10 +37,10 @@ export function buildSessionReplacedEmailHtml(
   });
 
   const cleanSiteUrl =
-    payload.siteUrl.replace(/\/$/, "") || "https://examnestcollege.vercel.app";
+    payload.siteUrl.replace(/\/$/, "") || "https://qoncepto.vercel.app";
   // Use public production logo URL when running on localhost so Gmail can render the image
   const logoBaseUrl = cleanSiteUrl.includes("localhost")
-    ? "https://examnestcollege.vercel.app"
+    ? "https://qoncepto.vercel.app"
     : cleanSiteUrl;
 
   return `<!DOCTYPE html>
@@ -48,7 +48,7 @@ export function buildSessionReplacedEmailHtml(
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>New Device Sign-In Alert | ExamNest</title>
+  <title>New Device Sign-In Alert | Qoncepto</title>
 </head>
 <body style="margin: 0; padding: 0; background-color: #f4f5fb; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased;">
   <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #f4f5fb; padding: 40px 16px;">
@@ -66,26 +66,26 @@ export function buildSessionReplacedEmailHtml(
           <tr>
             <td style="padding: 36px 36px 32px 36px;">
               
-              <!-- Brand Header (ExamNest Logo + Name) -->
+              <!-- Brand Header (Qoncepto Logo + Name) -->
               <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin-bottom: 28px;">
                 <tr>
                   <td valign="middle" style="padding-right: 12px;">
-                    <div style="width: 40px; height: 40px; border-radius: 12px; background-color: #0052cc; overflow: hidden; display: inline-block; line-height: 40px; text-align: center;">
+                    <div style="width: 40px; height: 40px; border-radius: 12px; background-color: #ffffff; border: 1px solid #e6e8f4; padding: 3px; box-sizing: border-box; overflow: hidden; display: inline-block; line-height: 34px; text-align: center;">
                       <img
                         src="${logoBaseUrl}/logo.png"
-                        alt="N"
-                        width="40"
-                        height="40"
-                        style="display: block; width: 40px; height: 40px; border-radius: 12px; object-fit: cover; color: #ffffff; font-weight: 900; font-size: 20px;"
+                        alt="Q"
+                        width="34"
+                        height="34"
+                        style="display: block; width: 34px; height: 34px; border-radius: 8px; object-fit: contain; color: #0052cc; font-weight: 900; font-size: 20px;"
                       />
                     </div>
                   </td>
                   <td valign="middle">
                     <div style="font-size: 19px; font-weight: 800; color: #171b2a; letter-spacing: -0.4px; line-height: 1.1;">
-                      ExamNest
+                      Qoncepto
                     </div>
                     <div style="font-size: 10px; font-weight: 700; color: #8c90a4; text-transform: uppercase; letter-spacing: 1.4px; margin-top: 2px;">
-                      The Engineering School
+                      Syllabus To Mastery
                     </div>
                   </td>
                 </tr>
@@ -96,7 +96,7 @@ export function buildSessionReplacedEmailHtml(
                 New device sign-in detected
               </h1>
               <p style="margin: 0 0 24px 0; font-size: 14px; color: #5d5c73; line-height: 1.6;">
-                Your ExamNest account (<strong style="color: #171b2a;">${safeEmail}</strong>) was just signed in on a new device or browser. Because ExamNest enforces a strict <strong style="color: #171b2a;">Single-Device Policy</strong>, your previous active session was immediately expired.
+                Your Qoncepto account (<strong style="color: #171b2a;">${safeEmail}</strong>) was just signed in on a new device or browser. Because Qoncepto enforces a strict <strong style="color: #171b2a;">Single-Device Policy</strong>, your previous active session was immediately expired.
               </p>
 
               <!-- Sleek Security Status Vault Box -->
@@ -139,7 +139,7 @@ export function buildSessionReplacedEmailHtml(
           <tr>
             <td style="background-color: #faf8ff; border-top: 1px solid #f0f2f8; padding: 18px 36px; text-align: center;">
               <p style="margin: 0; font-size: 11px; font-weight: 600; color: #8c90a4;">
-                © ${currentYear} ExamNest · Curricular Standard &amp; Academic Workspace
+                © ${currentYear} Qoncepto · Curricular Standard &amp; Academic Workspace
               </p>
             </td>
           </tr>
@@ -153,51 +153,40 @@ export function buildSessionReplacedEmailHtml(
 }
 
 /**
- * Sends the "New Device Sign-In & Previous Session Expired" security notification email via SMTP.
+ * Sends the "New Device Sign-In & Previous Session Expired" security notification email via edge-compatible HTTP API.
  */
 export async function sendSessionReplacedEmail(
   payload: SessionReplacedAlertPayload
 ): Promise<boolean> {
-  const smtpHost = process.env.SMTP_HOST || "smtp.gmail.com";
-  const smtpPort = Number(process.env.SMTP_PORT || "587");
-  const smtpUser = process.env.SMTP_USER;
-  const smtpPass = process.env.SMTP_PASS;
-  const smtpFrom =
-    process.env.SMTP_FROM ||
-    (smtpUser ? `ExamNest <${smtpUser}>` : "ExamNest <noreply@examnest.org>");
-
-  if (!smtpUser || !smtpPass) {
+  if (!isEmailProviderConfigured()) {
     console.warn(
-      "[ExamNest Security Alert] Skipping new-device email notification because SMTP_USER or SMTP_PASS is not configured in .env."
+      "[Qoncepto Security Alert] Skipping new-device email notification because no HTTP email provider (RESEND_API_KEY, BREVO_API_KEY, or EMAIL_API_URL) is configured."
     );
     return false;
   }
 
   try {
-    const transporter = nodemailer.createTransport({
-      host: smtpHost,
-      port: smtpPort,
-      secure: smtpPort === 465,
-      auth: {
-        user: smtpUser,
-        pass: smtpPass,
-      },
-    });
-
     const html = buildSessionReplacedEmailHtml(payload);
 
-    await transporter.sendMail({
-      from: smtpFrom,
+    const result = await sendPlatformEmail({
       to: payload.toEmail,
       subject:
-        "Security Alert: New device sign-in (Previous ExamNest session expired)",
+        "Security Alert: New device sign-in (Previous Qoncepto session expired)",
       html,
     });
+
+    if (!result.sent) {
+      console.error(
+        "[Qoncepto Security Alert] Failed to send session replaced email:",
+        result.error || "Unknown email provider error"
+      );
+      return false;
+    }
 
     return true;
   } catch (err) {
     console.error(
-      "[ExamNest Security Alert] Failed to send session replaced email:",
+      "[Qoncepto Security Alert] Failed to send session replaced email:",
       err instanceof Error ? err.message : err
     );
     return false;

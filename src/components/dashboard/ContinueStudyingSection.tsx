@@ -214,7 +214,7 @@ export function ContinueStudyingSection({ subjects }: ContinueStudyingSectionPro
       // In client mode, read progress for filtering
       if (typeof window === "undefined") return true;
       try {
-        const raw = localStorage.getItem(`examnest_completed_${subject.id}`);
+        const raw = localStorage.getItem(`qoncepto_completed_${subject.id}`);
         const parsed = raw ? JSON.parse(raw) : null;
         const units = Array.isArray(parsed)
           ? parsed.filter((i) => typeof i === "number")

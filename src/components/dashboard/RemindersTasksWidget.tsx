@@ -85,7 +85,7 @@ let cachedTasks: StudentTask[] = DEFAULT_TASKS;
 function getStudentTasks(): StudentTask[] {
   if (typeof window === "undefined") return DEFAULT_TASKS;
   try {
-    const raw = localStorage.getItem("examnest_student_tasks");
+    const raw = localStorage.getItem("qoncepto_student_tasks");
     if (raw === cachedTasksJson) {
       return cachedTasks;
     }
@@ -105,10 +105,10 @@ function getStudentTasks(): StudentTask[] {
 function subscribeTasks(callback: () => void): () => void {
   if (typeof window === "undefined") return () => {};
   window.addEventListener("storage", callback);
-  window.addEventListener("examnest:tasks-update", callback);
+  window.addEventListener("qoncepto:tasks-update", callback);
   return () => {
     window.removeEventListener("storage", callback);
-    window.removeEventListener("examnest:tasks-update", callback);
+    window.removeEventListener("qoncepto:tasks-update", callback);
   };
 }
 
@@ -117,11 +117,11 @@ function saveStudentTasks(updated: StudentTask[]): void {
     const raw = JSON.stringify(updated);
     cachedTasksJson = raw;
     cachedTasks = updated;
-    localStorage.setItem("examnest_student_tasks", raw);
+    localStorage.setItem("qoncepto_student_tasks", raw);
   } catch {
     // ignore
   }
-  window.dispatchEvent(new Event("examnest:tasks-update"));
+  window.dispatchEvent(new Event("qoncepto:tasks-update"));
   window.dispatchEvent(new Event("storage"));
 }
 

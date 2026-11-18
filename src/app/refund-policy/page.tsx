@@ -16,9 +16,9 @@ import {
 } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Refund & Cancellation Policy | ExamNest",
+  title: "Refund & Cancellation Policy | Qoncepto",
   description:
-    "Review ExamNest's strict No-Refund and No-Cancellation policy once a batch is activated, along with our one-time wrong-batch replacement guidelines and gateway debit reconciliation.",
+    "Review Qoncepto's strict No-Refund and No-Cancellation policy once a batch is activated, along with our one-time wrong-batch replacement guidelines and gateway debit reconciliation.",
 };
 
 const REFUND_TOC_ITEMS: TocItem[] = [
@@ -67,7 +67,7 @@ export default function RefundPolicyPage() {
               </h1>
 
               <p className="mt-4 text-base sm:text-lg text-slate-600 leading-relaxed">
-                ExamNest operates a strict <strong>No-Refund and No-Cancellation Policy</strong> once a batch or digital course bundle is activated. Please verify your university, semester, and batch selection carefully prior to completing payment on{" "}
+                Qoncepto operates a strict <strong>No-Refund and No-Cancellation Policy</strong> once a batch or digital course bundle is activated. Please verify your university, semester, and batch selection carefully prior to completing payment on{" "}
                 <code className="text-xs bg-slate-100 px-1.5 py-0.5 rounded font-mono text-slate-700">
                   {PLATFORM_INFO.domain}
                 </code>.
@@ -88,7 +88,7 @@ export default function RefundPolicyPage() {
                 <span>•</span>
                 <span>
                   Document Reference:{" "}
-                  <strong className="text-slate-700">EN-POL-REF-2026</strong>
+                  <strong className="text-slate-700">QN-POL-REF-2026</strong>
                 </span>
               </div>
             </header>
@@ -124,7 +124,7 @@ export default function RefundPolicyPage() {
                 </h2>
                 <div className="mt-4 space-y-3">
                   <p>
-                    ExamNest provides digital educational services, including online recorded video lectures, downloadable notes, previous year question (PYQ) solutions, and online mock tests. All purchases made on ExamNest (<code className="text-xs bg-slate-100 px-1.5 py-0.5 rounded font-mono text-slate-700">{PLATFORM_INFO.domain}</code>) represent non-tangible, digital intellectual property provisioned electronically.
+                    Qoncepto provides digital educational services, including online recorded video lectures, downloadable notes, previous year question (PYQ) solutions, and online mock tests. All purchases made on Qoncepto (<code className="text-xs bg-slate-100 px-1.5 py-0.5 rounded font-mono text-slate-700">{PLATFORM_INFO.domain}</code>) represent non-tangible, digital intellectual property provisioned electronically.
                   </p>
                   <p>
                     Because digital materials are unlocked immediately upon transaction confirmation, students are advised to review course codes, university affiliations, and semester specifications carefully before checkout. See our{" "}
@@ -146,14 +146,14 @@ export default function RefundPolicyPage() {
                 </h2>
                 <div className="mt-4 space-y-3">
                   <p>
-                    Once a purchased batch, course, subject bundle, or test series is activated on your registered ExamNest account:
+                    Once a purchased batch, course, subject bundle, or test series is activated on your registered Qoncepto account:
                   </p>
                   <ul className="list-disc pl-5 space-y-2 text-xs sm:text-sm text-slate-600">
                     <li>
                       <strong>All Sales Are Final:</strong> Orders cannot be cancelled, revoked, or reversed once digital batch access has been activated.
                     </li>
                     <li>
-                      <strong>Zero Monetary Refunds:</strong> ExamNest strictly does <strong>not</strong> provide monetary refunds (to UPI, bank accounts, cards, or wallets) after batch activation, regardless of whether the request is submitted immediately after purchase or later.
+                      <strong>Zero Monetary Refunds:</strong> Qoncepto strictly does <strong>not</strong> provide monetary refunds (to UPI, bank accounts, cards, or wallets) after batch activation, regardless of whether the request is submitted immediately after purchase or later.
                     </li>
                     <li>
                       <strong>No Partial or Pro-Rata Refunds:</strong> Unused portions of a semester subscription, exam date changes, or incomplete course consumption do not qualify for partial or full fee refunds.
@@ -169,7 +169,7 @@ export default function RefundPolicyPage() {
                 </h2>
                 <div className="mt-4 space-y-3">
                   <p>
-                    While monetary refunds are strictly unavailable once a batch is activated, we understand that students may occasionally select an incorrect semester, branch, or subject batch during checkout. In such cases, ExamNest may <strong>replace or transfer your enrollment from our end to the intended batch</strong>—without issuing any monetary refund—strictly subject to <strong>all</strong> of the following conditions:
+                    While monetary refunds are strictly unavailable once a batch is activated, we understand that students may occasionally select an incorrect semester, branch, or subject batch during checkout. In such cases, Qoncepto may <strong>replace or transfer your enrollment from our end to the intended batch</strong>—without issuing any monetary refund—strictly subject to <strong>all</strong> of the following conditions:
                   </p>
 
                   <div className="space-y-3">
@@ -287,7 +287,7 @@ export default function RefundPolicyPage() {
                   <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50/70 p-5 space-y-2">
                     <div className="flex items-center gap-2 font-semibold text-slate-900">
                       <Mail className="h-4 w-4 text-slate-600" />
-                      <span>ExamNest Enrollment &amp; Billing Support</span>
+                      <span>Qoncepto Enrollment &amp; Billing Support</span>
                     </div>
                     <p className="text-xs sm:text-sm text-slate-600">
                       Support Email:{" "}

@@ -83,7 +83,7 @@ export function ProfileSessionView() {
               Single-Device Protection
             </h4>
             <p className="mt-1 text-[11px] leading-relaxed text-slate-500">
-              ExamNest enforces strict single-session security. Signing in on
+              Qoncepto enforces strict single-session security. Signing in on
               another device or browser automatically terminates older sessions
               and alerts you via email so your notes and coursework stay safe.
             </p>

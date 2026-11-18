@@ -143,7 +143,7 @@ export default async function HomePage() {
               </p>
             </div>
 
-            {/* Problem vs ExamNest Resolution Architecture */}
+            {/* Problem vs Qoncepto Resolution Architecture */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {/* Card 1 */}
               <div className="p-6 rounded-2xl bg-white shadow-xs hover:shadow-md transition-all flex flex-col justify-between border border-transparent hover:border-rose-100">
@@ -167,7 +167,7 @@ export default async function HomePage() {
                 <div className="p-4 rounded-xl bg-[#f7f8fc] border border-[#e8ebf6]">
                   <div className="flex items-center gap-1.5 text-[#402ae6] font-bold text-xs mb-1">
                     <CheckCircle2 className="h-4 w-4" />
-                    <span>The ExamNest Solution</span>
+                    <span>The Qoncepto Solution</span>
                   </div>
                   <p className="text-xs text-[#171b2a] leading-relaxed">
                     Unified subject repositories indexed strictly by official
@@ -199,7 +199,7 @@ export default async function HomePage() {
                 <div className="p-4 rounded-xl bg-[#f7f8fc] border border-[#e8ebf6]">
                   <div className="flex items-center gap-1.5 text-[#402ae6] font-bold text-xs mb-1">
                     <CheckCircle2 className="h-4 w-4" />
-                    <span>The ExamNest Solution</span>
+                    <span>The Qoncepto Solution</span>
                   </div>
                   <p className="text-xs text-[#171b2a] leading-relaxed">
                     1-to-1 regulation mapping. Every single mathematical formula
@@ -231,7 +231,7 @@ export default async function HomePage() {
                 <div className="p-4 rounded-xl bg-[#f7f8fc] border border-[#e8ebf6]">
                   <div className="flex items-center gap-1.5 text-[#402ae6] font-bold text-xs mb-1">
                     <CheckCircle2 className="h-4 w-4" />
-                    <span>The ExamNest Solution</span>
+                    <span>The Qoncepto Solution</span>
                   </div>
                   <p className="text-xs text-[#171b2a] leading-relaxed">
                     10-year question frequency matrix mapping past university
@@ -622,7 +622,7 @@ export default async function HomePage() {
               </h2>
 
               <p className="text-sm sm:text-base text-white/80 leading-relaxed mb-6">
-                ExamNest is built by engineering scholars who experienced firsthand
+                Qoncepto is built by engineering scholars who experienced firsthand
                 the friction of out-of-sync syllabi, disjointed resources, and
                 unclear examination standards. We believe syllabus transparency
                 and quality study materials are essential foundations for every
@@ -813,7 +813,7 @@ export default async function HomePage() {
 
           {/* Bottom Bar */}
           <div className="pt-8 border-t border-[#e2e5f0] flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[#717588]">
-            <p>© {new Date().getFullYear()} ExamNest | All Rights Reserved</p>
+            <p>© {new Date().getFullYear()} Qoncepto | All Rights Reserved</p>
             <div className="flex items-center gap-6">
               <a
                 href="#open-charter"

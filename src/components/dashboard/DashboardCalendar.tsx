@@ -139,7 +139,7 @@ let cachedCalendarEvents: CalendarEvent[] = DEFAULT_EVENTS;
 function getCalendarEvents(): CalendarEvent[] {
   if (typeof window === "undefined") return DEFAULT_EVENTS;
   try {
-    const raw = localStorage.getItem("examnest_calendar_events");
+    const raw = localStorage.getItem("qoncepto_calendar_events");
     if (raw === cachedCalendarJson) {
       return cachedCalendarEvents;
     }
@@ -159,10 +159,10 @@ function getCalendarEvents(): CalendarEvent[] {
 function subscribeCalendar(callback: () => void): () => void {
   if (typeof window === "undefined") return () => {};
   window.addEventListener("storage", callback);
-  window.addEventListener("examnest:calendar-update", callback);
+  window.addEventListener("qoncepto:calendar-update", callback);
   return () => {
     window.removeEventListener("storage", callback);
-    window.removeEventListener("examnest:calendar-update", callback);
+    window.removeEventListener("qoncepto:calendar-update", callback);
   };
 }
 
@@ -171,11 +171,11 @@ function saveCalendarEvents(updated: CalendarEvent[]): void {
     const raw = JSON.stringify(updated);
     cachedCalendarJson = raw;
     cachedCalendarEvents = updated;
-    localStorage.setItem("examnest_calendar_events", raw);
+    localStorage.setItem("qoncepto_calendar_events", raw);
   } catch {
     // ignore
   }
-  window.dispatchEvent(new Event("examnest:calendar-update"));
+  window.dispatchEvent(new Event("qoncepto:calendar-update"));
   window.dispatchEvent(new Event("storage"));
 }
 

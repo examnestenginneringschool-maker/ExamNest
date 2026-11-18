@@ -16,9 +16,9 @@ import {
 } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Contact Us & Grievance Redressal | ExamNest",
+  title: "Contact Us & Grievance Redressal | Qoncepto",
   description:
-    "Reach ExamNest student support, view registered operating details, or escalate issues to our Grievance & Compliance Officer under the IT Act, 2000 and Consumer Protection (E-Commerce) Rules, 2020.",
+    "Reach Qoncepto student support, view registered operating details, or escalate issues to our Grievance & Compliance Officer under the IT Act, 2000 and Consumer Protection (E-Commerce) Rules, 2020.",
 };
 
 const CONTACT_TOC_ITEMS: TocItem[] = [
@@ -84,7 +84,7 @@ export default function ContactGrievancePage() {
                 <span>•</span>
                 <span>
                   Document Reference:{" "}
-                  <strong className="text-slate-700">EN-CMP-GRV-2026</strong>
+                  <strong className="text-slate-700">QN-CMP-GRV-2026</strong>
                 </span>
               </div>
             </header>

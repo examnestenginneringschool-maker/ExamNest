@@ -10,9 +10,9 @@ import { PLATFORM_INFO } from "@/lib/legal/navigation";
 import { Building2, CheckCircle2, Globe2, Mail } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "About Us | ExamNest",
+  title: "About Us | Qoncepto",
   description:
-    "Discover ExamNest — The Engineering School. Learn how our independent academic workspace organizes university syllabus blueprints, verified derivations, and exam prep.",
+    "Discover Qoncepto — Syllabus To Mastery. Learn how our independent academic workspace organizes university syllabus blueprints, verified derivations, and exam prep.",
 };
 
 const ABOUT_TOC_ITEMS: TocItem[] = [
@@ -57,11 +57,11 @@ export default function AboutUsPage() {
               </div>
 
               <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-slate-900">
-                About ExamNest
+                About Qoncepto
               </h1>
 
               <p className="mt-4 text-base sm:text-lg text-slate-600 leading-relaxed">
-                Eliminating academic anxiety through curriculum clarity. ExamNest is an engineering-focused educational technology platform built to unite official university syllabus blueprints, verified mathematical derivations, and exam preparation in one structured workspace.
+                Eliminating academic anxiety through curriculum clarity. Qoncepto is an engineering-focused educational technology platform built to unite official university syllabus blueprints, verified mathematical derivations, and exam preparation in one structured workspace.
               </p>
 
               <div className="mt-6 flex flex-wrap items-center gap-y-2 gap-x-6 text-xs text-slate-500 font-medium">
@@ -73,13 +73,13 @@ export default function AboutUsPage() {
                 <span>
                   Platform:{" "}
                   <strong className="text-slate-700">
-                    ExamNest — The Engineering School
+                    Qoncepto — Syllabus To Mastery
                   </strong>
                 </span>
                 <span>•</span>
                 <span>
                   Document Reference:{" "}
-                  <strong className="text-slate-700">EN-CMP-ABT-2026</strong>
+                  <strong className="text-slate-700">QN-CMP-ABT-2026</strong>
                 </span>
               </div>
             </header>
@@ -91,7 +91,7 @@ export default function AboutUsPage() {
                 <span>Our Core Academic Charter</span>
               </div>
               <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-                ExamNest was founded by engineering scholars who experienced firsthand the friction of out-of-sync syllabi, scattered WhatsApp links, and unclear university exam standards. We focus on precision, legible step-by-step derivations, and strict student privacy first.
+                Qoncepto was founded by engineering scholars who experienced firsthand the friction of out-of-sync syllabi, scattered WhatsApp links, and unclear university exam standards. We focus on precision, legible step-by-step derivations, and strict student privacy first.
               </p>
             </div>
 
@@ -104,10 +104,10 @@ export default function AboutUsPage() {
                 </h2>
                 <div className="mt-4 space-y-3">
                   <p>
-                    ExamNest (<code className="text-xs bg-slate-100 px-1.5 py-0.5 rounded font-mono text-slate-700">{PLATFORM_INFO.domain}</code>) is an independent educational technology platform engineered specifically for collegiate engineering and technical students across India—with deep curriculum alignment for Maulana Abul Kalam Azad University of Technology (MAKAUT), West Bengal State Council of Technical Education (WBSCTE), and AICTE model frameworks.
+                    Qoncepto (<code className="text-xs bg-slate-100 px-1.5 py-0.5 rounded font-mono text-slate-700">{PLATFORM_INFO.domain}</code>) is an independent educational technology platform engineered specifically for collegiate engineering and technical students across India—with deep curriculum alignment for Maulana Abul Kalam Azad University of Technology (MAKAUT), West Bengal State Council of Technical Education (WBSCTE), and AICTE model frameworks.
                   </p>
                   <p>
-                    Rather than offering generic, unindexed video playlists or cluttered PDF dumps, ExamNest organizes the entire semester learning experience around the way university examiners actually structure and evaluate technical papers.
+                    Rather than offering generic, unindexed video playlists or cluttered PDF dumps, Qoncepto organizes the entire semester learning experience around the way university examiners actually structure and evaluate technical papers.
                   </p>
                 </div>
               </section>
@@ -119,7 +119,7 @@ export default function AboutUsPage() {
                 </h2>
                 <div className="mt-4 space-y-3">
                   <p>
-                    Far too many engineering students lose valuable semester hours navigating disorganized study materials. ExamNest targets three structural problems directly:
+                    Far too many engineering students lose valuable semester hours navigating disorganized study materials. Qoncepto targets three structural problems directly:
                   </p>
                   <div className="space-y-3">
                     <div className="rounded-lg border border-slate-200 p-4 bg-slate-50/40">
@@ -127,7 +127,7 @@ export default function AboutUsPage() {
                         A. Fragmented Study Drives
                       </h3>
                       <p className="mt-1 text-xs sm:text-sm text-slate-600">
-                        Instead of hunting through broken Google Drive folders, random messaging links, and blurry phone scans with missing intermediate steps, ExamNest delivers unified subject repositories indexed strictly by official course codes and checked for clarity and mobile legibility.
+                        Instead of hunting through broken Google Drive folders, random messaging links, and blurry phone scans with missing intermediate steps, Qoncepto delivers unified subject repositories indexed strictly by official course codes and checked for clarity and mobile legibility.
                       </p>
                     </div>
 
@@ -136,7 +136,7 @@ export default function AboutUsPage() {
                         B. Syllabus Drift &amp; Blind Derivations
                       </h3>
                       <p className="mt-1 text-xs sm:text-sm text-slate-600">
-                        Generic online tutorials often skip university-specific derivation notations and circuit conventions. ExamNest delivers 1-to-1 regulation mapping with step-by-step mathematical proofs, clean diagrams, and concise formula sheets formatted for semester examinations.
+                        Generic online tutorials often skip university-specific derivation notations and circuit conventions. Qoncepto delivers 1-to-1 regulation mapping with step-by-step mathematical proofs, clean diagrams, and concise formula sheets formatted for semester examinations.
                       </p>
                     </div>
 
@@ -206,7 +206,7 @@ export default function AboutUsPage() {
                 </h2>
                 <div className="mt-4 space-y-3">
                   <p>
-                    ExamNest operates as a completely independent private educational technology platform and is not affiliated with MAKAUT, WBSCTE, AICTE, or any government examination authority.
+                    Qoncepto operates as a completely independent private educational technology platform and is not affiliated with MAKAUT, WBSCTE, AICTE, or any government examination authority.
                   </p>
                   <p>
                     We uphold strict data stewardship: we never run behavioral advertising trackers, never sell student data, and never share reading activity with college faculty. Review our{" "}
@@ -235,13 +235,13 @@ export default function AboutUsPage() {
                 </h2>
                 <div className="mt-4 space-y-3">
                   <p>
-                    ExamNest operates out of Kolkata, West Bengal, India, serving engineering students across campuses with responsive digital support:
+                    Qoncepto operates out of Kolkata, West Bengal, India, serving engineering students across campuses with responsive digital support:
                   </p>
 
                   <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50/70 p-5 space-y-2">
                     <div className="flex items-center gap-2 font-semibold text-slate-900">
                       <Mail className="h-4 w-4 text-slate-600" />
-                      <span>ExamNest Platform Headquarters</span>
+                      <span>Qoncepto Platform Headquarters</span>
                     </div>
                     <p className="text-xs sm:text-sm text-slate-600">
                       <strong>Operating Address:</strong> {PLATFORM_INFO.address.full}

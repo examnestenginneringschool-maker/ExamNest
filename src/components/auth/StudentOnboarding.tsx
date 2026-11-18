@@ -337,7 +337,7 @@ export default function StudentOnboarding({ initialUniversities = [] }: Props) {
         </h1>
 
         <p className="mx-auto mt-2 max-w-xl text-xs sm:text-sm leading-relaxed text-[#717588]">
-          ExamNest organizes your notes, syllabus, and exam questions to match your exact university curriculum.
+          Qoncepto organizes your notes, syllabus, and exam questions to match your exact university curriculum.
         </p>
       </div>
 
@@ -909,7 +909,7 @@ export default function StudentOnboarding({ initialUniversities = [] }: Props) {
                   </>
                 ) : (
                   <>
-                    <span>Launch ExamNest</span>
+                    <span>Launch Qoncepto</span>
                     <ChevronRight className="h-4 w-4" />
                   </>
                 )}

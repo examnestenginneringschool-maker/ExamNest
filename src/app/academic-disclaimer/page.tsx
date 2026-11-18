@@ -10,9 +10,9 @@ import { PLATFORM_INFO } from "@/lib/legal/navigation";
 import { AlertCircle, BookOpenCheck, Mail } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Academic Disclaimer | ExamNest",
+  title: "Academic Disclaimer | Qoncepto",
   description:
-    "Read ExamNest's Academic Disclaimer clarifying non-affiliation with MAKAUT, WBSCTE, AICTE, or universities, and the supplemental role of solved PYQs and study guides.",
+    "Read Qoncepto's Academic Disclaimer clarifying non-affiliation with MAKAUT, WBSCTE, AICTE, or universities, and the supplemental role of solved PYQs and study guides.",
 };
 
 const DISCLAIMER_TOC_ITEMS: TocItem[] = [
@@ -60,7 +60,7 @@ export default function AcademicDisclaimerPage() {
               </h1>
 
               <p className="mt-4 text-base sm:text-lg text-slate-600 leading-relaxed">
-                ExamNest is an independent academic preparation platform. This Academic Disclaimer outlines our non-affiliation with official university authorities and defines the educational boundaries of our solved previous year questions, notes, and mock assessments.
+                Qoncepto is an independent academic preparation platform. This Academic Disclaimer outlines our non-affiliation with official university authorities and defines the educational boundaries of our solved previous year questions, notes, and mock assessments.
               </p>
 
               <div className="mt-6 flex flex-wrap items-center gap-y-2 gap-x-6 text-xs text-slate-500 font-medium">
@@ -78,7 +78,7 @@ export default function AcademicDisclaimerPage() {
                 <span>•</span>
                 <span>
                   Document Reference:{" "}
-                  <strong className="text-slate-700">EN-SAF-DISC-2026</strong>
+                  <strong className="text-slate-700">QN-SAF-DISC-2026</strong>
                 </span>
               </div>
             </header>
@@ -90,7 +90,7 @@ export default function AcademicDisclaimerPage() {
                 <span>Institutional Independence Declaration</span>
               </div>
               <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-                ExamNest is <strong>not affiliated with, associated with, authorized by, endorsed by, or in any way officially connected to</strong> Maulana Abul Kalam Azad University of Technology (MAKAUT), West Bengal State Council of Technical Education (WBSCTE), the All India Council for Technical Education (AICTE), or any state or central university or examination authority.
+                Qoncepto is <strong>not affiliated with, associated with, authorized by, endorsed by, or in any way officially connected to</strong> Maulana Abul Kalam Azad University of Technology (MAKAUT), West Bengal State Council of Technical Education (WBSCTE), the All India Council for Technical Education (AICTE), or any state or central university or examination authority.
               </p>
             </div>
 
@@ -103,7 +103,7 @@ export default function AcademicDisclaimerPage() {
                 </h2>
                 <div className="mt-4 space-y-3">
                   <p>
-                    ExamNest (<code className="text-xs bg-slate-100 px-1.5 py-0.5 rounded font-mono text-slate-700">{PLATFORM_INFO.domain}</code>) is an independent, private educational technology platform built to help engineering students organize and master technical curricula.
+                    Qoncepto (<code className="text-xs bg-slate-100 px-1.5 py-0.5 rounded font-mono text-slate-700">{PLATFORM_INFO.domain}</code>) is an independent, private educational technology platform built to help engineering students organize and master technical curricula.
                   </p>
                   <p>
                     No part of our website, curriculum matrix, or study workspace should be construed as an official notice, administrative directive, or endorsed publication of any university, college, or regulatory council.
@@ -133,7 +133,7 @@ export default function AcademicDisclaimerPage() {
                 </h2>
                 <div className="mt-4 space-y-3">
                   <p>
-                    Solved previous year questions (PYQs), step-by-step mathematical derivations, circuit schematics, model answers, and study notes on ExamNest are curated strictly as <strong>revision guides and conceptual learning aids</strong>.
+                    Solved previous year questions (PYQs), step-by-step mathematical derivations, circuit schematics, model answers, and study notes on Qoncepto are curated strictly as <strong>revision guides and conceptual learning aids</strong>.
                   </p>
                   <p>
                     They are intended to reinforce classroom instruction and prescribed textbooks—not to replace official university lectures, laboratory work, or academic integrity standards.
@@ -148,7 +148,7 @@ export default function AcademicDisclaimerPage() {
                 </h2>
                 <div className="mt-4 space-y-3">
                   <p>
-                    While every effort is made by our academic reviewers to maintain factual, conceptual, and numerical accuracy, ExamNest makes no representation or guarantee:
+                    While every effort is made by our academic reviewers to maintain factual, conceptual, and numerical accuracy, Qoncepto makes no representation or guarantee:
                   </p>
                   <ul className="list-disc pl-5 space-y-1.5 text-xs sm:text-sm text-slate-600">
                     <li>That specific solved questions, derivations, or mock test items will reappear in university semester examinations.</li>

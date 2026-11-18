@@ -7,9 +7,9 @@ import { PLATFORM_INFO } from "@/lib/legal/navigation";
 import { ShieldCheck, Lock, CheckCircle2, Mail } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Student Privacy Policy | ExamNest",
+  title: "Student Privacy Policy | Qoncepto",
   description:
-    "Learn how ExamNest protects student privacy, academic curriculum data, payment safety, and account security. We do not sell student data or use third-party advertising trackers.",
+    "Learn how Qoncepto protects student privacy, academic curriculum data, payment safety, and account security. We do not sell student data or use third-party advertising trackers.",
 };
 
 const PRIVACY_TOC_ITEMS: TocItem[] = [
@@ -63,7 +63,7 @@ export default function StudentPrivacyPage() {
               </h1>
 
               <p className="mt-4 text-base sm:text-lg text-slate-600 leading-relaxed">
-                This policy outlines how ExamNest collects, handles, and protects your personal and academic information. Our platform is built on an absolute principle: your education belongs to you, and your study data will never be commercialized.
+                This policy outlines how Qoncepto collects, handles, and protects your personal and academic information. Our platform is built on an absolute principle: your education belongs to you, and your study data will never be commercialized.
               </p>
 
               <div className="mt-6 flex flex-wrap items-center gap-y-2 gap-x-6 text-xs text-slate-500 font-medium">
@@ -71,7 +71,7 @@ export default function StudentPrivacyPage() {
                 <span>•</span>
                 <span>Scope: <strong className="text-slate-700">All Registered Students &amp; Visitors</strong></span>
                 <span>•</span>
-                <span>Document Reference: <strong className="text-slate-700">EN-POL-PRIV-2026</strong></span>
+                <span>Document Reference: <strong className="text-slate-700">QN-POL-PRIV-2026</strong></span>
               </div>
             </header>
 
@@ -106,7 +106,7 @@ export default function StudentPrivacyPage() {
                 </h2>
                 <div className="mt-4 space-y-3">
                   <p>
-                    ExamNest is an independent educational initiative created to solve academic confusion for engineering students. We believe educational software should be clean, fast, and transparent. We operate under the standard that your personal data is held in strict stewardship, solely to provide you with syllabus blueprints, verified notes, and exam patterns.
+                    Qoncepto is an independent educational initiative created to solve academic confusion for engineering students. We believe educational software should be clean, fast, and transparent. We operate under the standard that your personal data is held in strict stewardship, solely to provide you with syllabus blueprints, verified notes, and exam patterns.
                   </p>
                   <p>
                     We do not sell student attention or profile data. We do not participate in ad exchanges or sell lead lists to private tuition companies, test-prep coaching centers, or corporate recruiters.
@@ -149,14 +149,14 @@ export default function StudentPrivacyPage() {
                     <div className="rounded-lg border border-slate-200 p-4 bg-slate-50/40">
                       <h3 className="font-semibold text-slate-900">D. Technical, Session &amp; Operational Telemetry</h3>
                       <p className="mt-1 text-xs sm:text-sm text-slate-600">
-                        When you access ExamNest, our servers record standard HTTP request data including your IP address, browser user-agent, operating system, active device session token, and request timestamps. This information is utilized strictly for single-device session enforcement, rate limiting, DDoS defense, preventing unauthorized scraping, and investigating runtime server errors.
+                        When you access Qoncepto, our servers record standard HTTP request data including your IP address, browser user-agent, operating system, active device session token, and request timestamps. This information is utilized strictly for single-device session enforcement, rate limiting, DDoS defense, preventing unauthorized scraping, and investigating runtime server errors.
                       </p>
                     </div>
 
                     <div className="rounded-lg border border-slate-200 p-4 bg-slate-50/40">
                       <h3 className="font-semibold text-slate-900">E. Payment &amp; Enrollment Transaction Metadata</h3>
                       <p className="mt-1 text-xs sm:text-sm text-slate-600">
-                        When you purchase a course, subject bundle, or mock test series, our authorized payment gateways process your payment securely. ExamNest receives and stores only non-sensitive transaction metadata—such as transaction reference IDs, order timestamps, amount paid, payment status, and electronic receipt records—to provision instant digital access, verify wrong-batch replacement requests, and maintain statutory billing records.
+                        When you purchase a course, subject bundle, or mock test series, our authorized payment gateways process your payment securely. Qoncepto receives and stores only non-sensitive transaction metadata—such as transaction reference IDs, order timestamps, amount paid, payment status, and electronic receipt records—to provision instant digital access, verify wrong-batch replacement requests, and maintain statutory billing records.
                       </p>
                     </div>
                   </div>
@@ -170,7 +170,7 @@ export default function StudentPrivacyPage() {
                 </h2>
                 <div className="mt-4 space-y-3">
                   <p>
-                    To maintain standard boundaries and eliminate intrusive surveillance, ExamNest intentionally does not collect or store:
+                    To maintain standard boundaries and eliminate intrusive surveillance, Qoncepto intentionally does not collect or store:
                   </p>
                   <ul className="list-disc pl-5 space-y-1.5 text-xs sm:text-sm text-slate-600">
                     <li>Raw credit or debit card numbers, CVV security codes, UPI PINs, or net-banking passwords (all payments are handled exclusively by authorized, PCI-DSS compliant payment gateways).</li>
@@ -253,12 +253,12 @@ export default function StudentPrivacyPage() {
                 </h2>
                 <div className="mt-4 space-y-3">
                   <p>
-                    Many academic tools monitor students and report surveillance data back to universities or colleges. ExamNest does not do this:
+                    Many academic tools monitor students and report surveillance data back to universities or colleges. Qoncepto does not do this:
                   </p>
                   <ul className="list-disc pl-5 space-y-1.5 text-xs sm:text-sm text-slate-600">
                     <li>We do not generate student surveillance dossiers or report your reading activity to your college professors or university administrations.</li>
                     <li>How many times you view a derivation, when you study, or which past year questions you review remains completely private to your account.</li>
-                    <li>ExamNest is your private companion for self-directed engineering preparation.</li>
+                    <li>Qoncepto is your private companion for self-directed engineering preparation.</li>
                   </ul>
                 </div>
               </section>
@@ -269,7 +269,7 @@ export default function StudentPrivacyPage() {
                   8. Student Rights &amp; Account Deletion
                 </h2>
                 <div className="mt-4 space-y-3">
-                  <p>Every student using ExamNest possesses standard rights regarding their personal data:</p>
+                  <p>Every student using Qoncepto possesses standard rights regarding their personal data:</p>
                   <ul className="list-disc pl-5 space-y-1.5 text-xs sm:text-sm text-slate-600">
                     <li><strong>Right of Access &amp; Portability:</strong> You can review your enrolled academic choices and account details from your workspace profile at any time.</li>
                     <li><strong>Right of Rectification:</strong> If you change your semester, branch, or college, you can update your track directly through your profile settings.</li>
@@ -304,7 +304,7 @@ export default function StudentPrivacyPage() {
                 </h2>
                 <div className="mt-4 space-y-3">
                   <p>
-                    ExamNest is intended for engineering, collegiate, and secondary school students preparing for university-level technical curricula (typically aged 16 and older). We do not knowingly solicit or collect personal information from individuals under the age of 13. If we become aware that personal information of a child under 13 has been collected without parental consent, we will promptly delete that information from our records.
+                    Qoncepto is intended for engineering, collegiate, and secondary school students preparing for university-level technical curricula (typically aged 16 and older). We do not knowingly solicit or collect personal information from individuals under the age of 13. If we become aware that personal information of a child under 13 has been collected without parental consent, we will promptly delete that information from our records.
                   </p>
                 </div>
               </section>
@@ -334,7 +334,7 @@ export default function StudentPrivacyPage() {
                   <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50/70 p-5 space-y-2">
                     <div className="flex items-center gap-2 font-semibold text-slate-900">
                       <Mail className="h-4 w-4 text-slate-600" />
-                      <span>ExamNest Privacy &amp; Data Stewardship</span>
+                      <span>Qoncepto Privacy &amp; Data Stewardship</span>
                     </div>
                     <p className="text-xs sm:text-sm text-slate-600">
                       Privacy Email:{" "}

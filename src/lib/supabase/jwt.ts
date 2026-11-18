@@ -1,7 +1,7 @@
 /**
- * RFC 7519 Standard + Supabase Auth JWT Claims Structure for ExamNest.
+ * RFC 7519 Standard + Supabase Auth JWT Claims Structure for Qoncepto.
  */
-export interface ExamNestJwtUserMetadata {
+export interface QonceptoJwtUserMetadata {
   full_name?: string;
   first_name?: string;
   last_name?: string;
@@ -13,7 +13,7 @@ export interface ExamNestJwtUserMetadata {
   [key: string]: unknown;
 }
 
-export interface ExamNestJwtPayload {
+export interface QonceptoJwtPayload {
   /** Subject (Student's unique UUID in auth.users) */
   sub: string;
   /** Audience (e.g. "authenticated") */
@@ -37,7 +37,7 @@ export interface ExamNestJwtPayload {
   /** Unique Supabase Auth Session ID */
   session_id?: string;
   /** Custom Student Claims embedded inside the JWT */
-  user_metadata?: ExamNestJwtUserMetadata;
+  user_metadata?: QonceptoJwtUserMetadata;
   /** Provider & role metadata */
   app_metadata?: {
     provider?: string;
@@ -52,7 +52,7 @@ export interface ExamNestJwtPayload {
  */
 export function parseJwtPayload(
   accessToken: string | null | undefined
-): ExamNestJwtPayload | null {
+): QonceptoJwtPayload | null {
   if (!accessToken || typeof accessToken !== "string") {
     return null;
   }
@@ -71,7 +71,7 @@ export function parseJwtPayload(
         ? Buffer.from(payloadBase64Url, "base64url").toString("utf-8")
         : atob(payloadBase64Url.replace(/-/g, "+").replace(/_/g, "/"));
 
-    const payload = JSON.parse(jsonString) as ExamNestJwtPayload;
+    const payload = JSON.parse(jsonString) as QonceptoJwtPayload;
 
     if (!payload || typeof payload.sub !== "string" || typeof payload.exp !== "number") {
       return null;

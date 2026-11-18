@@ -1,14 +1,14 @@
-# ExamNest — Comprehensive Project Summary & Architecture Changelog
+# Qoncepto — Comprehensive Project Summary & Architecture Changelog
 
 **Date:** October 26, 2026  
-**Project:** ExamNest (Student Academic Companion Platform)  
+**Project:** Qoncepto (Student Academic Companion Platform)  
 **Tech Stack:** Next.js 16.3.6 (Turbopack, App Router), React 19, TypeScript, Tailwind CSS, Supabase Native Authentication (`@supabase/ssr`), Supabase (PostgreSQL), Vitest  
 
 ---
 
 ## 1. Executive Summary
 
-ExamNest is a specialized academic companion web platform designed for university students. Rather than offering generic study material, ExamNest tailors the entire learning experience to a student's exact academic track:
+Qoncepto is a specialized academic companion web platform designed for university students. Rather than offering generic study material, Qoncepto tailors the entire learning experience to a student's exact academic track:
 
 $$\text{University} \longrightarrow \text{College} \longrightarrow \text{Course} \longrightarrow \text{Department} \longrightarrow \text{Semester}$$
 
@@ -37,7 +37,7 @@ Once enrolled, students get immediate access to their curated semester curriculu
 
 ### 5. Modularization of the Notes Reader
 * Decomposed into focused, single-responsibility components in `src/components/notes/`:
-  * `NotesHeader.tsx`: Sticky topbar with back link, subject name, ExamNest branding, and `<UserMenu />`.
+  * `NotesHeader.tsx`: Sticky topbar with back link, subject name, Qoncepto branding, and `<UserMenu />`.
   * `NotesHero.tsx`: Subject metadata, category, semester badge, and the 3-metric statistics grid.
   * `NotesMobileNav.tsx`: Horizontal scrolling pill navigation for phones.
   * `NotesOutlineSidebar.tsx`: Sticky desktop sidebar locked to the viewport past the hero section.

@@ -46,7 +46,7 @@ export async function proxy(request: NextRequest) {
   // If a password recovery flow cookie is active and Supabase redirected to "/" or "/app/dashboard",
   // route the user straight to the password recovery portal ("/reset-password").
   const hasRecoveryFlowCookie =
-    request.cookies.get("examnest_recovery_flow")?.value === "1";
+    request.cookies.get("qoncepto_recovery_flow")?.value === "1";
   if (
     hasRecoveryFlowCookie &&
     (pathname === "/" || pathname.startsWith("/app"))
@@ -54,7 +54,7 @@ export async function proxy(request: NextRequest) {
     const resetUrl = request.nextUrl.clone();
     resetUrl.pathname = "/reset-password";
     const res = NextResponse.redirect(resetUrl);
-    res.cookies.delete("examnest_recovery_flow");
+    res.cookies.delete("qoncepto_recovery_flow");
     return res;
   }
 
@@ -123,13 +123,13 @@ export async function proxy(request: NextRequest) {
 
   // 0b. Single-Device Session Enforcement on protected routes:
   // If `user.user_metadata.active_device_token` is set and does not match this browser's
-  // `examnest_device_token` cookie, another device or browser has signed in with this account.
+  // `qoncepto_device_token` cookie, another device or browser has signed in with this account.
   const activeDeviceToken =
     typeof user?.user_metadata?.active_device_token === "string"
       ? user.user_metadata.active_device_token
       : null;
   const browserDeviceToken =
-    request.cookies.get("examnest_device_token")?.value || null;
+    request.cookies.get("qoncepto_device_token")?.value || null;
   const isDeviceDisplaced = Boolean(
     activeDeviceToken &&
       (!browserDeviceToken || activeDeviceToken !== browserDeviceToken)
@@ -141,7 +141,7 @@ export async function proxy(request: NextRequest) {
     redirectUrl.pathname = "/sign-in";
     redirectUrl.search = "?reason=session_replaced";
     const res = NextResponse.redirect(redirectUrl);
-    res.cookies.delete("examnest_device_token");
+    res.cookies.delete("qoncepto_device_token");
     allCookies.forEach((c) => {
       if (c.name.startsWith("sb-")) {
         res.cookies.delete(c.name);

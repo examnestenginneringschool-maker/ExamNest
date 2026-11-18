@@ -22,7 +22,7 @@ export function LegalFooter({ className = "", currentDoc }: LegalFooterProps) {
           </Link>
           <span className="h-3 w-px bg-slate-200" />
           <span className="text-[11px] text-slate-400">
-            The Engineering School
+            Syllabus To Mastery
           </span>
         </div>
 
@@ -30,7 +30,7 @@ export function LegalFooter({ className = "", currentDoc }: LegalFooterProps) {
           href="/"
           className="text-xs font-semibold text-slate-600 hover:text-slate-950 transition-colors"
         >
-          Return to ExamNest Home →
+          Return to Qoncepto Home →
         </Link>
       </div>
 
@@ -66,7 +66,7 @@ export function LegalFooter({ className = "", currentDoc }: LegalFooterProps) {
 
       {/* Bottom Row: Minimalist Legal Notice */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-5 text-[11px] text-slate-400 leading-relaxed">
-        <p>© {currentYear} ExamNest. All rights reserved.</p>
+        <p>© {currentYear} Qoncepto. All rights reserved.</p>
         <p className="sm:text-right">
           Independent initiative. All university trademarks belong to their
           respective authorities.
