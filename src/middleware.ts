@@ -5,7 +5,7 @@ import { isDisposableEmail } from "@/lib/validation/auth";
 const PROTECTED_PREFIXES = ["/app", "/onboarding"];
 const AUTH_PREFIXES = ["/sign-in", "/sign-up"];
 
-export async function proxy(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
     request,
   });
@@ -175,7 +175,7 @@ export async function proxy(request: NextRequest) {
   return supabaseResponse;
 }
 
-export default proxy;
+export default middleware;
 
 export const config = {
   matcher: [
