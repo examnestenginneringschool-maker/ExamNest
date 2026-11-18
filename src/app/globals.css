@@ -21,7 +21,7 @@ body {
   font-family: var(--font-plus-jakarta-sans), "Plus Jakarta Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
-/* Custom ExamNest Scrollbars (Cross-browser, Theme-aligned) */
+/* Custom Qoncepto Scrollbars (Cross-browser, Theme-aligned) */
 
 /* Firefox & standard CSS */
 * {
@@ -280,7 +280,7 @@ body {
   animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-@keyframes examnestPageExit {
+@keyframes qonceptoPageExit {
   from {
     opacity: 1;
     transform: translate3d(0, 0, 0);
@@ -291,7 +291,7 @@ body {
   }
 }
 
-@keyframes examnestPageEnter {
+@keyframes qonceptoPageEnter {
   from {
     opacity: 0;
     transform: translate3d(0, 8px, 0);
@@ -302,7 +302,7 @@ body {
   }
 }
 
-@keyframes examnestLoaderExit {
+@keyframes qonceptoLoaderExit {
   from {
     opacity: 1;
     transform: translate3d(0, 0, 0) scale(1);
@@ -313,7 +313,7 @@ body {
   }
 }
 
-@keyframes examnestLoaderEnter {
+@keyframes qonceptoLoaderEnter {
   from {
     opacity: 0;
     transform: translate3d(0, 6px, 0) scale(0.99);
@@ -325,19 +325,19 @@ body {
 }
 
 ::view-transition-old(.page-exit) {
-  animation: examnestPageExit 120ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: qonceptoPageExit 120ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 ::view-transition-new(.page-enter) {
-  animation: examnestPageEnter 200ms cubic-bezier(0.16, 1, 0.3, 1) 40ms both;
+  animation: qonceptoPageEnter 200ms cubic-bezier(0.16, 1, 0.3, 1) 40ms both;
 }
 
 ::view-transition-old(.loader-exit) {
-  animation: examnestLoaderExit 120ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: qonceptoLoaderExit 120ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 ::view-transition-new(.loader-enter) {
-  animation: examnestLoaderEnter 200ms cubic-bezier(0.16, 1, 0.3, 1) 40ms both;
+  animation: qonceptoLoaderEnter 200ms cubic-bezier(0.16, 1, 0.3, 1) 40ms both;
 }
 
 @media (prefers-reduced-motion: reduce) {

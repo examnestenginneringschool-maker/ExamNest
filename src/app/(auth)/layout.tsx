@@ -33,7 +33,7 @@ export default function AuthLayout({
           className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/85 border border-[#e2e5f0] text-xs font-bold text-[#1B1B2F] shadow-2xs backdrop-blur-md hover:bg-white hover:border-[#5B4DFF]/40 hover:-translate-x-0.5 transition-all"
         >
           <ArrowLeft className="h-3.5 w-3.5 text-[#5B4DFF]" />
-          <span>Back to ExamNest</span>
+          <span>Back to Qoncepto</span>
         </Link>
       </div>
 
@@ -44,9 +44,9 @@ export default function AuthLayout({
           <div className="hidden lg:flex lg:col-span-5 bg-[#5856FF] text-white p-9 flex-col justify-between relative overflow-hidden select-none">
             {/* Brand Header */}
             <div className="relative z-10 flex items-center gap-3">
-              <LogoImage size="sm" className="ring-2 ring-white/25 rounded-xl" />
+              <LogoImage size="sm" className="bg-white/95 p-0.5 ring-2 ring-white/40 rounded-xl shadow-xs" />
               <span className="text-lg font-extrabold tracking-tight text-white">
-                ExamNest
+                Qoncepto
               </span>
             </div>
 
@@ -66,7 +66,7 @@ export default function AuthLayout({
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src="/auth_hero.svg"
-                alt="ExamNest Student Authentication"
+                alt="Qoncepto Student Authentication"
                 width={300}
                 height={310}
                 decoding="async"

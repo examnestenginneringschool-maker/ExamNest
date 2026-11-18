@@ -28,15 +28,15 @@ export function LogoImage({
 
   return (
     <div
-      className={`relative shrink-0 overflow-hidden shadow-xs select-none transition-transform duration-300 ${config.class} ${className}`}
+      className={`relative shrink-0 overflow-hidden select-none transition-transform duration-300 ${config.class} ${className}`}
     >
       <Image
         src="/logo.png"
-        alt="ExamNest Logo"
+        alt="Qoncepto Logo"
         width={config.px}
         height={config.px}
         priority
-        className="h-full w-full object-cover"
+        className="h-full w-full object-contain"
       />
     </div>
   );
@@ -66,7 +66,7 @@ export function Logo({
                 : "text-3xl"
             }`}
           >
-            ExamNest
+            Qoncepto
           </span>
           {subtitle && (
             <span className="-mt-1 text-[10px] font-bold uppercase tracking-[0.16em] text-[#717588]">

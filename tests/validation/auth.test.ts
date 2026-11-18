@@ -197,13 +197,13 @@ describe("Authentication Security & Zod Schemas", () => {
       newDeviceRaw: "Mozilla/5.0 (Linux; Android 14) Chrome/131.0.0.0",
       previousDeviceRaw: "Mozilla/5.0 (Windows NT 10.0) Edg/131.0.0.0",
       loginTimeIso: "2026-11-01T13:30:00.000Z",
-      siteUrl: "https://examnestcollege.vercel.app",
+      siteUrl: "https://qoncepto.vercel.app",
     });
 
     expect(html).toContain("New device sign-in detected");
     expect(html).toContain("Previous Session Expired");
     expect(html).toContain("Google Chrome on Android");
     expect(html).toContain("Microsoft Edge on Windows");
-    expect(html).toContain("https://examnestcollege.vercel.app/logo.png");
+    expect(html).toContain("https://qoncepto.vercel.app/logo.png");
   });
 });

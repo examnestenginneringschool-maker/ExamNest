@@ -8,7 +8,7 @@ function getBrowserDeviceCookie(): string | null {
   if (typeof document === "undefined") return null;
   const match = document.cookie
     .split("; ")
-    .find((row) => row.startsWith("examnest_device_token="));
+    .find((row) => row.startsWith("qoncepto_device_token="));
   return match ? decodeURIComponent(match.split("=")[1] || "") : null;
 }
 
@@ -53,7 +53,7 @@ export function SingleSessionGuard() {
           (!localDeviceToken || serverActiveToken !== localDeviceToken)
         ) {
           document.cookie =
-            "examnest_device_token=; path=/; max-age=0; SameSite=Lax";
+            "qoncepto_device_token=; path=/; max-age=0; SameSite=Lax";
           await supabase.auth.signOut({ scope: "local" }).catch(() => {});
           router.replace("/sign-in?reason=session_replaced");
           router.refresh();

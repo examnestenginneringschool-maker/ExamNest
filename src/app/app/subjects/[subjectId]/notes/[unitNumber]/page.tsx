@@ -8,7 +8,6 @@ import { getStudentAcademicContext } from "@/lib/academic/student-context";
 import { WorkspaceHeader } from "@/components/notes/WorkspaceHeader";
 import { NotesWorkspaceClient } from "@/components/notes/NotesWorkspaceClient";
 import type { NoteUnit, Topic } from "@/components/notes/UnitSection";
-import type { TopicBlock } from "@/components/notes/NoteBlockRenderer";
 import { PageTransition } from "@/components/ui/ViewTransitions";
 
 type PageProps = {
@@ -105,12 +104,10 @@ export default async function ChapterNotesReaderPage({
     ? { unitNumber: nextUnitRow.unit_number, title: nextUnitRow.title }
     : null;
 
-  // Fetch topics ONLY for this selected chapter
+  // Fetch topics ONLY for this selected chapter (PDFs are streamed securely on-demand via /api/notes/pdf/[topicId])
   const { data: topicRows, error: topicsError } = await supabase
     .from("subject_note_topics")
-    .select(
-      "id, note_unit_id, topic_number, title, summary, is_important, sort_order"
-    )
+    .select("*")
     .eq("note_unit_id", activeUnit.id)
     .eq("is_active", true)
     .order("sort_order", { ascending: true });
@@ -118,33 +115,9 @@ export default async function ChapterNotesReaderPage({
   if (topicsError) throw new Error(topicsError.message);
   const topics = (topicRows ?? []) as Topic[];
 
-  // Fetch note blocks ONLY for topics inside this selected chapter
-  const topicIds = topics.map((topic) => topic.id);
-  let blocks: TopicBlock[] = [];
-
-  if (topicIds.length > 0) {
-    const { data: blockRows, error: blocksError } = await supabase
-      .from("subject_note_blocks")
-      .select("id, topic_id, block_key, block_type, content, sort_order")
-      .in("topic_id", topicIds)
-      .eq("is_active", true)
-      .order("sort_order", { ascending: true });
-
-    if (blocksError) throw new Error(blocksError.message);
-    blocks = (blockRows ?? []) as TopicBlock[];
-  }
-
   const topicsByUnitRecord: Record<string, Topic[]> = {
     [activeUnit.id]: topics,
   };
-
-  const blocksByTopicRecord: Record<string, TopicBlock[]> = {};
-  for (const block of blocks) {
-    if (!blocksByTopicRecord[block.topic_id]) {
-      blocksByTopicRecord[block.topic_id] = [];
-    }
-    blocksByTopicRecord[block.topic_id].push(block);
-  }
 
   return (
     <PageTransition>
@@ -170,12 +143,13 @@ export default async function ChapterNotesReaderPage({
           subjectId={subject.id}
           subjectName={subject.name}
           semesterNumber={semester.semester_number}
+          studentName={user.fullName}
+          studentEmail={user.email}
           units={[activeUnit]}
           totalUnitsCount={allUnits.length}
           initialTopicId={resolvedSearchParams.topic ?? null}
           nextUnit={nextUnit}
           topicsByUnit={topicsByUnitRecord}
-          blocksByTopic={blocksByTopicRecord}
         />
       </div>
       </main>

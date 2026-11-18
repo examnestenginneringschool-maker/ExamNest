@@ -4,7 +4,7 @@ import { createServerClient } from "@supabase/ssr";
 import { createClient } from "@supabase/supabase-js";
 import type { User } from "@supabase/supabase-js";
 import { isDisposableEmail } from "@/lib/validation/auth";
-import { parseJwtPayload, type ExamNestJwtPayload } from "@/lib/supabase/jwt";
+import { parseJwtPayload, type QonceptoJwtPayload } from "@/lib/supabase/jwt";
 
 function getSupabaseEnv() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -66,7 +66,7 @@ export type AuthenticatedStudent = {
   hasPasswordAuth: boolean;
   activeDeviceInfo: string | null;
   activeLoginAt: string | null;
-  jwt: ExamNestJwtPayload | null;
+  jwt: QonceptoJwtPayload | null;
   accessToken: string | null;
   rawUser: User;
 };
@@ -119,7 +119,7 @@ export const getAuthenticatedUser = cache(
           ? user.user_metadata.active_device_token
           : null;
       const browserDeviceToken =
-        cookieStore.get("examnest_device_token")?.value || null;
+        cookieStore.get("qoncepto_device_token")?.value || null;
 
       if (
         activeDeviceToken &&

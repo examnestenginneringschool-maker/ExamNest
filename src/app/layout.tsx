@@ -10,7 +10,7 @@ const plusJakartaSans = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "ExamNest",
+  title: "Qoncepto",
   description: "Your semester. Your subjects. One clear study plan.",
   icons: {
     icon: [

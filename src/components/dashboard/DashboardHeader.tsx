@@ -40,11 +40,11 @@ export function DashboardHeader({
         <Link
           href="/app/dashboard"
           className="flex items-center gap-2 shrink-0 hover:opacity-90 transition-opacity"
-          title="ExamNest Dashboard"
+          title="Qoncepto Dashboard"
         >
           <LogoImage size="sm" />
           <span className="font-extrabold text-sm tracking-tight text-[#1B1B2F] hidden lg:inline">
-            ExamNest
+            Qoncepto
           </span>
         </Link>
 

@@ -79,7 +79,7 @@ export function UserMenu({
       await supabase.auth.signOut({ scope: "local" });
       if (typeof document !== "undefined") {
         document.cookie =
-          "examnest_device_token=; path=/; max-age=0; SameSite=Lax";
+          "qoncepto_device_token=; path=/; max-age=0; SameSite=Lax";
       }
       setOpen(false);
       router.push("/sign-in");

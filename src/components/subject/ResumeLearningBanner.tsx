@@ -30,7 +30,7 @@ export function ResumeLearningBanner({ subjectId }: ResumeLearningBannerProps) {
     subscribe,
     () => {
       try {
-        return localStorage.getItem(`examnest_resume_${subjectId}`);
+        return localStorage.getItem(`qoncepto_resume_${subjectId}`);
       } catch {
         return null;
       }

@@ -235,7 +235,7 @@ export function ProfileOverviewTab() {
       setFeedbackMessage("");
       setFeedbackResult({
         type: "success",
-        text: "Thank you! Your note has been sent directly to the ExamNest team.",
+        text: "Thank you! Your note has been sent directly to the Qoncepto team.",
       });
     } catch {
       setFeedbackResult({
@@ -554,7 +554,7 @@ export function ProfileOverviewTab() {
                 Found a syllabus issue or bug?
               </h4>
               <p className="text-[11px] text-slate-400 font-medium truncate">
-                Send a note directly to the ExamNest team
+                Send a note directly to the Qoncepto team
               </p>
             </div>
           </div>

@@ -21,4 +21,10 @@ export type Topic = {
   summary: string | null;
   is_important: boolean;
   sort_order: number;
+  pdf_storage_bucket?: string | null;
+  pdf_storage_path?: string | null;
+  pdf_page_count?: number | null;
+  pdf_size_bytes?: number | null;
+  video_storage_path?: string | null;
+  is_pdf_downloadable?: boolean;
 };

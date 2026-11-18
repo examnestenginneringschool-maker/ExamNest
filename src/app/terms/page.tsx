@@ -7,9 +7,9 @@ import { PLATFORM_INFO } from "@/lib/legal/navigation";
 import { Scale, AlertCircle, Mail } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Terms & Conditions | ExamNest",
+  title: "Terms & Conditions | Qoncepto",
   description:
-    "Review the Terms & Conditions for ExamNest. Learn about student usage guidelines, digital course access, academic integrity, permitted use, and institutional disclaimers.",
+    "Review the Terms & Conditions for Qoncepto. Learn about student usage guidelines, digital course access, academic integrity, permitted use, and institutional disclaimers.",
 };
 
 const TERMS_TOC_ITEMS: TocItem[] = [
@@ -63,7 +63,7 @@ export default function TermsOfUsePage() {
               </h1>
 
               <p className="mt-4 text-base sm:text-lg text-slate-600 leading-relaxed">
-                These Terms &amp; Conditions (also referred to as our Terms of Use) govern your access to and usage of ExamNest (<code className="text-xs bg-slate-100 px-1.5 py-0.5 rounded font-mono text-slate-700">examnestcollege.vercel.app</code>). By creating an account, purchasing a course bundle, or reviewing study material on this platform, you agree to comply with these terms, our Student Privacy Policy, Refund &amp; Cancellation Policy, and Fair Usage Policy.
+                These Terms &amp; Conditions (also referred to as our Terms of Use) govern your access to and usage of Qoncepto (<code className="text-xs bg-slate-100 px-1.5 py-0.5 rounded font-mono text-slate-700">qoncepto.vercel.app</code>). By creating an account, purchasing a course bundle, or reviewing study material on this platform, you agree to comply with these terms, our Student Privacy Policy, Refund &amp; Cancellation Policy, and Fair Usage Policy.
               </p>
 
               <div className="mt-6 flex flex-wrap items-center gap-y-2 gap-x-6 text-xs text-slate-500 font-medium">
@@ -71,7 +71,7 @@ export default function TermsOfUsePage() {
                 <span>•</span>
                 <span>Scope: <strong className="text-slate-700">All Students, Contributors &amp; Visitors</strong></span>
                 <span>•</span>
-                <span>Document Reference: <strong className="text-slate-700">EN-TOS-2026</strong></span>
+                <span>Document Reference: <strong className="text-slate-700">QN-TOS-2026</strong></span>
               </div>
             </header>
 
@@ -82,7 +82,7 @@ export default function TermsOfUsePage() {
                 <span>Important Institutional Notice &amp; Academic Scope</span>
               </div>
               <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-                ExamNest is an <strong>independent, private educational technology platform</strong>. ExamNest is not affiliated with, associated with, authorized by, endorsed by, or officially connected to Maulana Abul Kalam Azad University of Technology (MAKAUT), West Bengal State Council of Technical Education (WBSCTE), the All India Council for Technical Education (AICTE), or any state or central university administration. Course codes, syllabus outlines, and university guidelines are referenced strictly for academic alignment, indexing, and nominative fair use. See our full{" "}
+                Qoncepto is an <strong>independent, private educational technology platform</strong>. Qoncepto is not affiliated with, associated with, authorized by, endorsed by, or officially connected to Maulana Abul Kalam Azad University of Technology (MAKAUT), West Bengal State Council of Technical Education (WBSCTE), the All India Council for Technical Education (AICTE), or any state or central university administration. Course codes, syllabus outlines, and university guidelines are referenced strictly for academic alignment, indexing, and nominative fair use. See our full{" "}
                 <Link href="/academic-disclaimer" className="font-semibold text-slate-900 underline hover:text-slate-700">
                   Academic Disclaimer
                 </Link>.
@@ -98,7 +98,7 @@ export default function TermsOfUsePage() {
                 </h2>
                 <div className="mt-4 space-y-3">
                   <p>
-                    By accessing, browsing, registering for, purchasing digital content on, or using ExamNest (&quot;the Platform&quot;, &quot;we&quot;, &quot;us&quot;, or &quot;our&quot;), you acknowledge that you have read, understood, and agreed to be legally bound by these Terms &amp; Conditions along with our{" "}
+                    By accessing, browsing, registering for, purchasing digital content on, or using Qoncepto (&quot;the Platform&quot;, &quot;we&quot;, &quot;us&quot;, or &quot;our&quot;), you acknowledge that you have read, understood, and agreed to be legally bound by these Terms &amp; Conditions along with our{" "}
                     <Link href="/privacy" className="font-semibold text-slate-900 underline hover:text-slate-700">Student Privacy Policy</Link>,{" "}
                     <Link href="/refund-policy" className="font-semibold text-slate-900 underline hover:text-slate-700">Refund &amp; Cancellation Policy</Link>,{" "}
                     <Link href="/shipping-delivery" className="font-semibold text-slate-900 underline hover:text-slate-700">Shipping &amp; Delivery Policy</Link>, and{" "}
@@ -117,12 +117,12 @@ export default function TermsOfUsePage() {
                 </h2>
                 <div className="mt-4 space-y-3">
                   <p>
-                    ExamNest is organized as a specialized academic workspace designed to address curriculum friction for collegiate engineering students. The Platform provides digital educational resources and services—including university syllabus blueprints, online recorded video lectures, downloadable notes, step-by-step mathematical proofs, solved previous year questions (PYQs), and online mock tests.
+                    Qoncepto is organized as a specialized academic workspace designed to address curriculum friction for collegiate engineering students. The Platform provides digital educational resources and services—including university syllabus blueprints, online recorded video lectures, downloadable notes, step-by-step mathematical proofs, solved previous year questions (PYQs), and online mock tests.
                   </p>
                   <p>
-                    <strong>Digital Services, Strict No-Refund Policy &amp; Independent Status:</strong> All purchases on ExamNest represent non-tangible, digital intellectual property provisioned electronically as described in our{" "}
-                    <Link href="/shipping-delivery" className="font-semibold text-slate-900 underline hover:text-slate-700">Shipping &amp; Delivery Policy</Link>. Once a batch, course, or subject bundle is activated on your account, all sales are final under a strict <strong>No-Refund and No-Cancellation Policy</strong>; if you accidentally purchase an incorrect batch, ExamNest does not issue monetary refunds but may replace or transfer your enrollment from our side strictly provided you have not downloaded any notes or PDFs from that batch (see our{" "}
-                    <Link href="/refund-policy" className="font-semibold text-slate-900 underline hover:text-slate-700">Refund &amp; Cancellation Policy</Link>). While our subject codes and modules are structured in alignment with AICTE guidelines and state technical curricula (such as MAKAUT and WBSCTE), ExamNest is not an official administrative service of any degree-awarding board. For official admit cards, registration numbers, re-evaluation requests, and grade sheets, students must always consult their university portals.
+                    <strong>Digital Services, Strict No-Refund Policy &amp; Independent Status:</strong> All purchases on Qoncepto represent non-tangible, digital intellectual property provisioned electronically as described in our{" "}
+                    <Link href="/shipping-delivery" className="font-semibold text-slate-900 underline hover:text-slate-700">Shipping &amp; Delivery Policy</Link>. Once a batch, course, or subject bundle is activated on your account, all sales are final under a strict <strong>No-Refund and No-Cancellation Policy</strong>; if you accidentally purchase an incorrect batch, Qoncepto does not issue monetary refunds but may replace or transfer your enrollment from our side strictly provided you have not downloaded any notes or PDFs from that batch (see our{" "}
+                    <Link href="/refund-policy" className="font-semibold text-slate-900 underline hover:text-slate-700">Refund &amp; Cancellation Policy</Link>). While our subject codes and modules are structured in alignment with AICTE guidelines and state technical curricula (such as MAKAUT and WBSCTE), Qoncepto is not an official administrative service of any degree-awarding board. For official admit cards, registration numbers, re-evaluation requests, and grade sheets, students must always consult their university portals.
                   </p>
                 </div>
               </section>
@@ -133,7 +133,7 @@ export default function TermsOfUsePage() {
                   3. Account Eligibility &amp; Email Policy
                 </h2>
                 <div className="mt-4 space-y-3">
-                  <p>To register an account on ExamNest, you must meet the following eligibility requirements:</p>
+                  <p>To register an account on Qoncepto, you must meet the following eligibility requirements:</p>
                   <ul className="list-disc pl-5 space-y-1.5 text-xs sm:text-sm text-slate-600">
                     <li>You must be at least 16 years of age or possess parental/guardian consent if required by your jurisdiction.</li>
                     <li>You must provide an authentic, valid email address and valid mobile phone number owned and accessible by you.</li>
@@ -153,10 +153,10 @@ export default function TermsOfUsePage() {
                 <div className="mt-4 space-y-3">
                   <p>
                     Subject to your compliance with these Terms and our{" "}
-                    <Link href="/fair-usage" className="font-semibold text-slate-900 underline hover:text-slate-700">Fair Usage Policy</Link>, ExamNest grants you a revocable, non-exclusive, non-transferable, single-user license strictly intended for your own individual, non-commercial personal learning.
+                    <Link href="/fair-usage" className="font-semibold text-slate-900 underline hover:text-slate-700">Fair Usage Policy</Link>, Qoncepto grants you a revocable, non-exclusive, non-transferable, single-user license strictly intended for your own individual, non-commercial personal learning.
                   </p>
                   <p>
-                    ExamNest enforces a strict Single-Device Active Session policy: simultaneous logins across distinct IP ranges or unauthorized devices will trigger automatic session expiration. You may not share login credentials, screen-record or rip video streams, or print, recompile, or redistribute watermarked study PDFs on Telegram, WhatsApp, Google Drive, or third-party platforms.
+                    Qoncepto enforces a strict Single-Device Active Session policy: simultaneous logins across distinct IP ranges or unauthorized devices will trigger automatic session expiration. You may not share login credentials, screen-record or rip video streams, or print, recompile, or redistribute watermarked study PDFs on Telegram, WhatsApp, Google Drive, or third-party platforms.
                   </p>
                 </div>
               </section>
@@ -167,13 +167,13 @@ export default function TermsOfUsePage() {
                   5. Prohibited Conduct &amp; Scraping Restrictions
                 </h2>
                 <div className="mt-4 space-y-3">
-                  <p>When using ExamNest, you agree that you will NOT:</p>
+                  <p>When using Qoncepto, you agree that you will NOT:</p>
                   <div className="space-y-2 text-xs sm:text-sm text-slate-600">
                     <div className="rounded-lg border border-slate-200 p-3 bg-slate-50/50">
                       <strong>A. Automated Scraping &amp; Extraction:</strong> Deploy automated crawlers, bots, headless browsers, data scrapers, or scripts to harvest notes, question banks, or curriculum trees in bulk.
                     </div>
                     <div className="rounded-lg border border-slate-200 p-3 bg-slate-50/50">
-                      <strong>B. Commercial Exploitation:</strong> Resell, sublicense, package, or monetize any compiled notes or ExamNest materials in any format.
+                      <strong>B. Commercial Exploitation:</strong> Resell, sublicense, package, or monetize any compiled notes or Qoncepto materials in any format.
                     </div>
                     <div className="rounded-lg border border-slate-200 p-3 bg-slate-50/50">
                       <strong>C. Security Violations:</strong> Probe, scan, or test the vulnerabilities of the application; attempt to bypass Row-Level Security (RLS) policies; intercept authentication tokens; or access data belonging to other students.
@@ -192,12 +192,12 @@ export default function TermsOfUsePage() {
                 </h2>
                 <div className="mt-4 space-y-3">
                   <p>
-                    ExamNest is dedicated to academic honesty and authentic conceptual mastery. Our notes, derivations, and question papers are structured to help students understand difficult technical concepts before entering examination halls.
+                    Qoncepto is dedicated to academic honesty and authentic conceptual mastery. Our notes, derivations, and question papers are structured to help students understand difficult technical concepts before entering examination halls.
                   </p>
                   <ul className="list-disc pl-5 space-y-1.5 text-xs sm:text-sm text-slate-600">
                     <li>Students are expected to uphold the honor codes, disciplinary rules, and academic honesty policies of their respective educational institutions.</li>
                     <li>The Platform must never be used to facilitate cheating during live, closed-book university examinations or proctored assessments.</li>
-                    <li>Any student discovered attempting to utilize ExamNest to violate exam room regulations is subject to immediate account termination.</li>
+                    <li>Any student discovered attempting to utilize Qoncepto to violate exam room regulations is subject to immediate account termination.</li>
                   </ul>
                 </div>
               </section>
@@ -209,10 +209,10 @@ export default function TermsOfUsePage() {
                 </h2>
                 <div className="mt-4 space-y-3">
                   <p>
-                    <strong>Statutory Curricula:</strong> The names of universities, college affiliations, standard course codes (e.g. BS-PH101, BS-M101), and statutory syllabus guidelines are the intellectual property of their respective governing boards. ExamNest makes no claim of ownership over official university syllabus blueprints and uses them solely for pedagogical identification and educational navigation.
+                    <strong>Statutory Curricula:</strong> The names of universities, college affiliations, standard course codes (e.g. BS-PH101, BS-M101), and statutory syllabus guidelines are the intellectual property of their respective governing boards. Qoncepto makes no claim of ownership over official university syllabus blueprints and uses them solely for pedagogical identification and educational navigation.
                   </p>
                   <p>
-                    <strong>Proprietary Compilations:</strong> The original pedagogical explanations, mathematical proofs, LaTeX-formatted derivations, custom circuit diagrams, recorded lectures, mock test banks, platform source code, and user interface designs are the intellectual property of ExamNest and its academic contributors. All rights not expressly granted are reserved. For full details on forensic watermarking and takedown notices, see our{" "}
+                    <strong>Proprietary Compilations:</strong> The original pedagogical explanations, mathematical proofs, LaTeX-formatted derivations, custom circuit diagrams, recorded lectures, mock test banks, platform source code, and user interface designs are the intellectual property of Qoncepto and its academic contributors. All rights not expressly granted are reserved. For full details on forensic watermarking and takedown notices, see our{" "}
                     <Link href="/copyright-policy" className="font-semibold text-slate-900 underline hover:text-slate-700">
                       Copyright &amp; IP Policy
                     </Link>.
@@ -235,7 +235,7 @@ export default function TermsOfUsePage() {
                   <ul className="list-disc pl-5 space-y-1.5 text-xs sm:text-sm text-slate-600">
                     <li>The Platform and all study materials are provided on an <strong>&quot;AS IS&quot;</strong> and <strong>&quot;AS AVAILABLE&quot;</strong> basis, without warranties of any kind, whether express, statutory, or implied.</li>
                     <li>Universities may revise syllabus sub-clauses, question paper weighting, or credit rules without notice. Students are encouraged to cross-reference official model curricula, textbooks, and circulars issued by their respective universities.</li>
-                    <li>ExamNest makes no guarantee that specific solved questions will reappear in university semester examinations or that using our study materials will produce specific letter grades, SGPA/CGPA scores, or passing outcomes.</li>
+                    <li>Qoncepto makes no guarantee that specific solved questions will reappear in university semester examinations or that using our study materials will produce specific letter grades, SGPA/CGPA scores, or passing outcomes.</li>
                   </ul>
                 </div>
               </section>
@@ -247,7 +247,7 @@ export default function TermsOfUsePage() {
                 </h2>
                 <div className="mt-4 space-y-3">
                   <p>
-                    To the fullest extent permissible by applicable law, ExamNest, its maintainers, student contributors, and infrastructure providers shall not be held liable for any direct, indirect, incidental, consequential, special, or exemplary damages—including but not limited to loss of academic standing, missed examination deadlines, hardware failure, or service interruptions—arising from your use of or inability to use the Platform.
+                    To the fullest extent permissible by applicable law, Qoncepto, its maintainers, student contributors, and infrastructure providers shall not be held liable for any direct, indirect, incidental, consequential, special, or exemplary damages—including but not limited to loss of academic standing, missed examination deadlines, hardware failure, or service interruptions—arising from your use of or inability to use the Platform.
                   </p>
                 </div>
               </section>
@@ -259,7 +259,7 @@ export default function TermsOfUsePage() {
                 </h2>
                 <div className="mt-4 space-y-3">
                   <p>
-                    We reserve the right, at our sole discretion, to suspend, disable, or permanently terminate your access to ExamNest without prior notice or refund if:
+                    We reserve the right, at our sole discretion, to suspend, disable, or permanently terminate your access to Qoncepto without prior notice or refund if:
                   </p>
                   <ul className="list-disc pl-5 space-y-1.5 text-xs sm:text-sm text-slate-600">
                     <li>You violate any provision of these Terms &amp; Conditions, our Fair Usage Policy, or our Copyright &amp; IP Policy.</li>
@@ -295,7 +295,7 @@ export default function TermsOfUsePage() {
                   <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50/70 p-5 space-y-2">
                     <div className="flex items-center gap-2 font-semibold text-slate-900">
                       <Mail className="h-4 w-4 text-slate-600" />
-                      <span>ExamNest Academic &amp; Legal Charter</span>
+                      <span>Qoncepto Academic &amp; Legal Charter</span>
                     </div>
                     <p className="text-xs sm:text-sm text-slate-600">
                       Legal / Terms Email:{" "}

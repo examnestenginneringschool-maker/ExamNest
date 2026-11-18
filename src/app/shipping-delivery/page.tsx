@@ -10,9 +10,9 @@ import { PLATFORM_INFO } from "@/lib/legal/navigation";
 import { Zap, CheckCircle2, Mail } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Shipping & Delivery Policy | ExamNest",
+  title: "Shipping & Delivery Policy | Qoncepto",
   description:
-    "Learn how ExamNest provisions instant digital delivery for online courses, study notes, PYQ solutions, and mock test series with zero physical shipping fees.",
+    "Learn how Qoncepto provisions instant digital delivery for online courses, study notes, PYQ solutions, and mock test series with zero physical shipping fees.",
 };
 
 const DELIVERY_TOC_ITEMS: TocItem[] = [
@@ -61,7 +61,7 @@ export default function ShippingDeliveryPage() {
               </h1>
 
               <p className="mt-4 text-base sm:text-lg text-slate-600 leading-relaxed">
-                ExamNest delivers all educational products electronically through your online student workspace. This policy outlines our digital provisioning timelines, confirmation receipts, and access troubleshooting steps.
+                Qoncepto delivers all educational products electronically through your online student workspace. This policy outlines our digital provisioning timelines, confirmation receipts, and access troubleshooting steps.
               </p>
 
               <div className="mt-6 flex flex-wrap items-center gap-y-2 gap-x-6 text-xs text-slate-500 font-medium">
@@ -77,7 +77,7 @@ export default function ShippingDeliveryPage() {
                 <span>•</span>
                 <span>
                   Document Reference:{" "}
-                  <strong className="text-slate-700">EN-POL-DEL-2026</strong>
+                  <strong className="text-slate-700">QN-POL-DEL-2026</strong>
                 </span>
               </div>
             </header>
@@ -119,10 +119,10 @@ export default function ShippingDeliveryPage() {
                 </h2>
                 <div className="mt-4 space-y-3">
                   <p>
-                    ExamNest provides digital educational services, including online recorded video lectures, downloadable notes, previous year question solutions, and online mock tests. All purchases made on ExamNest (<code className="text-xs bg-slate-100 px-1.5 py-0.5 rounded font-mono text-slate-700">{PLATFORM_INFO.domain}</code>) represent non-tangible, digital intellectual property.
+                    Qoncepto provides digital educational services, including online recorded video lectures, downloadable notes, previous year question solutions, and online mock tests. All purchases made on Qoncepto (<code className="text-xs bg-slate-100 px-1.5 py-0.5 rounded font-mono text-slate-700">{PLATFORM_INFO.domain}</code>) represent non-tangible, digital intellectual property.
                   </p>
                   <p>
-                    Because ExamNest does not sell or dispatch printed books, physical kits, or hardware items, there is <strong>no physical shipping, courier tracking, or postal delivery charge</strong> on any transaction.
+                    Because Qoncepto does not sell or dispatch printed books, physical kits, or hardware items, there is <strong>no physical shipping, courier tracking, or postal delivery charge</strong> on any transaction.
                   </p>
                 </div>
               </section>
@@ -134,7 +134,7 @@ export default function ShippingDeliveryPage() {
                 </h2>
                 <div className="mt-4 space-y-3">
                   <p>
-                    Upon successful payment processing through our authorized payment gateways (UPI, debit/credit cards, or net banking), access to the purchased course, subject bundle, or test series is provisioned <strong>instantly</strong> to your registered ExamNest account.
+                    Upon successful payment processing through our authorized payment gateways (UPI, debit/credit cards, or net banking), access to the purchased course, subject bundle, or test series is provisioned <strong>instantly</strong> to your registered Qoncepto account.
                   </p>
                   <p>
                     For scheduled upcoming batches, your enrollment status appears in your account upon checkout, and course modules unlock automatically on the announced batch start date and time. Please note that once batch access is activated, all orders are strictly non-refundable under our{" "}
@@ -243,7 +243,7 @@ export default function ShippingDeliveryPage() {
                   <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50/70 p-5 space-y-2">
                     <div className="flex items-center gap-2 font-semibold text-slate-900">
                       <Mail className="h-4 w-4 text-slate-600" />
-                      <span>ExamNest Digital Delivery Desk</span>
+                      <span>Qoncepto Digital Delivery Desk</span>
                     </div>
                     <p className="text-xs sm:text-sm text-slate-600">
                       Support Email:{" "}

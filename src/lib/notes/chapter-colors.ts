@@ -166,7 +166,7 @@ export function getChapterAccentPalette(
   unitNumber: number,
   subjectKey = ""
 ): ChapterColorPalette {
-  const subjectHash = hashString(subjectKey || "examnest");
+  const subjectHash = hashString(subjectKey || "qoncepto");
   const baseHue = (subjectHash % 360) + (unitNumber % 3) * 0.37;
 
   // Golden Angle distribution in degrees: never aligns or cycles over finite N

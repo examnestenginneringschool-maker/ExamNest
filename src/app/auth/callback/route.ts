@@ -77,7 +77,7 @@ export async function GET(request: Request) {
 
   const cookieStore = await cookies();
   const hasRecoveryCookie =
-    cookieStore.get("examnest_recovery_flow")?.value === "1";
+    cookieStore.get("qoncepto_recovery_flow")?.value === "1";
 
   // Check if Supabase sent an error in query parameters (e.g. otp_expired)
   const errorDescription =
@@ -87,7 +87,7 @@ export async function GET(request: Request) {
       const res = NextResponse.redirect(
         `${origin}/reset-password?error=${encodeURIComponent(errorDescription)}`
       );
-      res.cookies.delete("examnest_recovery_flow");
+      res.cookies.delete("qoncepto_recovery_flow");
       return res;
     }
     return NextResponse.redirect(
@@ -133,14 +133,14 @@ export async function GET(request: Request) {
         )
       ) {
         const res = NextResponse.redirect(`${origin}/reset-password`);
-        res.cookies.delete("examnest_recovery_flow");
-        res.cookies.set("examnest_recovery_verified", "1", {
+        res.cookies.delete("qoncepto_recovery_flow");
+        res.cookies.set("qoncepto_recovery_verified", "1", {
           path: "/",
           maxAge: 600,
           sameSite: "lax",
         });
         if (deviceToken) {
-          res.cookies.set("examnest_device_token", deviceToken, {
+          res.cookies.set("qoncepto_device_token", deviceToken, {
             path: "/",
             maxAge: 60 * 60 * 24 * 30,
             sameSite: "lax",
@@ -153,7 +153,7 @@ export async function GET(request: Request) {
       if (safeNext) {
         const res = NextResponse.redirect(`${origin}${safeNext}`);
         if (deviceToken) {
-          res.cookies.set("examnest_device_token", deviceToken, {
+          res.cookies.set("qoncepto_device_token", deviceToken, {
             path: "/",
             maxAge: 60 * 60 * 24 * 30,
             sameSite: "lax",
@@ -167,7 +167,7 @@ export async function GET(request: Request) {
       const destination = context ? "/app/dashboard" : "/onboarding";
       const res = NextResponse.redirect(`${origin}${destination}`);
       if (deviceToken) {
-        res.cookies.set("examnest_device_token", deviceToken, {
+        res.cookies.set("qoncepto_device_token", deviceToken, {
           path: "/",
           maxAge: 60 * 60 * 24 * 30,
           sameSite: "lax",
@@ -211,14 +211,14 @@ export async function GET(request: Request) {
         )
       ) {
         const res = NextResponse.redirect(`${origin}/reset-password`);
-        res.cookies.delete("examnest_recovery_flow");
-        res.cookies.set("examnest_recovery_verified", "1", {
+        res.cookies.delete("qoncepto_recovery_flow");
+        res.cookies.set("qoncepto_recovery_verified", "1", {
           path: "/",
           maxAge: 600,
           sameSite: "lax",
         });
         if (deviceToken) {
-          res.cookies.set("examnest_device_token", deviceToken, {
+          res.cookies.set("qoncepto_device_token", deviceToken, {
             path: "/",
             maxAge: 60 * 60 * 24 * 30,
             sameSite: "lax",
@@ -231,7 +231,7 @@ export async function GET(request: Request) {
       if (safeNext) {
         const res = NextResponse.redirect(`${origin}${safeNext}`);
         if (deviceToken) {
-          res.cookies.set("examnest_device_token", deviceToken, {
+          res.cookies.set("qoncepto_device_token", deviceToken, {
             path: "/",
             maxAge: 60 * 60 * 24 * 30,
             sameSite: "lax",
@@ -246,7 +246,7 @@ export async function GET(request: Request) {
       const destination = context ? "/app/dashboard" : "/onboarding";
       const res = NextResponse.redirect(`${origin}${destination}`);
       if (deviceToken) {
-        res.cookies.set("examnest_device_token", deviceToken, {
+        res.cookies.set("qoncepto_device_token", deviceToken, {
           path: "/",
           maxAge: 60 * 60 * 24 * 30,
           sameSite: "lax",
@@ -262,7 +262,7 @@ export async function GET(request: Request) {
     const res = NextResponse.redirect(
       `${origin}/reset-password?error=Invalid+or+expired+recovery+link`
     );
-    res.cookies.delete("examnest_recovery_flow");
+    res.cookies.delete("qoncepto_recovery_flow");
     return res;
   }
 

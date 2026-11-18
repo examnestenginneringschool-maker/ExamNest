@@ -13,7 +13,7 @@ export default function GlobalError({
 }) {
   useEffect(() => {
     // Log error to monitoring if configured
-    console.error("ExamNest Application Error:", error);
+    console.error("Qoncepto Application Error:", error);
   }, [error]);
 
   return (

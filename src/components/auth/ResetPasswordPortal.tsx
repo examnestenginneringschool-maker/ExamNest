@@ -66,8 +66,8 @@ function getPasswordStrengthInfo(password: string) {
   };
 }
 
-const CONSUMED_TOKENS_STORAGE_KEY = "examnest_consumed_recovery_tokens";
-const ACTIVE_RECOVERY_GRANT_KEY = "examnest_recovery_grant";
+const CONSUMED_TOKENS_STORAGE_KEY = "qoncepto_consumed_recovery_tokens";
+const ACTIVE_RECOVERY_GRANT_KEY = "qoncepto_recovery_grant";
 
 // Module-level deduplication so React 19 Strict Mode double-mount in dev does not call verifyOtp twice
 const inFlightTokenVerifications = new Map<
@@ -110,9 +110,9 @@ function consumeRecoveryGrantPermanently(tokenKey?: string | null) {
 
   if (typeof document !== "undefined") {
     document.cookie =
-      "examnest_recovery_flow=; path=/; max-age=0; SameSite=Lax";
+      "qoncepto_recovery_flow=; path=/; max-age=0; SameSite=Lax";
     document.cookie =
-      "examnest_recovery_verified=; path=/; max-age=0; SameSite=Lax";
+      "qoncepto_recovery_verified=; path=/; max-age=0; SameSite=Lax";
   }
 }
 
@@ -147,7 +147,7 @@ export function ResetPasswordPortal() {
     // Clear the redirect-routing cookie now that the user has reached /reset-password
     if (typeof document !== "undefined") {
       document.cookie =
-        "examnest_recovery_flow=; path=/; max-age=0; SameSite=Lax";
+        "qoncepto_recovery_flow=; path=/; max-age=0; SameSite=Lax";
     }
 
     const searchParams =
@@ -283,7 +283,7 @@ export function ResetPasswordPortal() {
         typeof document !== "undefined" &&
         document.cookie
           .split("; ")
-          .some((c) => c === "examnest_recovery_verified=1");
+          .some((c) => c === "qoncepto_recovery_verified=1");
       const existingGrant =
         typeof window !== "undefined"
           ? window.sessionStorage.getItem(ACTIVE_RECOVERY_GRANT_KEY)
@@ -295,7 +295,7 @@ export function ResetPasswordPortal() {
         try {
           window.sessionStorage.setItem(ACTIVE_RECOVERY_GRANT_KEY, grantId);
           document.cookie =
-            "examnest_recovery_verified=; path=/; max-age=0; SameSite=Lax";
+            "qoncepto_recovery_verified=; path=/; max-age=0; SameSite=Lax";
         } catch {
           // Ignore storage errors
         }
@@ -488,7 +488,7 @@ export function ResetPasswordPortal() {
           </h2>
           <p className="text-xs sm:text-sm text-[#717588] mt-1.5 leading-relaxed">
             You are securely authenticated. How would you like to proceed with
-            your ExamNest account?
+            your Qoncepto account?
           </p>
         </div>
 

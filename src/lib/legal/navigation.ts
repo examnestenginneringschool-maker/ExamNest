@@ -24,10 +24,10 @@ export interface PolicyBranch {
 }
 
 export const PLATFORM_INFO = {
-  name: "ExamNest",
-  tagline: "The Engineering School",
-  domain: "examnestcollege.vercel.app",
-  url: "https://examnestcollege.vercel.app",
+  name: "Qoncepto",
+  tagline: "Syllabus To Mastery",
+  domain: "qoncepto.vercel.app",
+  url: "https://qoncepto.vercel.app",
   lastUpdated: "November, 2026",
   phoneDisplay: "+91-87092 87648",
   phoneHref: "tel:+918709287648",
@@ -43,11 +43,11 @@ export const PLATFORM_INFO = {
     full: "Panchpota, Police Para, Garia, Kolkata, South 24 Parganas, West Bengal – 700152, India",
   },
   emails: {
-    support: "support@examnestcollege.vercel.app",
-    privacy: "privacy@examnestcollege.vercel.app",
-    terms: "terms@examnestcollege.vercel.app",
-    legal: "legal@examnestcollege.vercel.app",
-    grievance: "grievance@examnestcollege.vercel.app",
+    support: "qoncepto.edutech@gmail.com",
+    privacy: "qoncepto.edutech@gmail.com",
+    terms: "qoncepto.edutech@gmail.com",
+    legal: "qoncepto.edutech@gmail.com",
+    grievance: "qoncepto.edutech@gmail.com",
   },
 } as const;
 
@@ -122,7 +122,7 @@ export const POLICY_BRANCHES: PolicyBranch[] = [
         label: "About Us",
         shortLabel: "About Us",
         href: "/about",
-        description: "ExamNest mission, architecture & curriculum story",
+        description: "Qoncepto mission, architecture & curriculum story",
       },
       {
         key: "contact",
