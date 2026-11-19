@@ -5,8 +5,14 @@ import {
 } from "@/lib/supabase/server";
 import { verifyAndConsumeDrmTicket } from "@/lib/notes/drm-ticket";
 import {
+  isHlsManifestPath,
+  isSafeHlsSegmentName,
+  resolveHlsSegmentPath,
+  rewriteHlsManifestSegments,
+} from "@/lib/notes/hls-manifest";
+import {
   buildCanonicalR2VideoPath,
-  fetchPrivateStudyFile,
+  fetchPrivateStudyStream,
 } from "@/lib/notes/r2-storage";
 
 /**
@@ -147,27 +153,161 @@ export async function GET(
     });
   }
 
-  const videoBytes =
-    (await fetchPrivateStudyFile("videos-bucket", videoPath)) ||
-    (await fetchPrivateStudyFile(
-      (topicRow.pdf_storage_bucket as string | null) || "notes-bucket",
-      videoPath
-    ));
+  const fallbackBucket =
+    (topicRow.pdf_storage_bucket as string | null) || "notes-bucket";
 
-  if (!videoBytes) {
+  // 5. Adaptive HLS delivery (.m3u8 manifest & .ts/.m4s/.key segments)
+  if (isHlsManifestPath(videoPath)) {
+    const segmentParam = request.nextUrl.searchParams.get("segment");
+
+    if (segmentParam !== null) {
+      if (!isSafeHlsSegmentName(segmentParam)) {
+        return NextResponse.json(
+          { error: "Invalid HLS segment." },
+          { status: 400 }
+        );
+      }
+
+      const segmentPath = resolveHlsSegmentPath(videoPath, segmentParam);
+      const segmentContentType = segmentParam.endsWith(".ts")
+        ? "video/mp2t"
+        : segmentParam.endsWith(".m4s")
+          ? "video/iso.segment"
+          : "application/octet-stream";
+
+      const segmentHeaders: Record<string, string> = {
+        "Content-Type": segmentContentType,
+        "Cache-Control": "private, no-store, no-cache, must-revalidate",
+        "X-Content-Type-Options": "nosniff",
+      };
+
+      const edgeCache = (
+        globalThis as unknown as { caches?: { default?: Cache } }
+      ).caches?.default;
+      const cacheKey = new Request(
+        `https://r2-cache.qoncepto.internal/hls/${encodeURIComponent(segmentPath)}`,
+        { method: "GET" }
+      );
+
+      if (edgeCache) {
+        const cachedSegment = await edgeCache
+          .match(cacheKey)
+          .catch(() => undefined);
+        if (cachedSegment && cachedSegment.body) {
+          const cachedLen = cachedSegment.headers.get("content-length");
+          if (cachedLen) {
+            segmentHeaders["Content-Length"] = cachedLen;
+          }
+          return new NextResponse(cachedSegment.body, {
+            status: 200,
+            headers: segmentHeaders,
+          });
+        }
+      }
+
+      const segmentStream =
+        (await fetchPrivateStudyStream("videos-bucket", segmentPath)) ||
+        (await fetchPrivateStudyStream(fallbackBucket, segmentPath));
+
+      if (!segmentStream) {
+        return NextResponse.json(
+          { error: "Requested video segment was not found." },
+          { status: 404 }
+        );
+      }
+
+      if (segmentStream.contentLength) {
+        segmentHeaders["Content-Length"] = segmentStream.contentLength;
+      }
+
+      if (edgeCache && segmentStream.status === 200) {
+        const [clientBody, cacheBody] = segmentStream.body.tee();
+        const cacheHeaders: Record<string, string> = {
+          "Content-Type": segmentContentType,
+          "Cache-Control": "public, max-age=2592000, immutable",
+        };
+        if (segmentStream.contentLength) {
+          cacheHeaders["Content-Length"] = segmentStream.contentLength;
+        }
+        void edgeCache
+          .put(
+            cacheKey,
+            new Response(cacheBody, { status: 200, headers: cacheHeaders })
+          )
+          .catch(() => {});
+
+        return new NextResponse(clientBody, {
+          status: 200,
+          headers: segmentHeaders,
+        });
+      }
+
+      return new NextResponse(segmentStream.body, {
+        status: 200,
+        headers: segmentHeaders,
+      });
+    }
+
+    const manifestStream =
+      (await fetchPrivateStudyStream("videos-bucket", videoPath)) ||
+      (await fetchPrivateStudyStream(fallbackBucket, videoPath));
+
+    if (!manifestStream) {
+      return NextResponse.json(
+        { error: "No HLS playlist uploaded for this topic yet." },
+        { status: 404 }
+      );
+    }
+
+    const rawManifest = await new Response(manifestStream.body).text();
+    const rewrittenManifest = rewriteHlsManifestSegments(
+      rawManifest,
+      topicId,
+      ticket || ""
+    );
+
+    return new NextResponse(rewrittenManifest, {
+      status: 200,
+      headers: {
+        "Content-Type": "application/vnd.apple.mpegurl",
+        "Cache-Control": "private, no-store, no-cache, must-revalidate",
+        "X-Content-Type-Options": "nosniff",
+      },
+    });
+  }
+
+  // 6. Standard MP4 Range / 206 Partial Content streaming
+  const rangeHeader = request.headers.get("range");
+  const videoStream =
+    (await fetchPrivateStudyStream("videos-bucket", videoPath, rangeHeader)) ||
+    (await fetchPrivateStudyStream(fallbackBucket, videoPath, rangeHeader));
+
+  if (!videoStream) {
     return NextResponse.json(
       { error: "No video lecture uploaded for this topic yet." },
       { status: 404 }
     );
   }
 
-  return new NextResponse(new Uint8Array(videoBytes), {
-    status: 200,
-    headers: {
-      "Content-Type": "video/mp4",
-      "Content-Disposition": "inline",
-      "Cache-Control": "private, no-store, no-cache, must-revalidate",
-      "X-Content-Type-Options": "nosniff",
-    },
+  const headers: Record<string, string> = {
+    "Content-Type": videoStream.contentType || "video/mp4",
+    "Content-Disposition": "inline",
+    "Accept-Ranges": videoStream.acceptRanges || "bytes",
+    "Cache-Control": "private, no-store, no-cache, must-revalidate",
+    "X-Content-Type-Options": "nosniff",
+  };
+  if (videoStream.contentLength) {
+    headers["Content-Length"] = videoStream.contentLength;
+  }
+  if (videoStream.contentRange) {
+    headers["Content-Range"] = videoStream.contentRange;
+  }
+  if (videoStream.etag) {
+    headers["ETag"] = videoStream.etag;
+  }
+
+  return new NextResponse(videoStream.body, {
+    status: videoStream.status === 206 ? 206 : 200,
+    headers,
   });
 }
