@@ -75,14 +75,25 @@ export function buildCanonicalR2VideoPath(
   return `${uniSlug}/${subjectSlug}/${unitFolder}/${videoFile}`;
 }
 
+export interface PrivateStudyStreamResult {
+  body: ReadableStream<Uint8Array>;
+  status: number;
+  contentType: string | null;
+  contentLength: string | null;
+  contentRange: string | null;
+  acceptRanges: string;
+  etag: string | null;
+}
+
 /**
- * Fetches an object directly from a Private Cloudflare R2 Bucket using AWS Signature V4.
- * Works with ZERO custom domain required (`https://<ACCOUNT_ID>.r2.cloudflarestorage.com`).
+ * Issues a signed AWS Signature V4 GET request to a private Cloudflare R2 bucket.
+ * Optionally forwards an HTTP Range header for partial chunk streaming.
  */
-async function fetchFromCloudflareR2(
+async function sendSignedR2GetRequest(
   storagePath: string,
-  bucketOverride?: string
-): Promise<Uint8Array | null> {
+  bucketOverride?: string,
+  rangeHeader?: string | null
+): Promise<Response | null> {
   const accountId = process.env.R2_ACCOUNT_ID;
   const accessKeyId = process.env.R2_ACCESS_KEY_ID;
   const secretAccessKey = process.env.R2_SECRET_ACCESS_KEY;
@@ -146,23 +157,118 @@ async function fetchFromCloudflareR2(
     `AWS4-HMAC-SHA256 Credential=${accessKeyId}/${credentialScope}, ` +
     `SignedHeaders=${signedHeaders}, Signature=${signature}`;
 
+  const headers: Record<string, string> = {
+    Authorization: authorizationHeader,
+    "x-amz-content-sha256": payloadHash,
+    "x-amz-date": amzDate,
+  };
+  if (rangeHeader) {
+    headers["Range"] = rangeHeader;
+  }
+
   try {
     const response = await fetch(endpoint, {
       method: "GET",
-      headers: {
-        Authorization: authorizationHeader,
-        "x-amz-content-sha256": payloadHash,
-        "x-amz-date": amzDate,
-      },
+      headers,
       cache: "no-store",
     });
 
-    if (!response.ok) {
+    if (!response.ok && response.status !== 206) {
       return null;
     }
 
+    return response;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Fetches an object stream directly from a Private Cloudflare R2 Bucket without buffering in RAM.
+ */
+async function fetchStreamFromCloudflareR2(
+  storagePath: string,
+  bucketOverride?: string,
+  rangeHeader?: string | null
+): Promise<PrivateStudyStreamResult | null> {
+  const response = await sendSignedR2GetRequest(
+    storagePath,
+    bucketOverride,
+    rangeHeader
+  );
+  if (!response || !response.body) {
+    return null;
+  }
+
+  return {
+    body: response.body as ReadableStream<Uint8Array>,
+    status: response.status,
+    contentType: response.headers.get("content-type"),
+    contentLength: response.headers.get("content-length"),
+    contentRange: response.headers.get("content-range"),
+    acceptRanges: response.headers.get("accept-ranges") || "bytes",
+    etag: response.headers.get("etag"),
+  };
+}
+
+/**
+ * Fetches an object directly from a Private Cloudflare R2 Bucket using AWS Signature V4.
+ * Works with ZERO custom domain required (`https://<ACCOUNT_ID>.r2.cloudflarestorage.com`).
+ */
+async function fetchFromCloudflareR2(
+  storagePath: string,
+  bucketOverride?: string
+): Promise<Uint8Array | null> {
+  const response = await sendSignedR2GetRequest(storagePath, bucketOverride);
+  if (!response) {
+    return null;
+  }
+
+  try {
     const arrayBuffer = await response.arrayBuffer();
     return new Uint8Array(arrayBuffer);
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Fetches an object stream from a Private Supabase Storage Bucket using the Service Role Key.
+ */
+async function fetchStreamFromSupabasePrivateBucket(
+  bucket: string,
+  storagePath: string
+): Promise<PrivateStudyStreamResult | null> {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!supabaseUrl || !serviceRoleKey || !storagePath) {
+    return null;
+  }
+
+  try {
+    const adminSupabase = createClient(supabaseUrl, serviceRoleKey, {
+      auth: { persistSession: false },
+    });
+
+    const cleanPath = storagePath.replace(/^\/+/, "");
+    const { data, error } = await adminSupabase.storage
+      .from(bucket || "notes-bucket")
+      .download(cleanPath);
+
+    if (error || !data) {
+      return null;
+    }
+
+    return {
+      body: data.stream() as ReadableStream<Uint8Array>,
+      status: 200,
+      contentType: data.type || null,
+      contentLength: String(data.size),
+      contentRange: null,
+      acceptRanges: "bytes",
+      etag: null,
+    };
   } catch {
     return null;
   }
@@ -201,6 +307,41 @@ async function fetchFromSupabasePrivateBucket(
   } catch {
     return null;
   }
+}
+
+/**
+ * Streams a raw PDF or media binary from Private Cloudflare R2 (primary)
+ * or Private Supabase Storage Bucket (fallback) without buffering in Worker RAM.
+ */
+export async function fetchPrivateStudyStream(
+  bucket: string,
+  storagePath: string | null | undefined,
+  rangeHeader?: string | null
+): Promise<PrivateStudyStreamResult | null> {
+  if (!storagePath) return null;
+
+  const targetBucket = bucket || process.env.R2_BUCKET_NAME || "notes-bucket";
+
+  // 1. Primary: Private Cloudflare R2 Bucket (S3 API with AWS Signature V4)
+  const r2Stream = await fetchStreamFromCloudflareR2(
+    storagePath,
+    targetBucket,
+    rangeHeader
+  );
+  if (r2Stream) {
+    return r2Stream;
+  }
+
+  // 2. Fallback: Private Supabase Storage Bucket
+  const sbStream = await fetchStreamFromSupabasePrivateBucket(
+    targetBucket,
+    storagePath
+  );
+  if (sbStream) {
+    return sbStream;
+  }
+
+  return null;
 }
 
 /**

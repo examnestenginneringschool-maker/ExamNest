@@ -37,10 +37,10 @@ export function buildSessionReplacedEmailHtml(
   });
 
   const cleanSiteUrl =
-    payload.siteUrl.replace(/\/$/, "") || "https://qoncepto.vercel.app";
+    payload.siteUrl.replace(/\/$/, "") || "https://qoncepto.com";
   // Use public production logo URL when running on localhost so Gmail can render the image
   const logoBaseUrl = cleanSiteUrl.includes("localhost")
-    ? "https://qoncepto.vercel.app"
+    ? "https://qoncepto.com"
     : cleanSiteUrl;
 
   return `<!DOCTYPE html>
@@ -50,77 +50,75 @@ export function buildSessionReplacedEmailHtml(
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>New Device Sign-In Alert | Qoncepto</title>
 </head>
-<body style="margin: 0; padding: 0; background-color: #f4f5fb; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased;">
-  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #f4f5fb; padding: 40px 16px;">
+<body style="margin: 0; padding: 0; background-color: #f8fafc; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; color: #0f172a;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #f8fafc; padding: 48px 16px;">
     <tr>
       <td align="center">
         <!-- Main Card Container -->
-        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="max-width: 460px; background-color: #ffffff; border-radius: 28px; border: 1px solid #e6e8f4; box-shadow: 0 20px 50px rgba(23, 27, 42, 0.06); overflow: hidden;">
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="max-width: 460px; background-color: #ffffff; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 4px 16px rgba(15, 23, 42, 0.04); overflow: hidden;">
           
-          <!-- Top Accent Gradient Strip -->
+          <!-- Subtle Charcoal Accent Bar -->
           <tr>
-            <td style="height: 6px; background: linear-gradient(90deg, #5B4DFF 0%, #0088FF 50%, #F6C844 100%);"></td>
+            <td style="height: 3px; background-color: #0f172a;"></td>
           </tr>
 
-          <!-- Inner Content Padding -->
+          <!-- Main Content -->
           <tr>
-            <td style="padding: 36px 36px 32px 36px;">
+            <td style="padding: 36px 32px 32px 32px;">
               
-              <!-- Brand Header (Qoncepto Logo + Name) -->
+              <!-- Brand Header -->
               <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin-bottom: 28px;">
                 <tr>
                   <td valign="middle" style="padding-right: 12px;">
-                    <div style="width: 40px; height: 40px; border-radius: 12px; background-color: #ffffff; border: 1px solid #e6e8f4; padding: 3px; box-sizing: border-box; overflow: hidden; display: inline-block; line-height: 34px; text-align: center;">
+                    <div style="width: 36px; height: 36px; border-radius: 10px; background-color: #ffffff; border: 1px solid #e2e8f0; overflow: hidden; display: inline-block; line-height: 34px; text-align: center;">
                       <img
                         src="${logoBaseUrl}/logo.png"
                         alt="Q"
-                        width="34"
-                        height="34"
-                        style="display: block; width: 34px; height: 34px; border-radius: 8px; object-fit: contain; color: #0052cc; font-weight: 900; font-size: 20px;"
+                        width="30"
+                        height="30"
+                        style="display: inline-block; vertical-align: middle; width: 30px; height: 30px; border-radius: 6px; object-fit: contain;"
                       />
                     </div>
                   </td>
                   <td valign="middle">
-                    <div style="font-size: 19px; font-weight: 800; color: #171b2a; letter-spacing: -0.4px; line-height: 1.1;">
+                    <div style="font-size: 18px; font-weight: 700; color: #0f172a; letter-spacing: -0.3px; line-height: 1.1;">
                       Qoncepto
                     </div>
-                    <div style="font-size: 10px; font-weight: 700; color: #8c90a4; text-transform: uppercase; letter-spacing: 1.4px; margin-top: 2px;">
+                    <div style="font-size: 10px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 1.2px; margin-top: 3px;">
                       Syllabus To Mastery
                     </div>
                   </td>
                 </tr>
               </table>
 
-              <!-- Headline & Minimal Copy -->
-              <h1 style="margin: 0 0 10px 0; font-size: 22px; font-weight: 800; color: #171b2a; letter-spacing: -0.3px;">
+              <!-- Headline & Copy -->
+              <h1 style="margin: 0 0 10px 0; font-size: 20px; font-weight: 700; color: #0f172a; letter-spacing: -0.3px;">
                 New device sign-in detected
               </h1>
-              <p style="margin: 0 0 24px 0; font-size: 14px; color: #5d5c73; line-height: 1.6;">
-                Your Qoncepto account (<strong style="color: #171b2a;">${safeEmail}</strong>) was just signed in on a new device or browser. Because Qoncepto enforces a strict <strong style="color: #171b2a;">Single-Device Policy</strong>, your previous active session was immediately expired.
+              <p style="margin: 0 0 24px 0; font-size: 14px; color: #475569; line-height: 1.6;">
+                Your Qoncepto account (<strong style="color: #0f172a;">${safeEmail}</strong>) was just signed in on a new device. Because Qoncepto enforces a strict <strong style="color: #0f172a;">Single-Device Policy</strong>, your previous active session was immediately signed out.
               </p>
 
-              <!-- Sleek Security Status Vault Box -->
-              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin-bottom: 26px;">
+              <!-- Hand-Written / Drafted Style Session Details Box -->
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin-bottom: 24px;">
                 <tr>
-                  <td style="background-color: #faf8ff; border: 1.5px solid #dee1f7; border-radius: 20px; padding: 22px 20px;">
-                    <div style="text-align: center; margin-bottom: 14px;">
-                      <span style="display: inline-block; padding: 5px 12px; border-radius: 999px; background-color: #fffbeb; border: 1px solid #fde68a; font-size: 10px; font-weight: 800; color: #d97706; text-transform: uppercase; letter-spacing: 1.3px;">
-                        ⚡ Previous Session Expired
-                      </span>
+                  <td style="background-color: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 12px; padding: 20px 18px;">
+                    <div style="font-family: 'Courier New', Courier, Monaco, monospace; font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 1.8px; margin-bottom: 12px; text-align: center;">
+                      SESSION ACTIVITY LOG
                     </div>
 
-                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="font-size: 12px; color: #5d5c73;">
+                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="font-size: 12px; color: #475569;">
                       <tr>
-                        <td style="padding: 5px 0; font-weight: 600; color: #8c90a4;">New Active Device:</td>
-                        <td align="right" style="padding: 5px 0; font-weight: 800; color: #171b2a;">${newDeviceFriendly}</td>
+                        <td style="padding: 6px 0; font-weight: 500; color: #64748b;">New Active Device:</td>
+                        <td align="right" style="padding: 6px 0; font-weight: 700; color: #0f172a;">${newDeviceFriendly}</td>
                       </tr>
                       <tr>
-                        <td style="padding: 5px 0; font-weight: 600; color: #8c90a4;">Expired Device:</td>
-                        <td align="right" style="padding: 5px 0; font-weight: 700; color: #5d5c73;">${prevDeviceFriendly}</td>
+                        <td style="padding: 6px 0; font-weight: 500; color: #64748b;">Previous Session:</td>
+                        <td align="right" style="padding: 6px 0; font-weight: 600; color: #64748b;">${prevDeviceFriendly} (Previous Session Expired)</td>
                       </tr>
                       <tr>
-                        <td style="padding: 5px 0; font-weight: 600; color: #8c90a4;">Time (IST):</td>
-                        <td align="right" style="padding: 5px 0; font-weight: 700; color: #171b2a;">${escapeHtml(formattedTime)} IST</td>
+                        <td style="padding: 6px 0; font-weight: 500; color: #64748b;">Time (IST):</td>
+                        <td align="right" style="padding: 6px 0; font-weight: 600; color: #334155;">${escapeHtml(formattedTime)} IST</td>
                       </tr>
                     </table>
                   </td>
@@ -128,18 +126,24 @@ export function buildSessionReplacedEmailHtml(
               </table>
 
               <!-- Unauthorized Activity Warning & Action -->
-              <p style="margin: 0; font-size: 12px; color: #8c90a4; line-height: 1.6;">
-                <strong style="color: #e11d48;">Wasn’t you?</strong> Someone else may have your password. Please <a href="${cleanSiteUrl}/sign-in" style="color: #5B4DFF; font-weight: 700; text-decoration: none;">reset your password immediately</a> to terminate their session and secure your account.
+              <p style="margin: 0 0 20px 0; font-size: 12px; color: #64748b; line-height: 1.6;">
+                <strong style="color: #0f172a;">Wasn’t you?</strong> Someone else may know your password. Please <a href="${cleanSiteUrl}/reset-password" style="color: #0f172a; font-weight: 700; text-decoration: underline;">reset your password immediately</a> to terminate any unauthorized session and secure your workspace.
+              </p>
+
+              <!-- Courtesy Sign-off (Personal touch) -->
+              <p style="margin: 0; font-size: 13px; color: #475569; line-height: 1.5;">
+                — <strong style="color: #0f172a; font-weight: 600;">Team Qoncepto</strong>
               </p>
 
             </td>
           </tr>
 
-          <!-- Subtle Bottom Footer (Dynamic Year) -->
+          <!-- Minimal Clean Footer -->
           <tr>
-            <td style="background-color: #faf8ff; border-top: 1px solid #f0f2f8; padding: 18px 36px; text-align: center;">
-              <p style="margin: 0; font-size: 11px; font-weight: 600; color: #8c90a4;">
-                © ${currentYear} Qoncepto · Curricular Standard &amp; Academic Workspace
+            <td style="background-color: #fafafa; border-top: 1px solid #f1f5f9; padding: 16px 32px; text-align: center;">
+              <p style="margin: 0; font-size: 11px; font-weight: 500; color: #94a3b8; line-height: 1.5;">
+                © ${currentYear} Qoncepto · Curricular Standard &amp; Academic Workspace<br />
+                This is an automated security alert regarding your active session.
               </p>
             </td>
           </tr>

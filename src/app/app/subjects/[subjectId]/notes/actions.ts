@@ -1,15 +1,19 @@
 "use server";
 
 import { cookies } from "next/headers";
-import { getAuthenticatedUser } from "@/lib/supabase/server";
+import { createServerSupabaseClient, getAuthenticatedUser } from "@/lib/supabase/server";
 import {
   createDrmStreamTicket,
   type DrmMediaIntent,
 } from "@/lib/notes/drm-ticket";
+import {
+  isHlsManifestPath,
+  signMediaGatekeeperUrl,
+} from "@/lib/notes/hls-manifest";
 
 /**
- * Mints a short-lived, single-use, device-bound DRM ticket for viewing a Topic PDF on-screen,
- * downloading a Topic PDF (with per-page watermark), or streaming a non-downloadable Topic Video.
+ * Mints a short-lived, device-bound DRM ticket for viewing/downloading a Topic PDF,
+ * or authorizing a Topic Video stream (HLS Gatekeeper Worker or Next.js DRM proxy).
  */
 export async function issueTopicDrmTicket(
   topicId: string,
@@ -18,6 +22,7 @@ export async function issueTopicDrmTicket(
   ok: boolean;
   url?: string;
   ticket?: string;
+  isHls?: boolean;
   error?: string;
 }> {
   if (!topicId) {
@@ -55,12 +60,47 @@ export async function issueTopicDrmTicket(
   const effectiveDeviceToken =
     browserDeviceToken || activeDeviceToken || "session-bound";
 
+  let isHls = false;
+  if (intent === "video") {
+    const supabase = await createServerSupabaseClient();
+    const { data: topicRow } = await supabase
+      .from("subject_note_topics")
+      .select("video_storage_path")
+      .eq("id", topicId)
+      .eq("is_active", true)
+      .maybeSingle();
+
+    const videoPath = topicRow?.video_storage_path as string | null | undefined;
+    isHls = isHlsManifestPath(videoPath);
+
+    const gatekeeperBase = process.env.MEDIA_GATEKEEPER_URL?.trim();
+    const gatekeeperSecret =
+      process.env.MEDIA_SIGNING_SECRET?.trim() ||
+      process.env.DRM_SIGNING_SECRET?.trim() ||
+      process.env.SUPABASE_SERVICE_ROLE_KEY?.trim();
+
+    if (isHls && videoPath && gatekeeperBase && gatekeeperSecret) {
+      const signedUrl = signMediaGatekeeperUrl({
+        baseUrl: gatekeeperBase,
+        storagePath: videoPath,
+        ttlSeconds: 120,
+        secret: gatekeeperSecret,
+      });
+
+      return {
+        ok: true,
+        url: signedUrl,
+        isHls: true,
+      };
+    }
+  }
+
   const ticket = createDrmStreamTicket({
     userId: user.id,
     deviceToken: effectiveDeviceToken,
     topicId,
     intent,
-    ttlSeconds: intent === "video" ? 120 : 60,
+    ttlSeconds: intent === "video" ? 14400 : 60,
   });
 
   const endpointBase =
@@ -76,5 +116,6 @@ export async function issueTopicDrmTicket(
     ok: true,
     url,
     ticket,
+    isHls,
   };
 }

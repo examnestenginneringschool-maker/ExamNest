@@ -1,0 +1,17 @@
+{
+  "name": "qoncepto-media-gatekeeper",
+  "main": "src/index.ts",
+  "compatibility_date": "2025-03-25",
+  "observability": {
+    "enabled": true
+  },
+  "r2_buckets": [
+    {
+      "binding": "MEDIA_BUCKET",
+      "bucket_name": "videos-bucket"
+    }
+  ],
+  "vars": {
+    "ALLOWED_ORIGIN": "https://qoncepto.examnest-enginneringschool.workers.dev"
+  }
+}

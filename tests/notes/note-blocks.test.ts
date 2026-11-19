@@ -1,19 +1,21 @@
 import { describe, expect, it } from "vitest";
-import { PDFDocument } from "pdf-lib";
 import type { TopicBlock } from "@/components/notes/NoteBlockRenderer";
 import {
   createDrmStreamTicket,
   verifyAndConsumeDrmTicket,
 } from "@/lib/notes/drm-ticket";
 import {
-  generateWatermarkedTopicPdf,
-  stampWatermarkOnEveryPage,
-} from "@/lib/notes/pdf-watermarker";
-import {
   buildCanonicalR2NotePath,
   buildCanonicalR2VideoPath,
   toStorageSlug,
 } from "@/lib/notes/r2-storage";
+import {
+  isHlsManifestPath,
+  isSafeHlsSegmentName,
+  resolveHlsSegmentPath,
+  rewriteHlsManifestSegments,
+  signMediaGatekeeperUrl,
+} from "@/lib/notes/hls-manifest";
 
 describe("Note Block Data Structure Contracts", () => {
   it("validates formula block structure", () => {
@@ -129,51 +131,6 @@ describe("Note Block Data Structure Contracts", () => {
     expect(secondUse.valid).toBe(false);
   });
 
-  it("stamps student watermark onto every page of a multi-page PDF", async () => {
-    const basePdf = await PDFDocument.create();
-    basePdf.addPage([595.28, 841.89]);
-    basePdf.addPage([595.28, 841.89]);
-    basePdf.addPage([595.28, 841.89]);
-    const rawBytes = await basePdf.save();
-
-    const watermarkedBytes = await stampWatermarkOnEveryPage(rawBytes, {
-      studentId: "644f219a-0af2-4c8d-8374-776c69454884",
-      studentName: "Sayantan Das",
-      studentEmail: "dassambit2006@gmail.com",
-      studentPhone: "+919876543210",
-      subjectCode: "BS-PH101",
-      subjectName: "Physics-I",
-      unitNumber: 1,
-      unitTitle: "Simple Harmonic Motion",
-      topicNumber: "1.1",
-      topicTitle: "Introduction",
-    });
-
-    const loaded = await PDFDocument.load(watermarkedBytes);
-    expect(loaded.getPageCount()).toBe(3);
-    expect(loaded.getAuthor()).toBe("Qoncepto Academic Cell");
-
-    const generatedBytes = await generateWatermarkedTopicPdf({
-      watermarkInfo: {
-        studentId: "644f219a-0af2-4c8d-8374-776c69454884",
-        studentName: "Sayantan Das",
-        studentEmail: "dassambit2006@gmail.com",
-        studentPhone: "+919876543210",
-        subjectCode: "BS-PH101",
-        subjectName: "Physics-I",
-        unitNumber: 1,
-        unitTitle: "Simple Harmonic Motion",
-        topicNumber: "1.1",
-        topicTitle: "Introduction",
-      },
-      topicSummary: "Core concepts of simple harmonic motion.",
-      syllabusText: "Oscillations and wave optics.",
-    });
-
-    const loadedGen = await PDFDocument.load(generatedBytes);
-    expect(loadedGen.getPageCount()).toBeGreaterThanOrEqual(1);
-  });
-
   it("constructs canonical 4-level Cloudflare R2 note and video paths using university and subject code", () => {
     expect(toStorageSlug("BS-PH101")).toBe("bs_ph101");
     expect(toStorageSlug("PCC-CS301")).toBe("pcc_cs301");
@@ -201,6 +158,38 @@ describe("Note Block Data Structure Contracts", () => {
     });
     expect(videoPath).toBe(
       "makaut/pcc_cs301/unit_2_stacks_and_queues/lecture_2_1_stack_adt.mp4"
+    );
+  });
+
+  it("validates HLS manifest rewriting, safe segment names, and Gatekeeper HMAC URL signing", () => {
+    expect(isHlsManifestPath("lectures/lec-01/playlist.m3u8")).toBe(true);
+    expect(isHlsManifestPath("lectures/lec-01/lecture.mp4")).toBe(false);
+
+    expect(isSafeHlsSegmentName("segment_001.ts")).toBe(true);
+    expect(isSafeHlsSegmentName("../secret.ts")).toBe(false);
+    expect(isSafeHlsSegmentName("evil.exe")).toBe(false);
+
+    expect(
+      resolveHlsSegmentPath("lectures/lec-01/playlist.m3u8", "segment_005.ts")
+    ).toBe("lectures/lec-01/segment_005.ts");
+
+    const rewritten = rewriteHlsManifestSegments(
+      "#EXTM3U\n#EXTINF:6.000,\nsegment_000.ts\n#EXT-X-ENDLIST",
+      "topic-1",
+      "ticket.abc"
+    );
+    expect(rewritten).toContain(
+      "/api/notes/video/topic-1?intent=video&ticket=ticket.abc&segment=segment_000.ts"
+    );
+
+    const signed = signMediaGatekeeperUrl({
+      baseUrl: "https://media.qoncepto.in/",
+      storagePath: "/lectures/lec-01/playlist.m3u8",
+      ttlSeconds: 120,
+      secret: "test-secret",
+    });
+    expect(signed).toMatch(
+      /^https:\/\/media\.qoncepto\.in\/lectures\/lec-01\/playlist\.m3u8\?token=[a-f0-9]{64}&exp=\d+$/
     );
   });
 });

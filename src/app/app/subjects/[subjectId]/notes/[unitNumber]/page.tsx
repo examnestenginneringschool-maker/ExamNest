@@ -143,6 +143,7 @@ export default async function ChapterNotesReaderPage({
           subjectId={subject.id}
           subjectName={subject.name}
           semesterNumber={semester.semester_number}
+          studentId={user.id}
           studentName={user.fullName}
           studentEmail={user.email}
           units={[activeUnit]}

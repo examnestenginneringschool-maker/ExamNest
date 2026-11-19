@@ -11,6 +11,7 @@ type NotesWorkspaceClientProps = {
   subjectId: string;
   subjectName: string;
   semesterNumber: number;
+  studentId?: string;
   studentName?: string;
   studentEmail?: string;
   units: NoteUnit[];
@@ -25,6 +26,7 @@ export function NotesWorkspaceClient({
   subjectId,
   subjectName,
   semesterNumber,
+  studentId,
   studentName,
   studentEmail,
   units,
@@ -156,6 +158,7 @@ export function NotesWorkspaceClient({
             <TopicReaderWorkspace
               subjectId={subjectId}
               subjectName={subjectName}
+              studentId={studentId}
               studentName={studentName}
               studentEmail={studentEmail}
               unit={activeUnit}

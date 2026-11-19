@@ -9,14 +9,8 @@ import {
 } from "@/lib/notes/drm-ticket";
 import {
   buildCanonicalR2NotePath,
-  fetchPrivateStudyFile,
+  fetchPrivateStudyStream,
 } from "@/lib/notes/r2-storage";
-import {
-  generateWatermarkedTopicPdf,
-  stampWatermarkOnEveryPage,
-  type CompiledNoteItem,
-  type StudentWatermarkInfo,
-} from "@/lib/notes/pdf-watermarker";
 
 function buildBlockedHtmlResponse(message: string, status = 403) {
   const html = `<!DOCTYPE html>
@@ -184,49 +178,11 @@ export async function GET(
     topicTitle: topicRow.title || "notes",
   });
 
-  const watermarkInfo: StudentWatermarkInfo = {
-    studentId: user.id,
-    studentName: user.fullName,
-    studentEmail: user.email,
-    studentPhone: user.phone,
-    subjectCode: subjectRow?.code || "SUBJ",
-    subjectName: subjectRow?.name || "Academic Subject",
-    unitNumber: unitRow?.unit_number ?? 1,
-    unitTitle: unitRow?.title || "Study Unit",
-    topicNumber: String(topicRow.topic_number || "1.1"),
-    topicTitle: String(topicRow.title || "Topic Notes"),
-  };
-
-  // 6. Fetch raw PDF from Private Cloudflare R2 (notes-bucket) or fallback
+  // 6. Stream pre-branded PDF from Auth-Gated Cloudflare Edge Cache or Private R2 (notes-bucket)
   const storageBucket =
     (topicRow.pdf_storage_bucket as string | null) || "notes-bucket";
   const storagePath =
     (topicRow.pdf_storage_path as string | null) || r2HierarchyPath;
-
-  let watermarkedPdfBytes: Uint8Array;
-
-  const rawStoragePdf = await fetchPrivateStudyFile(storageBucket, storagePath);
-
-  if (rawStoragePdf && rawStoragePdf.byteLength > 0) {
-    // Stamp watermark on EVERY SINGLE PAGE of the R2/Storage PDF
-    watermarkedPdfBytes = await stampWatermarkOnEveryPage(
-      rawStoragePdf,
-      watermarkInfo
-    );
-  } else {
-    // Fallback: Synthesize typeset PDF from topic's compiled notes & stamp watermark on EVERY SINGLE PAGE
-    const compiledNotes = Array.isArray(topicRow.compiled_notes)
-      ? (topicRow.compiled_notes as CompiledNoteItem[])
-      : [];
-
-    watermarkedPdfBytes = await generateWatermarkedTopicPdf({
-      watermarkInfo,
-      topicSummary: topicRow.summary as string | null,
-      syllabusText: unitRow?.syllabus_text ?? null,
-      importantTopics: unitRow?.important_topics ?? null,
-      compiledNotes,
-    });
-  }
 
   const safeSubjectCode = (subjectRow?.code || "Qoncepto").replace(
     /[^a-zA-Z0-9_-]/g,
@@ -238,19 +194,78 @@ export async function GET(
   );
   const filename = `Qoncepto_${safeSubjectCode}_Topic_${safeTopicNum}_Notes.pdf`;
 
-  return new NextResponse(new Uint8Array(watermarkedPdfBytes), {
-    status: 200,
-    headers: {
+  const responseHeaders: Record<string, string> = {
+    "Content-Type": "application/pdf",
+    "Content-Disposition":
+      intent === "download"
+        ? `attachment; filename="${filename}"`
+        : `inline; filename="${filename}"`,
+    "Cache-Control": "private, no-store, no-cache, must-revalidate, max-age=0",
+    Pragma: "no-cache",
+    Expires: "0",
+    "X-Content-Type-Options": "nosniff",
+    "X-Frame-Options": "SAMEORIGIN",
+  };
+
+  const edgeCache = (
+    globalThis as unknown as { caches?: { default?: Cache } }
+  ).caches?.default;
+  const cleanCachePath = storagePath.replace(/^\/+/, "");
+  const cacheKey = new Request(
+    `https://r2-cache.qoncepto.internal/pdf/${encodeURIComponent(storageBucket)}/${cleanCachePath}`,
+    { method: "GET" }
+  );
+
+  if (edgeCache) {
+    const cachedResponse = await edgeCache.match(cacheKey).catch(() => undefined);
+    if (cachedResponse && cachedResponse.body) {
+      const cachedLen = cachedResponse.headers.get("content-length");
+      if (cachedLen) {
+        responseHeaders["Content-Length"] = cachedLen;
+      }
+      return new NextResponse(cachedResponse.body, {
+        status: 200,
+        headers: responseHeaders,
+      });
+    }
+  }
+
+  const pdfStream = await fetchPrivateStudyStream(storageBucket, storagePath);
+  if (!pdfStream) {
+    return buildBlockedHtmlResponse(
+      "No study PDF has been uploaded for this topic yet.",
+      404
+    );
+  }
+
+  if (pdfStream.contentLength) {
+    responseHeaders["Content-Length"] = pdfStream.contentLength;
+  }
+
+  if (edgeCache && pdfStream.status === 200) {
+    const [clientStream, cacheStream] = pdfStream.body.tee();
+    const cacheHeaders: Record<string, string> = {
       "Content-Type": "application/pdf",
-      "Content-Disposition":
-        intent === "download"
-          ? `attachment; filename="${filename}"`
-          : `inline; filename="${filename}"`,
-      "Cache-Control": "private, no-store, no-cache, must-revalidate, max-age=0",
-      Pragma: "no-cache",
-      Expires: "0",
-      "X-Content-Type-Options": "nosniff",
-      "X-Frame-Options": "SAMEORIGIN",
-    },
+      "Cache-Control": "public, max-age=2592000, immutable",
+    };
+    if (pdfStream.contentLength) {
+      cacheHeaders["Content-Length"] = pdfStream.contentLength;
+    }
+    void edgeCache
+      .put(
+        cacheKey,
+        new Response(cacheStream, { status: 200, headers: cacheHeaders })
+      )
+      .catch(() => {});
+
+    return new NextResponse(clientStream, {
+      status: 200,
+      headers: responseHeaders,
+    });
+  }
+
+  return new NextResponse(pdfStream.body, {
+    status: 200,
+    headers: responseHeaders,
   });
 }

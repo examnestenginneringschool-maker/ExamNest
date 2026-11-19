@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import Hls from "hls.js";
 import Link from "next/link";
 import {
   AlertCircle,
@@ -30,10 +31,12 @@ import {
   toggleUnitProgress,
 } from "@/lib/academic/progress-store";
 import { issueTopicDrmTicket } from "@/app/app/subjects/[subjectId]/notes/actions";
+import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 
 type TopicReaderWorkspaceProps = {
   subjectId: string;
   subjectName: string;
+  studentId?: string;
   studentName?: string;
   studentEmail?: string;
   unit: NoteUnit;
@@ -50,6 +53,7 @@ type TopicReaderWorkspaceProps = {
 export function TopicReaderWorkspace({
   subjectId,
   subjectName,
+  studentId,
   studentName = "Student",
   studentEmail = "",
   unit,
@@ -73,9 +77,13 @@ export function TopicReaderWorkspace({
   const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
 
   const [videoStreamUrl, setVideoStreamUrl] = useState<string | null>(null);
+  const [isVideoHls, setIsVideoHls] = useState(false);
   const [isVideoLoading, setIsVideoLoading] = useState(false);
+  const [watermarkPos, setWatermarkPos] = useState({ top: 12, left: 62 });
+  const [watermarkTime, setWatermarkTime] = useState("");
 
   const activeBlobUrlRef = useRef<string | null>(null);
+  const videoElementRef = useRef<HTMLVideoElement | null>(null);
 
   // Sync completion directly with persistent Progress Store
   const progress = useSubjectProgress(subjectId);
@@ -165,6 +173,7 @@ export function TopicReaderWorkspace({
     if (!topic?.id || !topic?.video_storage_path) {
       queueMicrotask(() => {
         setVideoStreamUrl(null);
+        setIsVideoHls(false);
       });
       return;
     }
@@ -179,6 +188,7 @@ export function TopicReaderWorkspace({
         .then((res) => {
           if (!cancelled && res.ok && res.url) {
             setVideoStreamUrl(res.url);
+            setIsVideoHls(Boolean(res.isHls));
           }
         })
         .finally(() => {
@@ -191,11 +201,98 @@ export function TopicReaderWorkspace({
     };
   }, [topic?.id, topic?.video_storage_path]);
 
+  // Attach HLS.js adaptive stream (or native Safari HLS / MP4 direct source)
+  useEffect(() => {
+    const videoEl = videoElementRef.current;
+    if (!videoEl || !videoStreamUrl) return;
+
+    if (!isVideoHls) {
+      videoEl.src = videoStreamUrl;
+      return;
+    }
+
+    if (Hls.isSupported()) {
+      const hls = new Hls({
+        enableWorker: true,
+        lowLatencyMode: false,
+        xhrSetup: (xhr) => {
+          xhr.withCredentials = true;
+        },
+      });
+      hls.loadSource(videoStreamUrl);
+      hls.attachMedia(videoEl);
+
+      return () => {
+        hls.destroy();
+      };
+    }
+
+    if (videoEl.canPlayType("application/vnd.apple.mpegurl")) {
+      videoEl.src = videoStreamUrl;
+    }
+  }, [videoStreamUrl, isVideoHls]);
+
+  // Dynamic moving forensic student watermark (shifts every 17s to deter capture)
+  useEffect(() => {
+    if (!videoStreamUrl) return;
+
+    const updateWatermark = () => {
+      const top = Math.floor(10 + Math.random() * 64);
+      const left = Math.floor(8 + Math.random() * 54);
+      const nowStr = new Date().toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+      });
+      setWatermarkPos({ top, left });
+      setWatermarkTime(nowStr);
+    };
+
+    updateWatermark();
+    const timer = window.setInterval(updateWatermark, 17000);
+    return () => window.clearInterval(timer);
+  }, [videoStreamUrl]);
+
+  // Fraud-proof 30-second watch-hour telemetry heartbeat
+  useEffect(() => {
+    if (!videoStreamUrl || !topic?.id || !studentId) return;
+
+    const supabase = createBrowserSupabaseClient();
+    const topicId = topic.id;
+
+    const timer = window.setInterval(() => {
+      const videoEl = videoElementRef.current;
+      if (!videoEl || videoEl.paused || videoEl.ended || document.hidden) {
+        return;
+      }
+
+      const durationSec =
+        Number.isFinite(videoEl.duration) && videoEl.duration > 0
+          ? Math.round(videoEl.duration)
+          : null;
+
+      void supabase
+        .rpc("log_watch_heartbeat", {
+          p_user_id: studentId,
+          p_video_id: topicId,
+          p_subject_id: subjectId,
+          p_increment: 30,
+          p_video_duration: durationSec,
+        })
+        .then(
+          () => {},
+          () => {}
+        );
+    }, 30000);
+
+    return () => window.clearInterval(timer);
+  }, [videoStreamUrl, topic?.id, studentId, subjectId]);
+
   /**
-   * Generates a single-use download ticket ONLY when the student clicks the Download PDF button.
-   * The server dynamically stamps the student's watermark on EVERY SINGLE PAGE of the PDF.
+   * Generates a single-use download ticket ONLY when the student clicks the Download PDF button
+   * to stream the pre-branded topic PDF from storage.
    */
-  const handleDownloadWatermarkedPdf = async () => {
+  const handleDownloadTopicPdf = async () => {
     if (!topic?.id || isDownloadingPdf) return;
 
     try {
@@ -212,7 +309,7 @@ export function TopicReaderWorkspace({
       link.href = ticketRes.url;
       link.setAttribute(
         "download",
-        `Qoncepto_Topic_${topic.topic_number}_Watermarked.pdf`
+        `Qoncepto_Topic_${topic.topic_number}_Notes.pdf`
       );
       document.body.appendChild(link);
       link.click();
@@ -294,10 +391,10 @@ export function TopicReaderWorkspace({
             />
           </button>
 
-          {/* Download Watermarked Topic PDF Button */}
+          {/* Download Topic PDF Button */}
           {topic?.is_pdf_downloadable !== false && (
             <button
-              onClick={handleDownloadWatermarkedPdf}
+              onClick={handleDownloadTopicPdf}
               disabled={!topic || isDownloadingPdf}
               type="button"
               className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold shadow-xs transition-all active:scale-95 cursor-pointer disabled:opacity-60"
@@ -305,7 +402,7 @@ export function TopicReaderWorkspace({
               {isDownloadingPdf ? (
                 <>
                   <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                  <span>Watermarking PDF...</span>
+                  <span>Preparing PDF...</span>
                 </>
               ) : (
                 <>
@@ -334,7 +431,7 @@ export function TopicReaderWorkspace({
           </div>
           <span className="inline-flex items-center gap-1 text-[11px] font-semibold bg-emerald-50 text-emerald-700 px-2.5 py-0.5 rounded-full border border-emerald-200/70">
             <ShieldCheck className="h-3.5 w-3.5" />
-            <span>DRM Protected · Per-Page Watermarked</span>
+            <span>DRM Protected · Official Study Notes</span>
           </span>
         </div>
 
@@ -416,16 +513,24 @@ export function TopicReaderWorkspace({
             ) : videoStreamUrl ? (
               <>
                 <video
-                  src={videoStreamUrl}
+                  ref={videoElementRef}
                   controls
-                  controlsList="nodownload noplaybackrate noremoteplayback"
+                  playsInline
+                  controlsList="nodownload noremoteplayback"
                   disablePictureInPicture
                   onContextMenu={(e) => e.preventDefault()}
                   className="w-full h-full object-contain"
                 />
-                {/* Floating Forensic Student Watermark Overlay */}
-                <div className="pointer-events-none absolute top-4 right-5 px-2.5 py-1 rounded bg-black/40 text-white/45 text-[10px] font-mono tracking-wide select-none">
-                  {studentName} · {studentEmail}
+                {/* Moving Forensic Student Watermark Overlay */}
+                <div
+                  style={{
+                    top: `${watermarkPos.top}%`,
+                    left: `${watermarkPos.left}%`,
+                  }}
+                  className="pointer-events-none absolute px-2.5 py-1 rounded bg-black/40 text-white/45 text-[10px] font-mono tracking-wide select-none transition-all duration-700"
+                >
+                  {studentEmail || studentName}
+                  {watermarkTime ? ` · ${watermarkTime}` : ""}
                 </div>
               </>
             ) : (
@@ -475,12 +580,8 @@ export function TopicReaderWorkspace({
               </span>
             </div>
 
-            <div className="flex items-center gap-2">
-              <span className="text-[11px] text-slate-500 font-medium hidden md:inline">
-                Licensed to{" "}
-                <strong className="text-slate-800">{studentName}</strong>
-              </span>
-              {isFullscreenPdf && (
+            {isFullscreenPdf && (
+              <div className="flex items-center gap-2">
                 <button
                   type="button"
                   onClick={() => setIsFullscreenPdf(false)}
@@ -488,8 +589,8 @@ export function TopicReaderWorkspace({
                 >
                   Close Fullscreen
                 </button>
-              )}
-            </div>
+              </div>
+            )}
           </div>
 
           <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight mt-0.5">
@@ -503,7 +604,7 @@ export function TopicReaderWorkspace({
           )}
         </div>
 
-        {/* Embedded Watermarked PDF Viewer Surface */}
+        {/* Embedded PDF Viewer Surface */}
         <div
           className={`relative w-full rounded-xl border border-slate-200 bg-slate-900 overflow-hidden ${
             isFullscreenPdf ? "flex-1 min-h-0" : "h-[680px] sm:h-[780px]"
@@ -517,7 +618,7 @@ export function TopicReaderWorkspace({
                   Fetching Topic PDF from Secure Storage...
                 </p>
                 <p className="text-xs text-slate-500 mt-0.5">
-                  Applying per-page student watermark for {studentName}
+                  Streaming official Qoncepto study notes
                 </p>
               </div>
             </div>
@@ -536,20 +637,13 @@ export function TopicReaderWorkspace({
               )}
             </div>
           ) : pdfBlobUrl ? (
-            <>
-              <iframe
-                src={pdfBlobUrl}
-                title={`${topic?.topic_number || ""} ${
-                  topic?.title || unit.title
-                }`}
-                className="w-full h-full border-0"
-              />
-              {/* Subtle Floating Anti-Screenshot Forensic Badge */}
-              <div className="pointer-events-none absolute bottom-3 right-4 px-3 py-1 rounded-full bg-slate-900/75 backdrop-blur-xs text-white/85 text-[10px] font-semibold tracking-wide shadow-sm">
-                Qoncepto Protected PDF · {studentName}{" "}
-                {studentEmail ? `(${studentEmail})` : ""}
-              </div>
-            </>
+            <iframe
+              src={pdfBlobUrl}
+              title={`${topic?.topic_number || ""} ${
+                topic?.title || unit.title
+              }`}
+              className="w-full h-full border-0"
+            />
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-slate-50 text-slate-400 text-sm">
               Select a topic from the syllabus navigator to view its PDF notes.
