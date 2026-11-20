@@ -260,6 +260,9 @@ export async function completeOnboarding(
     .upsert(
       {
         user_id: user.id,
+        full_name: user.fullName,
+        email: user.email,
+        phone: user.phone,
         semester_id: validatedData.semesterId,
         college_course_department_id: validatedData.collegeCourseDepartmentId,
         updated_at: timestamp,

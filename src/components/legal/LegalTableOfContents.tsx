@@ -19,7 +19,7 @@ interface LegalTableOfContentsProps {
 export function LegalTableOfContents({
   items,
   title = "Table of Contents",
-  contactEmail = "qoncepto.edutech@gmail.com",
+  contactEmail = "management.qoncepto@gmail.com",
   contactLabel = "Need clarification?",
 }: LegalTableOfContentsProps) {
   const [activeId, setActiveId] = useState<string>(items[0]?.id || "");

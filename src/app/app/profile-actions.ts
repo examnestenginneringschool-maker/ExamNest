@@ -66,6 +66,15 @@ export async function updateStudentDisplayName(rawName: string): Promise<{
     return { success: false, error: error.message };
   }
 
+  // Keep `public.student_profiles.full_name` in sync even if DB trigger is not installed yet
+  await supabase
+    .from("student_profiles")
+    .update({
+      full_name: fullName,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("user_id", user.id);
+
   revalidatePath("/app", "layout");
   return { success: true, fullName, firstName };
 }
