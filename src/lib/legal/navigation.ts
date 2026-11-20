@@ -26,8 +26,8 @@ export interface PolicyBranch {
 export const PLATFORM_INFO = {
   name: "Qoncepto",
   tagline: "Syllabus To Mastery",
-  domain: "qoncepto.vercel.app",
-  url: "https://qoncepto.vercel.app",
+  domain: "qoncepto.com",
+  url: "https://qoncepto.com",
   lastUpdated: "November, 2026",
   phoneDisplay: "+91-87092 87648",
   phoneHref: "tel:+918709287648",
@@ -43,11 +43,11 @@ export const PLATFORM_INFO = {
     full: "Panchpota, Police Para, Garia, Kolkata, South 24 Parganas, West Bengal – 700152, India",
   },
   emails: {
-    support: "qoncepto.edutech@gmail.com",
-    privacy: "qoncepto.edutech@gmail.com",
-    terms: "qoncepto.edutech@gmail.com",
-    legal: "qoncepto.edutech@gmail.com",
-    grievance: "qoncepto.edutech@gmail.com",
+    support: "support@qoncepto.com",
+    privacy: "privacy@qoncepto.com",
+    terms: "terms@qoncepto.com",
+    legal: "legal@qoncepto.com",
+    grievance: "grievance@qoncepto.com",
   },
 } as const;
 
